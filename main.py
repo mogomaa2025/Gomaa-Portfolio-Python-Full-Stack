@@ -710,6 +710,43 @@ def delete_skill(skill_id):
     
     return jsonify({"success": True, "message": "Skill deleted successfully"})
 
+@app.route('/admin/skills/reorder', methods=['POST'])
+@admin_required
+def admin_skills_reorder():
+    data = request.json
+    if not data or 'skill_ids' not in data:
+        return jsonify({"success": False, "message": "Missing skill_ids"}), 400
+    
+    skill_ids = data['skill_ids']
+    try:
+        with open(SKILLS_FILE, 'r') as f:
+            skills = json.load(f)
+    except:
+        return jsonify({"success": False, "message": "Could not load skills"}), 500
+    
+    # Map skills by ID
+    skills_map = {s['id']: s for s in skills}
+    
+    # Create new ordered list
+    ordered_skills = []
+    for sid in skill_ids:
+        if sid in skills_map:
+            ordered_skills.append(skills_map[sid])
+            
+    # Add any skills that weren't in the ID list (just in case)
+    remaining_ids = set(skills_map.keys()) - set(skill_ids)
+    for rid in remaining_ids:
+        ordered_skills.append(skills_map[rid])
+    
+    # Re-index IDs to match the new order
+    for index, skill in enumerate(ordered_skills):
+        skill['id'] = index + 1
+        
+    with open(SKILLS_FILE, 'w') as f:
+        json.dump(ordered_skills, f, indent=2)
+        
+    return jsonify({"success": True, "message": "Skills reordered successfully"})
+
 @app.route('/admin/projects/categories/manage', methods=['GET', 'POST'])
 @admin_required
 def manage_categories():

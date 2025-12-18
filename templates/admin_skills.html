@@ -175,6 +175,53 @@
             color: white;
         }
         
+        .move-up-btn, .move-down-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            font-size: 1.1rem;
+        }
+        
+        .move-up-btn:hover, .move-down-btn:hover {
+            background: rgba(100, 255, 218, 0.2);
+            color: #64ffda;
+            border-color: #64ffda;
+        }
+        
+        .skill-controls {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .save-order-btn {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: none; /* Hidden until reordered */
+            margin-left: 1rem;
+        }
+
+        .save-order-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+        }
+        
         @media (max-width: 768px) {
             .admin-header {
                 flex-direction: column;
@@ -212,6 +259,7 @@
                 <p class="page-subtitle">Manage your portfolio skills</p>
             </div>
             <div style="display:flex;gap:1rem;align-items:center;">
+                <button id="save-order-btn" class="save-order-btn" onclick="saveOrder()">Save Order</button>
                 <a href="/admin/skills/add" class="add-btn">+ Add Skill</a>
                 <a href="/admin/skill-categories" class="add-btn" style="background:linear-gradient(135deg,#3b82f6,#a78bfa);color:#fff;">Manage Categories</a>
             </div>
@@ -227,7 +275,11 @@
         
         <div class="skills-grid">
             {% for skill in skills %}
-                <div class="skill-card" data-skill-category="{{ skill.category }}">
+                <div class="skill-card" data-skill-category="{{ skill.category }}" data-skill-id="{{ skill.id }}">
+                    <div class="skill-controls">
+                        <button type="button" class="move-up-btn" onclick="moveSkill(this, 'up')" title="Move Up">↑</button>
+                        <button type="button" class="move-down-btn" onclick="moveSkill(this, 'down')" title="Move Down">↓</button>
+                    </div>
                     <span class="skill-icon" style="display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;">
                         {# --- SVG CODE SUPPORT --- #}
                         {% if skill.icon and skill.icon.strip().startswith('<svg') %}
@@ -268,6 +320,46 @@
                     }
                 });
             }
+        }
+
+        function moveSkill(btn, direction) {
+            const card = btn.closest('.skill-card');
+            const grid = card.parentNode;
+            
+            if (direction === 'up') {
+                const prev = card.previousElementSibling;
+                if (prev) {
+                    grid.insertBefore(card, prev);
+                }
+            } else {
+                const next = card.nextElementSibling;
+                if (next) {
+                    grid.insertBefore(next, card);
+                }
+            }
+            
+            // Show save order button
+            document.getElementById('save-order-btn').style.display = 'inline-block';
+        }
+
+        function saveOrder() {
+            const cards = document.querySelectorAll('.skill-card');
+            const skillIds = Array.from(cards).map(card => parseInt(card.dataset.skillId));
+            
+            fetch('/admin/skills/reorder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ skill_ids: skillIds })
+            }).then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    location.reload();
+                } else {
+                    alert('Error saving order: ' + data.message);
+                }
+            });
         }
 
         document.addEventListener('DOMContentLoaded', function() {
