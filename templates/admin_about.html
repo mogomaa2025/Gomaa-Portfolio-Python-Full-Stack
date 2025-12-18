@@ -59,6 +59,14 @@
         .remove-btn:hover { background: #ff5252; color: white; }
         .add-btn { background: rgba(100,255,218,0.2); color: #64ffda; border-color: #64ffda; }
         .add-btn:hover { background: #64ffda; color: #1e1e2e; }
+        .move-up-btn, .move-down-btn {
+            background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2);
+            padding: 0.5rem; border-radius: 8px; cursor: pointer; transition: all 0.3s ease;
+            display: flex; align-items: center; justify-content: center; width: 40px; height: 40px;
+            font-size: 1.2rem;
+        }
+        .move-up-btn:hover, .move-down-btn:hover { background: rgba(100,255,218,0.2); color: #64ffda; border-color: #64ffda; }
+        .timeline-item .controls { display: flex; gap: 0.5rem; }
     </style>
 </head>
 <body>
@@ -95,6 +103,10 @@
                     <div id="timeline-editor" class="timeline-editor">
                         {% for item in about_data.timeline %}
                         <div class="timeline-item">
+                            <div class="controls">
+                                <button type="button" class="move-up-btn" title="Move Up">↑</button>
+                                <button type="button" class="move-down-btn" title="Move Down">↓</button>
+                            </div>
                             <input type="text" name="timeline_year" class="form-input" placeholder="Year (e.g., June 2025)" value="{{ item.year }}">
                             <input type="text" name="timeline_content" class="form-input" placeholder="Content" value="{{ item.content }}">
                             <button type="button" class="remove-btn">Remove</button>
@@ -114,6 +126,20 @@
             if (e.target.classList.contains('remove-btn')) {
                 e.target.closest('.timeline-item').remove();
             }
+            if (e.target.classList.contains('move-up-btn')) {
+                const item = e.target.closest('.timeline-item');
+                const prev = item.previousElementSibling;
+                if (prev) {
+                    item.parentNode.insertBefore(item, prev);
+                }
+            }
+            if (e.target.classList.contains('move-down-btn')) {
+                const item = e.target.closest('.timeline-item');
+                const next = item.nextElementSibling;
+                if (next) {
+                    item.parentNode.insertBefore(next, item);
+                }
+            }
         });
 
         document.getElementById('add-timeline-item').addEventListener('click', function() {
@@ -121,6 +147,10 @@
             const newItem = document.createElement('div');
             newItem.className = 'timeline-item';
             newItem.innerHTML = `
+                <div class="controls">
+                    <button type="button" class="move-up-btn" title="Move Up">↑</button>
+                    <button type="button" class="move-down-btn" title="Move Down">↓</button>
+                </div>
                 <input type="text" name="timeline_year" class="form-input" placeholder="Year (e.g., June 2025)">
                 <input type="text" name="timeline_content" class="form-input" placeholder="Content">
                 <button type="button" class="remove-btn">Remove</button>
