@@ -24,6 +24,21 @@
       "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">   <path d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z\"></path>   <path d=\"M14 2v6h6\"></path>   <text x=\"8\" y=\"17\" font-family=\"sans-serif\" font-size=\"7\" fill=\"currentColor\" stroke=\"none\">CV</text> </svg>",
       "url": "https://shorturl.at/BbMhz",
       "title": "CV"
+    },
+    {
+      "icon": "<img src=\"https://i.ibb.co/bRB9C3fy/empty-testination1.png\" alt=\"Lamp\" width=\"72\" height=\"82\" style=\"mix-blend-mode: multiply;\" >",
+      "url": "https://www.linkedin.com/company/testination-eg",
+      "title": "Testination"
+    },
+    {
+      "icon": "<svg version=\"1.0\" xmlns=\"http://www.w3.org/2000/svg\" width=\"29pt\" height=\"42pt\" viewBox=\"0 0 79 122\" preserveAspectRatio=\"xMidYMid meet\"><g transform=\"translate(0,122) scale(0.1,-0.1)\" fill=\"#BA1313\" stroke=\"none\"><path d=\"M85 1115 c-27 -26 -31 -54 -14 -88 16 -30 28 -37 65 -37 67 0 100 88 48 129 -35 28 -69 26 -99 -4z\"/><path d=\"M60 688 c0 -270 1 -295 20 -333 22 -46 64 -75 109 -75 l31 0 0 210 0 210 45 0 45 0 0 -202 c0 -220 7 -262 47 -302 34 -35 101 -55 114 -35 5 8 8 130 6 277 l-2 262 123 0 122 0 0 75 0 75 -248 0 -248 0 -14 42 c-18 50 -68 88 -116 88 l-34 0 0 -292z\"/><path d=\"M665 673 c-36 -9 -77 -45 -91 -79 -11 -25 -14 -91 -14 -274 l0 -240 28 0 c35 0 86 31 109 67 16 24 18 53 18 277 0 269 1 262 -50 249z\"/></g></svg>",
+      "url": "https://iti.gov.eg/",
+      "title": "ITI"
+    },
+    {
+      "icon": "<img src=\"https://i.ibb.co/23ZpdpNQ/pro-Ar.png\" alt=\"Lamp\" width=\"42\" height=\"42\" style=\"mix-blend-mode: multiply;\" >",
+      "url": "https://depi.gov.eg/content/home",
+      "title": "Depi"
     }
   ],
   "project_sort_by": "id"

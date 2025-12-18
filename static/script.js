@@ -89,7 +89,8 @@ class PortfolioApp {
                     config.social_links.forEach(link => {
                         const linkElement = document.createElement('a');
                         linkElement.href = link.url;
-                        linkElement.className = 'social-link';
+                        const titleClass = (link.title || '').toLowerCase().replace(/\s+/g, '-');
+                        linkElement.className = `social-link ${titleClass}`;
                         linkElement.title = link.title;
                         linkElement.innerHTML = link.icon;
                         if (link.url.startsWith('http')) {
