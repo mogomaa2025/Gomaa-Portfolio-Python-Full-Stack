@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "title": "OpenCart",
+    "description": "Manual Testing for E-Commerce Website : https://demo.opencart.com/",
+    "category": "Manual Testing",
+    "tags": [
+      "Manual Testing",
+      "Excel",
+      "Test Execution",
+      "Exploratory Testing"
+    ],
+    "github_url": "https://github.com/mogomaa2025/DEPI_GRADUTION_PROJECT/tree/main/Manual%20Project%20Link",
+    "link_button_text": "Github",
+    "mockup_content": "image/manual.png",
+    "date": "2025-04-16",
+    "demo_url": "",
+    "demo_button_text": "Demo",
+    "confidential": false
+  },
+  {
+    "id": 2,
+    "title": "Api Testing For SimpleBook",
+    "description": "We Used Postman,\r\nWe Used Script For Account Registration + User Token + OrderID,\r\nAll Tests Are 200 or 201 ok,\r\nYou Can Import Json File",
+    "category": "Api Testing",
+    "tags": [
+      "Postman",
+      "Api Testing",
+      "Javascript",
+      "Environment Variable"
+    ],
+    "github_url": "https://github.com/mogomaa2025/DEPI_GRADUTION_PROJECT/tree/main/Api",
+    "link_button_text": "Github",
+    "mockup_content": "image/api.png",
+    "date": "2025-04-16",
+    "demo_url": "https://www.postman.com/galactic-station-85267/depi/collection/nmgi80w/simple-books-api-depi-final?action=share&creator=43348422",
+    "demo_button_text": "Postman",
+    "confidential": false
+  },
+  {
+    "id": 3,
+    "title": "Automation Testing For Demoblaze",
+    "description": "This project is a Selenium-based automation test project using Java, Maven, and TestNG. It automates scenarios on the Demoblaze website such as user sign-up, login, product selection, adding to cart, and purchase.\r\nIt Automate for 11 testcase for every thing in the website.\r\nUsing Soft Assertion and Dashboard for the result using ExtenReport.\r\n\r\n",
+    "category": "Automation Testing",
+    "tags": [
+      "Automation Testing",
+      "Java Selenium",
+      "TestNG",
+      "ExtentReport",
+      "Maven",
+      "Java Faker",
+      "OOP"
+    ],
+    "github_url": "https://github.com/mogomaa2025/DEPI_GRADUTION_PROJECT/tree/main/Automation-Demoblaze-V2",
+    "link_button_text": "Github",
+    "mockup_content": "image/auto.png",
+    "date": "2025-04-16",
+    "demo_url": "https://www.youtube.com/watch?v=XpugaXmBV30",
+    "demo_button_text": "Youtube",
+    "confidential": false
+  }
+]

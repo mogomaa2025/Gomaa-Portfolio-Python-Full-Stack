@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects Management - Admin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a0b2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .admin-header {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .admin-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6, #4ade80);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .admin-nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .page-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 0.5rem;
+        }
+        
+        .add-project-btn {
+            background: linear-gradient(135deg, #3b82f6, #4ade80);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .add-project-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+        }
+        
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+        
+        .project-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .project-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-4px);
+        }
+        
+        .project-header {
+            margin-bottom: 1rem;
+        }
+        
+        .project-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #93c5fd;
+        }
+        
+        .project-category {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #93c5fd;
+        }
+        
+        .project-description {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+        
+        .project-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .project-tag {
+            background: rgba(74, 222, 128, 0.2);
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            color: #86efac;
+            padding: 0.25rem 0.5rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+        }
+        
+        .project-date {
+            font-size: 0.85em;
+            color: #a5b4fc;
+            margin-bottom: 0.5em;
+        }
+        
+        .project-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            color: #86efac;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .edit-btn {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #93c5fd;
+        }
+        
+        .edit-btn:hover {
+            background: rgba(59, 130, 246, 0.3);
+            color: white;
+        }
+        
+        .delete-btn {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+        
+        .delete-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .page-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <h1 class="admin-title">Portfolio Admin</h1>
+        <nav class="admin-nav">
+            <a href="/admin" class="nav-link">Dashboard</a>
+            <a href="/" class="nav-link">View Site</a>
+            <a href="/admin/logout" class="nav-link">Logout</a>
+        </nav>
+    </header>
+    
+    <div class="admin-container">
+        <div class="page-header">
+            <div>
+                <h2 class="page-title">Projects Management</h2>
+                <p class="page-subtitle">Manage your portfolio projects</p>
+            </div>
+            <form method="get" id="sortForm" style="display:flex;align-items:center;gap:1rem;">
+                <label for="sort_by" style="color:#a5b4fc;font-size:0.95em;">Sort by:</label>
+                <select name="sort_by" id="sort_by" class="form-input" style="width:auto;padding:0.5rem 1rem;">
+                    <option value="date" {% if request.args.get('sort_by', 'date') == 'date' %}selected{% endif %}>Date</option>
+                    <option value="id" {% if request.args.get('sort_by') == 'id' %}selected{% endif %}>ID</option>
+                </select>
+            </form>
+            <a href="/admin/projects/add" class="add-project-btn">+ Add Project</a>
+            <a href="/admin/projects/categories/manage" class="add-project-btn" style="background: #4ade80;">Manage Categories</a>
+        </div>
+        <script>
+            document.getElementById('sort_by').addEventListener('change', function() {
+                document.getElementById('sortForm').submit();
+            });
+        </script>
+        
+        <div class="projects-grid">
+            {% for project in projects %}
+            <div class="project-card">
+                <div class="project-header">
+                    <h3 class="project-title">{{ project.title }}</h3>
+                    <span class="project-category">{{ project.category }}</span>
+                    <span class="project-id" style="font-size:0.8em;color:#fbbf24;margin-left:1em;">ID: {{ project.id }}</span>
+                </div>
+                <p class="project-description">{{ project.description }}</p>
+                <div class="project-tags">
+                    {% for tag in project.tags %}
+                    <span class="project-tag">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+                <div class="project-date" style="font-size:0.85em;color:#a5b4fc;margin-bottom:0.5em;">
+                    <span>Date: {{ project.date if project.date else 'N/A' }}</span>
+                </div>
+                <!-- Show Demo and Confidential Info -->
+                <div class="project-links" style="margin-bottom:0.5em;">
+                    {% if project.confidential %}
+                        <span style="color:#f87171;font-size:0.95em;">Confidential Project</span>
+                    {% else %}
+                        {% if project.github_url %}
+                            <a href="{{ project.github_url }}" class="action-btn" target="_blank">{{ project.link_button_text or 'GitHub' }}</a>
+                        {% endif %}
+                        {% if project.demo_url %}
+                            <a href="{{ project.demo_url }}" class="action-btn" target="_blank">{{ project.demo_button_text or 'Demo' }}</a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                <div class="project-actions">
+                    <a href="/admin/projects/edit/{{ project.id }}" class="action-btn edit-btn">Edit</a>
+                    <button onclick="deleteProject({{ project.id }}, '{{ project.title }}')" class="action-btn delete-btn">Delete</button>
+                </div>
+            </div>
+            {% endfor %}
+            {% if not projects %}
+            <div style="grid-column: 1 / -1; text-align: center; color: rgba(255, 255, 255, 0.5); padding: 3rem;">
+                <h3>No projects found</h3>
+                <p>Click "Add Project" to create your first project.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <script>
+        function deleteProject(projectId, projectTitle) {
+            if (confirm(`Are you sure you want to delete "${projectTitle}"? This action cannot be undone.`)) {
+                fetch(`/admin/projects/delete/${projectId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Project deleted successfully!');
+                        location.reload();
+                    } else {
+                        alert('Error deleting project: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Error deleting project: ' + error);
+                });
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gomaa Portfolio</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app">
+        <!-- Header with theme toggle and source code link -->
+        <header class="header">
+            <div class="header-left">
+                <div class="logo">
+                    <span class="logo-text" id="logo-text"></span>
+                </div>
+            </div>
+            <div class="header-right">
+                <a href="https://github.com/mogomaa2025" class="header-link" title="Source Code">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                    </svg>
+                </a>
+                <button class="theme-toggle" title="Toggle Theme">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+                    </svg>
+                </button>
+                <button class="terminal-toggle" title="Toggle Terminal Mode">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="4,17 10,11 4,5"></polyline>
+                        <line x1="12" y1="19" x2="20" y2="19"></line>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main content -->
+        <main class="main-content">
+            <div class="container">
+                <!-- Home Section -->
+                <section id="home-section" class="section active">
+                    <div class="hero-section">
+                        <div class="hero-content">
+                            <div class="text-content">
+                                <h1 class="hero-title" id="hero-title"></h1>
+                                <p class="hero-subtitle" id="typing-text"></p>
+                                <div class="location" id="location">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+                                        <circle cx="12" cy="10" r="3"></circle>
+                                    </svg>
+                                    <span id="location-text"></span>
+                                </div>
+                                
+                                <!-- Social Links -->
+                                <div class="social-links" id="social-links">
+                                    <!-- Social links will be loaded dynamically -->
+                                </div>
+                            </div>
+                            
+                            <!-- Profile Image -->
+                            <div class="profile-image-container">
+                                <img src="" alt="Profile Image" class="profile-image" id="profile-image">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- About Section -->
+                <section id="about-section" class="section">
+                    <div class="section-content">
+                        <h2 class="section-title">Who Am I</h2>
+                        <p class="section-description" id="about-description"></p>
+                        
+                        <div class="tags-container" id="about-tags">
+                            <!-- Tags will be loaded dynamically -->
+                        </div>
+
+                        <div class="timeline">
+                            <h3 class="timeline-title">Timeline</h3>
+                            <div class="timeline-items" id="about-timeline">
+                                <!-- Timeline items will be loaded dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Projects Section -->
+                <section id="projects-section" class="section">
+                    <div class="section-content">
+                        <h2 class="section-title">Projects</h2>
+                        <p class="section-description">A collection of projects, I've worked on.</p>
+                        
+                        <div class="filter-buttons" id="filter-buttons-container">
+                            <!-- Filter buttons will be rendered here by JS -->
+                        </div>
+
+                        <div class="projects-grid">
+                            <!-- Projects will be loaded dynamically -->
+                        </div>
+                    </div>
+                </section>
+
+                           <!-- Skills Section -->
+                <section id="skills-section" class="section">
+                    <div class="section-content">
+                        <h2 class="section-title">My Skills</h2>
+                        <p class="section-description">Technologies, tools & languages I work with.</p>
+                        
+                        <div class="skills-grid">
+                            <div class="skill-card">
+                                <div class="skill-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="16 18 22 12 16 6"></polyline>
+                                        <polyline points="8 6 2 12 8 18"></polyline>
+                                    </svg>
+                                </div>
+                                <span class="skill-name">React</span>
+                            </div>
+                            
+                            <div class="skill-card">
+                                <div class="skill-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect width="18" height="12" x="3" y="4" rx="2" ry="2"></rect>
+                                        <line x1="2" y1="20" x2="22" y2="20"></line>
+                                    </svg>
+                                </div>
+                                <span class="skill-name">Node.js</span>
+                            </div>
+                            
+                            <div class="skill-card">
+                                <div class="skill-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                                        <path d="M3 5v14a9 3 0 0 0 18 0V5"></path>
+                                    </svg>
+                                </div>
+                                <span class="skill-name">MongoDB</span>
+                            </div>
+                            
+                            <div class="skill-card">
+                                <div class="skill-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                                        <polyline points="14,2 14,8 20,8"></polyline>
+                                    </svg>
+                                </div>
+                                <span class="skill-name">Tailwind CSS</span>
+                            </div>
+                            
+                            <div class="skill-card">
+                                <div class="skill-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M9 12l2 2 4-4"></path>
+                                        <path d="M21 12c.552 0 1-.448 1-1V5c0-.552-.448-1-1-1H3c-.552 0-1 .448-1 1v6c0 .552.448 1 1 1h18z"></path>
+                                        <path d="M3 12v6c0 .552.448 1 1 1h16c.552 0 1-.448 1-1v-6"></path>
+                                    </svg>
+                                </div>
+                                <span class="skill-name">TypeScript</span>
+                            </div>
+                            
+                            <div class="skill-card">
+                                <div class="skill-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                                    </svg>
+                                </div>
+                                <span class="skill-name">Git & GitHub</span>
+                            </div>
+                            
+                            <div class="skill-card">
+                                <div class="skill-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                                    </svg>
+                                </div>
+                                <span class="skill-name">Next.js</span>
+                            </div>
+                            
+                            <div class="skill-card">
+                                <div class="skill-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                                    </svg>
+                                </div>
+                                <span class="skill-name">Python</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+
+                <!-- Contact Section -->
+                <section id="contact-section" class="section">
+                    <div class="section-content">
+                        <div class="contact-card">
+                            <h2 class="section-title">Get in Touch</h2>
+                            <p class="section-description" id="contact-description"></p>
+                            
+                            <div class="contact-info" id="contact-items">
+                                <!-- Contact items will be loaded dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <div class="nav-container">
+                <div class="nav-spacer"></div>
+                
+                <button class="nav-item active" data-section="home">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path>
+                        <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    </svg>
+                    <span>Home</span>
+                </button>
+                
+                <button class="nav-item" data-section="about">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M12 16v-4"></path>
+                        <path d="M12 8h.01"></path>
+                    </svg>
+                    <span>About</span>
+                </button>
+                
+                <button class="nav-item" data-section="projects">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path>
+                        <path d="M8 10v4"></path>
+                        <path d="M12 10v2"></path>
+                        <path d="M16 10v6"></path>
+                    </svg>
+                    <span>Projects</span>
+                </button>
+                
+                <button class="nav-item" data-section="skills">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <circle cx="12" cy="12" r="6"></circle>
+                        <circle cx="12" cy="12" r="2"></circle>
+                    </svg>
+                    <span>Skills</span>
+                </button>
+                
+                <button class="nav-item" data-section="contact">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 2v2"></path>
+                        <path d="M17.915 22a6 6 0 0 0-12 0"></path>
+                        <path d="M8 2v2"></path>
+                        <circle cx="12" cy="12" r="4"></circle>
+                        <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+                    </svg>
+                    <span>Contact</span>
+                </button>
+                
+                <div class="nav-spacer"></div>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Modal for enlarged images -->
+    <div id="image-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-content">
+            <button class="modal-close" id="modal-close" aria-label="Close">&times;</button>
+            <button class="modal-nav prev" id="modal-prev" aria-label="Previous">&lt;</button>
+            <button class="modal-nav next" id="modal-next" aria-label="Next">&gt;</button>
+            <div class="modal-slide-container">
+                <img src="" alt="Enlarged view" id="modal-img" class="modal-img">
+                <div class="slide-indicator" id="slide-indicator"></div>
+                <div class="zoom-indicator" id="zoom-indicator">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        <line x1="11" y1="8" x2="11" y2="14"/>
+                        <line x1="8" y1="11" x2="14" y2="11"/>
+                    </svg>
+                    <span>Click image to zoom or press 'Z'</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(20, 20, 30, 0.9);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .modal-content {
+            position: relative;
+            background: none;
+            max-width: 90vw;
+            max-height: 90vh;
+            animation: modalScaleIn 0.25s cubic-bezier(.4,2,.6,1) both;
+        }
+        .zoom-indicator {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(34,34,34,0.8);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .zoom-indicator.visible {
+            opacity: 1;
+        }
+        .zoom-indicator svg {
+            width: 16px;
+            height: 16px;
+        }
+        .modal-img {
+            max-width: 90vw;
+            max-height: 85vh;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+            display: block;
+            cursor: zoom-in;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            transition: transform 0.3s ease;
+        }
+        .modal-img.zoomed {
+            cursor: zoom-out;
+            transform: scale(1.5);
+        }
+        .modal-img::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 50%;
+            height: 100%;
+            transform: translateY(-50%);
+            z-index: 2;
+        }
+        .modal-img::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 0;
+            width: 50%;
+            height: 100%;
+            transform: translateY(-50%);
+            z-index: 2;
+        }
+        .modal-content:hover .modal-img::before {
+            cursor: w-resize;
+        }
+        .modal-content:hover .modal-img::after {
+            cursor: e-resize;
+        }
+        .modal-close {
+            position: absolute;
+            top: -18px;
+            right: -18px;
+            background: rgba(34,34,34,0.8);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 2rem;
+            line-height: 1;
+            cursor: pointer;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: background 0.2s ease;
+        }
+        .modal-close:hover {
+            background: #f87171;
+        }
+        .modal-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(34,34,34,0.8);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            font-size: 1.8rem;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.2s ease;
+            opacity: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            text-decoration: none;
+        }
+        .modal-nav:hover {
+            background: rgba(59, 130, 246, 0.9);
+        }
+        .modal-nav.prev {
+            left: 20px;
+        }
+        .modal-nav.next {
+            right: 20px;
+        }
+        .modal-content:hover .modal-nav {
+            opacity: 1;
+        }
+        .modal-slide-container {
+            position: relative;
+        }
+        .modal-content:hover .modal-nav {
+            display: block;
+        }
+        .slide-indicator {
+            position: absolute;
+            bottom: -25px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px;
+        }
+        .slide-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .slide-dot.active {
+            background: #3b82f6;
+        }
+        @keyframes modalScaleIn {
+            0% { transform: scale(0.7); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .mockup-media {
+            cursor: zoom-in;
+            transition: transform 0.2s ease;
+        }
+        .slide-preview {
+            position: relative;
+        }
+        .slide-preview::after {
+            content: "";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>') no-repeat center;
+            background-color: rgba(0,0,0,0.5);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .slide-hint {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+        .slide-preview:hover .slide-hint {
+            opacity: 1;
+        }
+        .mockup-media:hover {
+            transform: scale(1.02);
+        }
+    </style>
+
+    <script src="script.js"></script>
+    <script>
+        // Image modal functionality
+        const imageModal = document.getElementById('image-modal');
+        const modalImg = document.getElementById('modal-img');
+        const modalClose = document.getElementById('modal-close');
+        const modalPrev = document.getElementById('modal-prev');
+        const modalNext = document.getElementById('modal-next');
+        const slideIndicator = document.getElementById('slide-indicator');
+        let currentSlideIndex = 0;
+        let currentSlides = [];
+        let clickX = 0;
+
+        // Handle image zooming
+        let isZoomed = false;
+        modalImg.addEventListener('click', (e) => {
+            e.stopPropagation();
+            isZoomed = !isZoomed;
+            modalImg.classList.toggle('zoomed', isZoomed);
+            
+            // Disable slide navigation when zoomed
+            modalPrev.style.pointerEvents = isZoomed ? 'none' : 'auto';
+            modalNext.style.pointerEvents = isZoomed ? 'none' : 'auto';
+            modalPrev.style.opacity = isZoomed ? '0.3' : '1';
+            modalNext.style.opacity = isZoomed ? '0.3' : '1';
+        });
+
+        // Add touch support for mobile devices
+        let touchStartX = 0;
+        modalImg.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+        });
+
+        modalImg.addEventListener('touchend', (e) => {
+            if (currentSlides.length <= 1) return;
+            
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchDiff = touchEndX - touchStartX;
+            
+            if (Math.abs(touchDiff) > 50) { // Minimum swipe distance
+                if (touchDiff > 0) {
+                    showSlide(currentSlideIndex - 1); // Swipe right = previous
+                } else {
+                    showSlide(currentSlideIndex + 1); // Swipe left = next
+                }
+            }
+        });
+
+        function updateSlideIndicators(total, current) {
+            slideIndicator.innerHTML = '';
+            if (total <= 1) return;
+            
+            for (let i = 0; i < total; i++) {
+                const dot = document.createElement('div');
+                dot.className = `slide-dot${i === current ? ' active' : ''}`;
+                dot.addEventListener('click', () => showSlide(i));
+                slideIndicator.appendChild(dot);
+            }
+        }
+
+        function showSlide(index) {
+            if (!currentSlides.length) return;
+            
+            // Reset zoom state when changing slides
+            if (isZoomed) {
+                isZoomed = false;
+                modalImg.classList.remove('zoomed');
+                modalPrev.style.pointerEvents = 'auto';
+                modalNext.style.pointerEvents = 'auto';
+                modalPrev.style.opacity = '1';
+                modalNext.style.opacity = '1';
+            }
+            
+            currentSlideIndex = (index + currentSlides.length) % currentSlides.length;
+            modalImg.src = currentSlides[currentSlideIndex];
+            updateSlideIndicators(currentSlides.length, currentSlideIndex);
+            
+            if (currentSlides.length > 1) {
+                modalPrev.style.display = 'flex';
+                modalNext.style.display = 'flex';
+                modalPrev.style.opacity = '1';
+                modalNext.style.opacity = '1';
+                
+                // Add indicator for navigation
+                const zoomIndicator = document.getElementById('zoom-indicator');
+                zoomIndicator.classList.add('visible');
+                zoomIndicator.innerHTML = `
+                    <span>Image ${currentSlideIndex + 1} of ${currentSlides.length}</span>
+                    <span style="opacity: 0.7">Use arrows or click sides to navigate</span>
+                `;
+                setTimeout(() => {
+                    zoomIndicator.classList.remove('visible');
+                }, 3000);
+            } else {
+                modalPrev.style.display = 'none';
+                modalNext.style.display = 'none';
+            }
+            
+            // Show zoom indicator briefly
+            const zoomIndicator = document.getElementById('zoom-indicator');
+            zoomIndicator.classList.add('visible');
+            setTimeout(() => {
+                zoomIndicator.classList.remove('visible');
+            }, 3000);
+        }
+
+        // Event delegation for project images
+        document.addEventListener('click', async function(e) {
+            if (e.target.classList.contains('mockup-media') && e.target.tagName === 'IMG') {
+                const slideAttribute = e.target.dataset.slides;
+                const externalSlideAttribute = e.target.dataset.externalSlides;
+                
+                if (externalSlideAttribute) {
+                    // Handle external slides
+                    const slides = externalSlideAttribute.split('|');
+                    currentSlides = slides;
+                    currentSlideIndex = 0;
+                    
+                    imageModal.style.display = 'flex';
+                    setTimeout(() => { 
+                        imageModal.style.opacity = 1;
+                        showSlide(0);
+                    }, 10);
+                } else if (slideAttribute) {
+                    // Handle local slides
+                    try {
+                        // For now, handle slides directly (we'll add API later)
+                        const slides = ['0.jpg', '1.jpg', '2.jpg'];
+                        currentSlides = slides.map(slide => `/static/slides/${slideAttribute}/${slide}`);
+                        currentSlideIndex = 0;
+                        
+                        // Show modal first
+                        imageModal.style.display = 'flex';
+                        setTimeout(() => { 
+                            imageModal.style.opacity = 1;
+                            showSlide(0);
+                        }, 10);
+                    } catch (err) {
+                        console.error('Error loading slides:', err);
+                        currentSlides = [e.target.src];
+                        showSlide(0);
+                    }
+                } else {
+                    // Handle single image
+                    currentSlides = [e.target.src];
+                    showSlide(0);
+                }
+                
+                imageModal.style.display = 'flex';
+                setTimeout(() => { imageModal.style.opacity = 1; }, 10);
+            }
+        });
+
+        // Navigation buttons
+        modalPrev.addEventListener('click', () => showSlide(currentSlideIndex - 1));
+        modalNext.addEventListener('click', () => showSlide(currentSlideIndex + 1));
+
+        // Keyboard navigation and zoom
+        document.addEventListener('keydown', function(e) {
+            if (imageModal.style.display === 'flex') {
+                if (!isZoomed && e.key === 'ArrowLeft') {
+                    showSlide(currentSlideIndex - 1);
+                } else if (!isZoomed && e.key === 'ArrowRight') {
+                    showSlide(currentSlideIndex + 1);
+                } else if (e.key === 'Escape') {
+                    if (isZoomed) {
+                        // If zoomed, first unzoom
+                        isZoomed = false;
+                        modalImg.classList.remove('zoomed');
+                        modalPrev.style.pointerEvents = 'auto';
+                        modalNext.style.pointerEvents = 'auto';
+                        modalPrev.style.opacity = '1';
+                        modalNext.style.opacity = '1';
+                    } else {
+                        // If not zoomed, close modal
+                        imageModal.style.opacity = 0;
+                        setTimeout(() => { 
+                            imageModal.style.display = 'none';
+                            currentSlides = [];
+                            slideIndicator.innerHTML = '';
+                        }, 200);
+                    }
+                } else if (e.key === 'z') {
+                    // Toggle zoom with 'z' key
+                    isZoomed = !isZoomed;
+                    modalImg.classList.toggle('zoomed', isZoomed);
+                    modalPrev.style.pointerEvents = isZoomed ? 'none' : 'auto';
+                    modalNext.style.pointerEvents = isZoomed ? 'none' : 'auto';
+                    modalPrev.style.opacity = isZoomed ? '0.3' : '1';
+                    modalNext.style.opacity = isZoomed ? '0.3' : '1';
+                }
+            }
+        });
+
+        // Close modal on button click
+        modalClose.addEventListener('click', function() {
+            imageModal.style.opacity = 0;
+            setTimeout(() => { 
+                imageModal.style.display = 'none';
+                currentSlides = [];
+                slideIndicator.innerHTML = '';
+                // Reset zoom state
+                isZoomed = false;
+                modalImg.classList.remove('zoomed');
+                modalPrev.style.pointerEvents = 'auto';
+                modalNext.style.pointerEvents = 'auto';
+                modalPrev.style.opacity = '1';
+                modalNext.style.opacity = '1';
+            }, 200);
+        });
+
+        // Close modal when clicking outside the image
+        imageModal.addEventListener('click', function(e) {
+            if (e.target === imageModal) {
+                imageModal.style.opacity = 0;
+                setTimeout(() => { 
+                    imageModal.style.display = 'none';
+                    currentSlides = [];
+                    slideIndicator.innerHTML = '';
+                }, 200);
+            }
+        });
+
+        document.getElementById('projects-social-link').addEventListener('click', function(e) {
+            e.preventDefault();
+            const navBtn = document.querySelector('.nav-item[data-section="projects"]');
+            if (navBtn) navBtn.click();
+        });
+    </script>
+</body>
+</html>

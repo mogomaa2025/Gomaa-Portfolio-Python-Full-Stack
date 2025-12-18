@@ -1,0 +1,41 @@
+{
+    "description": "I'm Mohamed Gomaa Live in Egypt, Graduated From <a href=\"https://eng.alexu.edu.eg/index.php/en/\" class=\"highlight-link\">Faculty Of Engineer Alexandria University</a> graduated from <a href=\"https://depi.gov.eg/content/home\" class=\"highlight-link\">Digital Egyptian Pioneers (DEPI)</a> and i got the prize of the best graduation project from <a href=\"https://mcit.gov.eg/\" class=\"highlight-link\">ministry of communications and information technology</a> Currently student at  <a href=\"https://iti.gov.eg/\" class=\"highlight-link\">Information Technology Institute (ITI) </a> Track Software Testing, I Worked as It Exective in Zahran Market Management for 8 Months, Now i specialized in software Testing Manual & Api and Automation.",
+    "tags": [
+        "Engineer",
+        "Passion for tech",
+        "Software Tester",
+        "Automation Testing",
+        "Best Graduation Project",
+        "Api Testing"
+    ],
+    "timeline": [
+        {
+            "year": "July 2025",
+            "content": "Started Software Testing Track at Information Technology Institute (ITI)"
+        },
+        {
+            "year": "June 2025",
+            "content": "Got The Best Prize Award For The Best Graduation Project"
+        },
+        {
+            "year": "April 2025",
+            "content": "Grduated From Digital Egyptian Pioneers (DEPI)."
+        },
+        {
+            "year": "Aug 2024",
+            "content": "Start Working As It Exective In Zahran Market Management."
+        },
+        {
+            "year": "Dec 2023",
+            "content": "Completed Military Service in Police Investigation."
+        },
+        {
+            "year": "Aug 2022",
+            "content": "Graduated From Alexandria University, Faculty Of Engineer."
+        },
+        {
+            "year": "June 2018",
+            "content": "Graduated From Alexandria Technical College Computer Science."
+        }
+    ]
+}

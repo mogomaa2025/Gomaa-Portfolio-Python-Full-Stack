@@ -1,0 +1,25 @@
+{
+    "description": "I'm always open to new opportunities and conversations. Reach out!",
+    "items": [
+        {
+            "icon": "<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect width='20' height='16' x='2' y='4' rx='2'></rect><path d='m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7'></path></svg>",
+            "text": "mohamed.gomaa.swt@gmail.com",
+            "link": "mailto:mohamed.gomaa.swt@gmail.com"
+        },
+        {
+            "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" fill=\"none\" stroke=\"#3D8BFF\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">   <path d=\"M22 16.92v3a2 2 0 0 1-2.18 2 19.78 19.78 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 9.8 19.78 19.78 0 0 1 1.07 1.18 2 2 0 0 1 3 0h3a2 2 0 0 1 2 1.72 12.3 12.3 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11l-1.27 1.27a16 16 0 0 0 6.58 6.58l1.27-1.27a2 2 0 0 1 2.11-.45 12.3 12.3 0 0 0 2.81.7A2 2 0 0 1 22 16.92z\"/> </svg>",
+            "text": "+20 01028838444",
+            "link": "tel:+201028838444"
+        },
+        {
+            "icon": "<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'>   <!-- Speech bubble outline -->   <path d='M12 2a10 10 0 0 1 10 10v5a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-5a10 10 0 0 1 10-10z'/>   <!-- Phone outline inside -->   <path d='M12 15a3 3 0 0 1-3-3V9a3 3 0 0 1 3-3h3a3 3 0 0 1 3 3v3a3 3 0 0 1-3 3h-3z'/>   <!-- Phone details -->   <path d='M9 9a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1h-3a1 1 0 0 1-1-1v-1z'/>   <path d='M9 12a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1h-3a1 1 0 0 1-1-1v-1z'/> </svg>",
+            "text": "WhatsApp",
+            "link": "https://wa.me/201028838444"
+        },
+        {
+            "icon": "<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z'></path><rect width='4' height='12' x='2' y='9'></rect><circle cx='4' cy='4' r='2'></circle></svg>",
+            "text": "linkedin.com/in/gomaa2022",
+            "link": "https://www.linkedin.com/in/gomaa2022/"
+        }
+    ]
+}

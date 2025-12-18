@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Page Management - Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .admin-header {
+            background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 1rem 2rem; display: flex;
+            justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .admin-header h1 { color: #64ffda; font-size: 1.5rem; }
+        .admin-nav { display: flex; gap: 1rem; }
+        .admin-nav a {
+            color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px;
+            background: rgba(255,255,255,0.1); transition: all 0.3s ease;
+        }
+        .admin-nav a:hover { background: rgba(100,255,218,0.2); transform: translateY(-2px); }
+        .admin-container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+        .page-header { text-align: center; margin-bottom: 2rem; }
+        .page-title { font-size: 2rem; color: white; }
+        .page-subtitle { color: #a0a0a0; margin-top: 0.5rem; }
+        .form-container {
+            background: rgba(255,255,255,0.05); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 2rem;
+        }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-label { display: block; font-weight: 600; margin-bottom: 0.5rem; color: #64ffda; }
+        .form-input, .form-textarea {
+            width: 100%; padding: 0.75rem 1rem; background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+            color: white; font-size: 1rem; transition: all 0.3s ease;
+        }
+        .form-input:focus, .form-textarea:focus { outline: none; border-color: #64ffda; box-shadow: 0 0 15px rgba(100,255,218,0.2); }
+        .form-textarea { min-height: 120px; resize: vertical; }
+        .image-preview-container {
+            display: flex; align-items: center; gap: 1rem; margin-top: 1rem;
+        }
+        .profile-image-preview {
+            width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid #64ffda;
+        }
+        .submit-btn {
+            background: linear-gradient(135deg, #64ffda 0%, #00bcd4 100%); color: #1e1e2e;
+            padding: 0.75rem 2rem; border: none; border-radius: 12px; font-weight: 600;
+            text-decoration: none; display: block; width: 100%; text-align: center;
+            font-size: 1.1rem; transition: all 0.3s ease; cursor: pointer;
+        }
+        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(100,255,218,0.3); }
+        .dynamic-list .list-item {
+            display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;
+            background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px;
+        }
+        .dynamic-list .list-item input { flex-grow: 1; }
+        .remove-btn, .add-btn {
+            background: rgba(255,82,82,0.2); color: #ff5252; border: 1px solid #ff5252;
+            padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; transition: all 0.3s ease;
+        }
+        .remove-btn:hover { background: #ff5252; color: white; }
+        .add-btn { background: rgba(100,255,218,0.2); color: #64ffda; border-color: #64ffda; }
+        .add-btn:hover { background: #64ffda; color: #1e1e2e; }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <h1>Portfolio Admin</h1>
+        <nav class="admin-nav">
+            <a href="/admin">Dashboard</a>
+            <a href="/">View Site</a>
+            <a href="/admin/logout">Logout</a>
+        </nav>
+    </header>
+    
+    <div class="admin-container">
+        <div class="page-header">
+            <h1 class="page-title">Home Page Management</h1>
+            <p class="page-subtitle">Update the main content of your portfolio's home page.</p>
+        </div>
+        
+        <div class="form-container">
+            <form action="/admin/home" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="logo_text" class="form-label">Logo Text</label>
+                    <input type="text" id="logo_text" name="logo_text" class="form-input" value="{{ config.get('logo_text', '') }}">
+                </div>
+                <div class="form-group">
+                    <label for="profile_image" class="form-label">Profile Image</label>
+                    <p style="color:#a0a0a0;font-size:0.9rem;margin-bottom:0.5rem;">Upload a new file or provide an image URL. The uploaded file will take priority.</p>
+                    <input type="file" id="profile_image" name="profile_image" class="form-input" style="margin-bottom: 0.5rem;">
+                    <input type="text" id="profile_image_url" name="profile_image_url" class="form-input" placeholder="Or enter image URL" value="{{ config.get('profile_image_url', '') }}">
+                    <div class="image-preview-container">
+                        <img src="{{ '/static/' + config.get('profile_image') if config.get('profile_image') and not config.get('profile_image').startswith('http') else config.get('profile_image_url') or '/static/profile.jpg' }}" alt="Profile Preview" class="profile-image-preview" id="profileImagePreview">
+                        <span>Current Image</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="hero_title" class="form-label">Hero Title</label>
+                    <input type="text" id="hero_title" name="hero_title" class="form-input" value="{{ config.get('hero_title', '') }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Hero Subtitle (Typing Text)</label>
+                    <p style="color:#a0a0a0;font-size:0.9rem;margin-bottom:0.5rem;">Enter phrases separated by commas or use the dynamic list below.</p>
+                    <div id="hero-subtitle-list" class="dynamic-list">
+                        {% for subtitle in config.get('hero_subtitle', []) %}
+                        <div class="list-item">
+                            <input type="text" name="hero_subtitle" class="form-input" placeholder="Subtitle" value="{{ subtitle }}">
+                            <button type="button" class="remove-btn">Remove</button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" id="add-hero-subtitle" class="add-btn" style="margin-top: 1rem;">+ Add Subtitle</button>
+                </div>
+                <div class="form-group">
+                    <label for="location" class="form-label">Location</label>
+                    <input type="text" id="location" name="location" class="form-input" value="{{ config.get('location', '') }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Social Links</label>
+                    <div id="social-links-list" class="dynamic-list">
+                        {% for link in config.get('social_links', []) %}
+                        <div class="list-item">
+                            <input type="text" name="social_link_icon" class="form-input" placeholder="SVG Icon" value="{{ link.icon }}">
+                            <input type="text" name="social_link_url" class="form-input" placeholder="URL" value="{{ link.url }}">
+                            <input type="text" name="social_link_title" class="form-input" placeholder="Title" value="{{ link.title }}">
+                            <button type="button" class="remove-btn">Remove</button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" id="add-social-link" class="add-btn" style="margin-top: 1rem;">+ Add Social Link</button>
+                </div>
+                <button type="submit" class="submit-btn">Save Changes</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        // Remove item from dynamic lists
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-btn')) {
+                e.target.closest('.list-item').remove();
+            }
+        });
+        // Add hero subtitle
+        document.getElementById('add-hero-subtitle').addEventListener('click', function() {
+            const list = document.getElementById('hero-subtitle-list');
+            const newItem = document.createElement('div');
+            newItem.className = 'list-item';
+            newItem.innerHTML = `
+                <input type="text" name="hero_subtitle" class="form-input" placeholder="Subtitle">
+                <button type="button" class="remove-btn">Remove</button>
+            `;
+            list.appendChild(newItem);
+        });
+        // Add social link
+        document.getElementById('add-social-link').addEventListener('click', function() {
+            const list = document.getElementById('social-links-list');
+            const newItem = document.createElement('div');
+            newItem.className = 'list-item';
+            newItem.innerHTML = `
+                <input type="text" name="social_link_icon" class="form-input" placeholder="SVG Icon">
+                <input type="text" name="social_link_url" class="form-input" placeholder="URL">
+                <input type="text" name="social_link_title" class="form-input" placeholder="Title">
+                <button type="button" class="remove-btn">Remove</button>
+            `;
+            list.appendChild(newItem);
+        });
+        // Profile image preview logic
+        const profileImageInput = document.getElementById('profile_image');
+        const profileImagePreview = document.getElementById('profileImagePreview');
+        const profileImageUrlInput = document.getElementById('profile_image_url');
+        profileImageInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    profileImagePreview.src = e.target.result;
+                    profileImageUrlInput.value = '';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+        profileImageUrlInput.addEventListener('input', function() {
+            if (this.value) {
+                profileImagePreview.src = this.value;
+                profileImageInput.value = '';
+            }
+        });
+    </script>
+</body>
+</html>

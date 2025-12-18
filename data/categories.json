@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "name": "Manual Testing"
+  },
+  {
+    "id": 2,
+    "name": "Automation Testing"
+  },
+  {
+    "id": 3,
+    "name": "Api Testing"
+  },
+  {
+    "id": 4,
+    "name": "Web"
+  },
+  {
+    "id": 5,
+    "name": "Mobile"
+  },
+  {
+    "id": 6,
+    "name": "Other"
+  }
+]

@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "name": "Software Testing"
+  },
+  {
+    "id": 2,
+    "name": "Web"
+  },
+  {
+    "id": 3,
+    "name": "Mobile"
+  },
+  {
+    "id": 4,
+    "name": "Database"
+  },
+  {
+    "id": 5,
+    "name": "IT"
+  }
+]

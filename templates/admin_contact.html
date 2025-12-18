@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Page Management - Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .admin-header {
+            background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 1rem 2rem; display: flex;
+            justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .admin-header h1 { color: #64ffda; font-size: 1.5rem; }
+        .admin-nav { display: flex; gap: 1rem; }
+        .admin-nav a {
+            color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px;
+            background: rgba(255,255,255,0.1); transition: all 0.3s ease;
+        }
+        .admin-nav a:hover { background: rgba(100,255,218,0.2); transform: translateY(-2px); }
+        .admin-container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+        .page-header { text-align: center; margin-bottom: 2rem; }
+        .page-title { font-size: 2rem; color: white; }
+        .page-subtitle { color: #a0a0a0; margin-top: 0.5rem; }
+        .form-container {
+            background: rgba(255,255,255,0.05); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 2rem;
+        }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-label { display: block; font-weight: 600; margin-bottom: 0.5rem; color: #64ffda; }
+        .form-input, .form-textarea {
+            width: 100%; padding: 0.75rem 1rem; background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+            color: white; font-size: 1rem; transition: all 0.3s ease;
+        }
+        .form-input:focus, .form-textarea:focus { outline: none; border-color: #64ffda; box-shadow: 0 0 15px rgba(100,255,218,0.2); }
+        .form-textarea { min-height: 100px; resize: vertical; }
+        .submit-btn {
+            background: linear-gradient(135deg, #64ffda 0%, #00bcd4 100%); color: #1e1e2e;
+            padding: 0.75rem 2rem; border: none; border-radius: 12px; font-weight: 600;
+            text-decoration: none; display: block; width: 100%; text-align: center;
+            font-size: 1.1rem; transition: all 0.3s ease; cursor: pointer;
+        }
+        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(100,255,218,0.3); }
+        .contact-editor .contact-item {
+            display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;
+            background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px;
+        }
+        .contact-editor .contact-item input { flex-grow: 1; }
+        .remove-btn, .add-btn {
+            background: rgba(255,82,82,0.2); color: #ff5252; border: 1px solid #ff5252;
+            padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; transition: all 0.3s ease;
+        }
+        .remove-btn:hover { background: #ff5252; color: white; }
+        .add-btn { background: rgba(100,255,218,0.2); color: #64ffda; border-color: #64ffda; }
+        .add-btn:hover { background: #64ffda; color: #1e1e2e; }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <h1>Portfolio Admin</h1>
+        <nav class="admin-nav">
+            <a href="/admin">Dashboard</a>
+            <a href="/">View Site</a>
+            <a href="/admin/logout">Logout</a>
+        </nav>
+    </header>
+    
+    <div class="admin-container">
+        <div class="page-header">
+            <h1 class="page-title">Contact Page Management</h1>
+            <p class="page-subtitle">Update your contact information.</p>
+        </div>
+        
+        <div class="form-container">
+            <form action="/admin/contact" method="POST">
+                <div class="form-group">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea id="description" name="description" class="form-textarea" rows="4">{{ contact_data.description }}</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Contact Items</label>
+                    <div id="contact-editor" class="contact-editor">
+                        {% for item in contact_data.get('items', []) %}
+                        <div class="contact-item">
+                            <input type="text" name="contact_icon" class="form-input" placeholder="SVG Icon Code" value="{{ item.icon }}">
+                            <input type="text" name="contact_text" class="form-input" placeholder="Display Text" value="{{ item.text }}">
+                            <input type="text" name="contact_link" class="form-input" placeholder="Link URL (e.g., mailto: or https://)" value="{{ item.link }}">
+                            <button type="button" class="remove-btn">Remove</button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" id="add-contact-item" class="add-btn" style="margin-top: 1rem;">+ Add Contact Item</button>
+                </div>
+                
+                <button type="submit" class="submit-btn">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-btn')) {
+                e.target.closest('.contact-item').remove();
+            }
+        });
+
+        document.getElementById('add-contact-item').addEventListener('click', function() {
+            const editor = document.getElementById('contact-editor');
+            const newItem = document.createElement('div');
+            newItem.className = 'contact-item';
+            newItem.innerHTML = `
+                <input type="text" name="contact_icon" class="form-input" placeholder="SVG Icon Code">
+                <input type="text" name="contact_text" class="form-input" placeholder="Display Text">
+                <input type="text" name="contact_link" class="form-input" placeholder="Link URL (e.g., mailto: or https://)">
+                <button type="button" class="remove-btn">Remove</button>
+            `;
+            editor.appendChild(newItem);
+        });
+    </script>
+</body>
+</html>

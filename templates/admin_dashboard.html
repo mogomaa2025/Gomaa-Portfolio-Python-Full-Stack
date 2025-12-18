@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Portfolio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a0b2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .admin-header {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .admin-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6, #4ade80);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .admin-nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+            color: white;
+        }
+        
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .dashboard-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .dashboard-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-4px);
+        }
+        
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #3b82f6, #4ade80);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .card-description {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+        
+        .card-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #93c5fd;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .card-button:hover {
+            background: rgba(59, 130, 246, 0.3);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .welcome-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .welcome-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <h1 class="admin-title">Portfolio Admin</h1>
+        <nav class="admin-nav">
+            <a href="/" class="nav-link">View Site</a>
+            <a href="/admin/logout" class="nav-link logout-btn">Logout</a>
+        </nav>
+    </header>
+    
+    <div class="admin-container">
+        <div class="welcome-section">
+            <h2 class="welcome-title">Welcome to Admin Dashboard</h2>
+            <p class="welcome-subtitle">Manage your portfolio content and monitor website activity</p>
+        </div>
+        
+        <div class="dashboard-grid">
+            <div class="dashboard-card">
+                <div class="card-icon">👥</div>
+                <h3 class="card-title">Visitor Analytics</h3>
+                <p class="card-description">Monitor website visitors, track IP addresses, and analyze user behavior patterns.</p>
+                <a href="/admin/visitors" class="card-button">
+                    View Visitors →
+                </a>
+            </div>
+            
+            <div class="dashboard-card">
+                <div class="card-icon">📁</div>
+                <h3 class="card-title">Projects Management</h3>
+                <p class="card-description">Add, edit, and organize your portfolio projects. Manage project categories and details.</p>
+                <a href="/admin/projects" class="card-button">
+                    Manage Projects →
+                </a>
+            </div>
+            
+            <div class="dashboard-card">
+                <div class="card-icon">⚡</div>
+                <h3 class="card-title">Skills Management</h3>
+                <p class="card-description">Update your skills section, add new technologies, and customize skill icons.</p>
+                <a href="/admin/skills" class="card-button">
+                    Manage Skills →
+                </a>
+            </div>
+<div class="dashboard-card">
+                <div class="card-icon">📧</div>
+                <h3 class="card-title">Contact Page Management</h3>
+                <p class="card-description">Update contact details and social links.</p>
+                <a href="/admin/contact" class="card-button">
+                    Manage Contact Page →
+                </a>
+            </div>
+<div class="dashboard-card">
+                <div class="card-icon">?</div>
+                <h3 class="card-title">About Page Management</h3>
+                <p class="card-description">Edit the "Who Am I" section, tags, and timeline.</p>
+                <a href="/admin/about" class="card-button">
+                    Manage About Page →
+                </a>
+            </div>
+<div class="dashboard-card">
+                <div class="card-icon">⚙️</div>
+                <h3 class="card-title">Home Page Settings</h3>
+                <p class="card-description">Manage profile image, about text, contact info, and logo text.</p>
+                <a href="/admin/home" class="card-button">
+                    Manage Home Page →
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

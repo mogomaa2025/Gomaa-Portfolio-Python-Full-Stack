@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visitor Analytics - Admin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a0b2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .admin-header {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .admin-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6, #4ade80);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .admin-nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .page-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 0.5rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .action-button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .export-button {
+            background: rgba(74, 222, 128, 0.2);
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            color: #86efac;
+        }
+        
+        .export-button:hover {
+            background: rgba(74, 222, 128, 0.3);
+            color: white;
+        }
+        
+        .clear-button {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+        
+        .clear-button:hover {
+            background: rgba(239, 68, 68, 0.3);
+            color: white;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #4ade80;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+        
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .analytics-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .card-content {
+            padding: 1rem;
+        }
+        
+        .top-pages-list {
+            list-style: none;
+        }
+        
+        .top-page-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .top-page-item:last-child {
+            border-bottom: none;
+        }
+        
+        .page-path {
+            color: #4ade80;
+            font-family: monospace;
+        }
+        
+        .page-count {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #93c5fd;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .visitors-table {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        
+        .table-content {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .visitor-item {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: background 0.2s ease;
+        }
+        
+        .visitor-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .visitor-item:last-child {
+            border-bottom: none;
+        }
+        
+        .visitor-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .visitor-ip {
+            font-weight: 600;
+            color: #93c5fd;
+        }
+        
+        .visitor-time {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+        
+        .visitor-path {
+            color: #4ade80;
+            font-family: monospace;
+        }
+        
+        .visitor-method {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .hourly-chart {
+            display: flex;
+            align-items: end;
+            gap: 0.25rem;
+            height: 100px;
+            padding: 1rem 0;
+        }
+        
+        .hour-bar {
+            flex: 1;
+            background: linear-gradient(to top, #3b82f6, #4ade80);
+            border-radius: 2px 2px 0 0;
+            min-height: 2px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .hour-bar:hover {
+            background: linear-gradient(to top, #4ade80, #3b82f6);
+        }
+        
+        .hour-label {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        @media (max-width: 768px) {
+            .admin-container {
+                padding: 1rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <h1 class="admin-title">Portfolio Admin</h1>
+        <nav class="admin-nav">
+            <a href="/admin" class="nav-link">Dashboard</a>
+            <a href="/" class="nav-link">View Site</a>
+            <a href="/admin/logout" class="nav-link">Logout</a>
+        </nav>
+    </header>
+    
+    <div class="admin-container">
+        <div class="page-header">
+            <div>
+                <h2 class="page-title">Visitor Analytics</h2>
+                <p class="page-subtitle">Monitor and analyze website visitor activity</p>
+            </div>
+            <div class="action-buttons">
+                <a href="/admin/visitors/export" class="action-button export-button">📊 Export CSV</a>
+                <button onclick="clearVisitorLogs()" class="action-button clear-button">🗑️ Clear Logs</button>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">{{ analytics.total_visits }}</div>
+                <div class="stat-label">Total Visits</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ analytics.unique_ips }}</div>
+                <div class="stat-label">Unique IPs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ analytics.total_visits }}</div>
+                <div class="stat-label">Total Visits</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ visitors|length }}</div>
+                <div class="stat-label">Recent Entries</div>
+            </div>
+        </div>
+        
+        <div class="analytics-grid">
+            <div class="analytics-card">
+                <div class="card-header">
+                    <h3 class="card-title">Today's Hourly Traffic</h3>
+                </div>
+                <div class="card-content">
+                    <div class="hourly-chart">
+                        {% for hour in range(24) %}
+                        {% set visits = analytics.hourly_visits.get(hour, 0) %}
+                        {% set max_visits = analytics.hourly_visits.values()|max if analytics.hourly_visits.values() else 1 %}
+                        {% set height = (visits / max_visits * 80) if max_visits > 0 else 2 %}
+                        <div class="hour-bar" style="height: {{ height }}px;" title="{{ hour }}:00 - {{ visits }} visits">
+                            <div class="hour-label">{{ hour }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="analytics-card">
+                <div class="card-header">
+                    <h3 class="card-title">Top Pages</h3>
+                </div>
+                <div class="card-content">
+                    <ul class="top-pages-list">
+                        {% for page, count in analytics.top_pages %}
+                        <li class="top-page-item">
+                            <span class="page-path">{{ page or '/' }}</span>
+                            <span class="page-count">{{ count }}</span>
+                        </li>
+                        {% endfor %}
+                        {% if not analytics.top_pages %}
+                        <li class="top-page-item">
+                            <span style="color: rgba(255, 255, 255, 0.5);">No page data available</span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="visitors-table">
+            <div class="card-header">
+                <h3 class="card-title">Recent Visitors (Last 50)</h3>
+            </div>
+            <div class="table-content">
+                {% for visitor in visitors|reverse %}
+                <div class="visitor-item">
+                    <div class="visitor-info">
+                        <div class="visitor-ip">{{ visitor.ip }}</div>
+                        <div class="visitor-time">{{ visitor.timestamp[:19] }}</div>
+                        <div class="visitor-path">{{ visitor.path }}</div>
+                        <div class="visitor-method">{{ visitor.method }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% if not visitors %}
+                <div class="visitor-item">
+                    <div style="text-align: center; color: rgba(255, 255, 255, 0.5); padding: 2rem;">
+                        No visitor data available
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function clearVisitorLogs() {
+            if (confirm('Are you sure you want to clear all visitor logs? This action cannot be undone.')) {
+                fetch('/admin/visitors/clear', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Visitor logs cleared successfully!');
+                        location.reload();
+                    } else {
+                        alert('Error clearing logs: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Error clearing logs: ' + error);
+                });
+            }
+        }
+    </script>
+</body>
+</html>

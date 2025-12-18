@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Categories - Admin</title>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #181a20; color: #fff; }
+        .container { max-width: 600px; margin: 2rem auto; background: #23263a; border-radius: 12px; padding: 2rem; }
+        h2 { margin-bottom: 1rem; }
+        form { display: flex; gap: 1rem; margin-bottom: 1rem; }
+        input, button { padding: 0.5rem 1rem; border-radius: 6px; border: none; }
+        input { flex: 1; background: #181a20; color: #fff; border: 1px solid #444; }
+        button { background: #4ade80; color: #181a20; font-weight: 600; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { padding: 0.5rem; border-bottom: 1px solid #333; }
+        .actions { display: flex; gap: 0.5rem; }
+        .edit-btn { background: #3b82f6; color: #fff; }
+        .delete-btn { background: #ef4444; color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Manage Project Categories</h2>
+        <form method="POST">
+            <input type="hidden" name="action" value="add">
+            <input type="text" name="name" placeholder="New category name" required>
+            <button type="submit">Add</button>
+        </form>
+        <table>
+            <thead>
+                <tr><th>Name</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for cat in categories %}
+                <tr>
+                    <form method="POST" style="display:inline;">
+                        <td>
+                            <input type="hidden" name="action" value="edit">
+                            <input type="hidden" name="id" value="{{ cat.id }}">
+                            <input type="text" name="name" value="{{ cat.name }}" required style="width:80%;">
+                        </td>
+                        <td class="actions">
+                            <button type="submit" class="edit-btn">Edit</button>
+                    </form>
+                    <form method="POST" style="display:inline;">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="id" value="{{ cat.id }}">
+                        <button type="submit" class="delete-btn" onclick="return confirm('Delete this category?')">Delete</button>
+                    </form>
+                        </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="/admin/projects" style="color:#4ade80;display:inline-block;margin-top:1rem;">&larr; Back to Projects</a>
+    </div>
+</body>
+</html>

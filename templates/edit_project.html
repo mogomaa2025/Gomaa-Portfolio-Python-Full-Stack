@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Project - Admin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a0b2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .admin-header {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .admin-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6, #4ade80);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .admin-nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .admin-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .page-header {
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .form-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: #4ade80;
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .form-input::placeholder, .form-textarea::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #4ade80);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        
+        .tag-input-container {
+            position: relative;
+        }
+        
+        .tag-help {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 0.25rem;
+        }
+        
+        @media (max-width: 768px) {
+            .admin-container {
+                padding: 1rem;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <h1 class="admin-title">Portfolio Admin</h1>
+        <nav class="admin-nav">
+            <a href="/admin" class="nav-link">Dashboard</a>
+            <a href="/admin/projects" class="nav-link">Projects</a>
+            <a href="/" class="nav-link">View Site</a>
+            <a href="/admin/logout" class="nav-link">Logout</a>
+        </nav>
+    </header>
+    
+    <div class="admin-container">
+        <div class="page-header">
+            <h2 class="page-title">Edit Project</h2>
+            <p class="page-subtitle">Update project information</p>
+        </div>
+        
+        <div class="form-card">
+            <form method="POST" action="/admin/projects/edit/{{ project.id }}">
+                <div class="form-group">
+                    <label for="id" class="form-label">Project ID</label>
+                    <input type="number" id="id" name="id" class="form-input" value="{{ project.id if project.id is not none else '' }}">
+                    <div class="tag-help">Project ID (must be unique, leave empty for auto)</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="title" class="form-label">Project Title</label>
+                    <input type="text" id="title" name="title" class="form-input" value="{{ project.title }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea id="description" name="description" class="form-textarea" required>{{ project.description }}</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="category" class="form-label">Category</label>
+                    <select id="category" name="category" class="form-select" required>
+                        {% for cat in categories %}
+                        <option value="{{ cat.name }}" {% if project.category == cat.name %}selected{% endif %}>{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <a href="/admin/projects/categories/manage" class="btn btn-secondary" style="margin-top:8px;">Manage Categories</a>
+                </div>
+                
+                <div class="form-group">
+                    <label for="tags" class="form-label">Technologies</label>
+                    <div class="tag-input-container">
+                        <input type="text" id="tags" name="tags" class="form-input" value="{{ project.tags|join(', ') }}">
+                        <div class="tag-help">Separate technologies with commas</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="github_url" class="form-label">GitHub URL</label>
+                    <input type="url" id="github_url" name="github_url" class="form-input" value="{{ project.github_url }}">
+                </div>
+                <div class="form-group">
+                    <label for="link_button_text" class="form-label">Link Button Text</label>
+                    <input type="text" id="link_button_text" name="link_button_text" class="form-input" value="{{ project.link_button_text or 'GitHub' }}">
+                </div>
+                <!-- New Demo Button Fields -->
+                <div class="form-group">
+                    <label for="demo_url" class="form-label">Demo URL</label>
+                    <input type="url" id="demo_url" name="demo_url" class="form-input" value="{{ project.demo_url }}">
+                </div>
+                <div class="form-group">
+                    <label for="demo_button_text" class="form-label">Demo Button Text</label>
+                    <input type="text" id="demo_button_text" name="demo_button_text" class="form-input" value="{{ project.demo_button_text or 'Demo' }}">
+                </div>
+                <!-- Confidential Checkbox -->
+                <div class="form-group">
+                    <label class="form-label" for="confidential">
+                        <input type="checkbox" id="confidential" name="confidential" style="width:auto;display:inline-block;" {% if project.confidential %}checked{% endif %}> Confidential (Hide URLs)
+                    </label>
+                    <div class="tag-help">If checked, GitHub and Demo URLs will be treated as confidential.</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="mockup_content" class="form-label">Mockup Content</label>
+                    <textarea id="mockup_content" name="mockup_content" class="form-textarea" style="min-height:120px;">{{ project.mockup_content if project.mockup_content is string else project.mockup_content | tojson(indent=2) }}</textarea>
+                    <div class="tag-help">For images, use format: img1:URL img2:URL img3:URL (one per line). For other content, use JSON format.</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="date" class="form-label">Project Date</label>
+                    <input type="date" id="date" name="date" class="form-input" value="{{ project.date if project.date else '' }}">
+                    <div class="tag-help">Set the project date (optional, defaults to today)</div>
+                </div>
+                
+                <div class="form-actions">
+                    <a href="/admin/projects" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Update Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
