@@ -1674,3 +1674,202 @@ button.category-tab-btn.active {
     cursor: zoom-in;
 }
 
+/* ====== Bottom Navigation Highlight Animation ====== */
+/* Initial highlight glow that fades out */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: var(--nav-bg);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--card-border);
+    padding: 0.5rem 1rem;
+}
+
+.bottom-nav::before {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        var(--accent-primary) 20%, 
+        var(--accent-secondary) 50%, 
+        var(--accent-primary) 80%, 
+        transparent 100%
+    );
+    opacity: 0;
+    animation: navHighlightPulse 2s ease-in-out 0.5s 3, navHighlightFade 0.8s ease-out 6.5s forwards;
+    border-radius: 3px;
+    filter: blur(2px);
+}
+
+.bottom-nav::after {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: 10%;
+    right: 10%;
+    height: 30px;
+    background: radial-gradient(ellipse at center, 
+        rgba(59, 130, 246, 0.4) 0%, 
+        rgba(74, 222, 128, 0.2) 40%, 
+        transparent 70%
+    );
+    opacity: 0;
+    animation: navGlowPulse 2s ease-in-out 0.5s 3, navHighlightFade 0.8s ease-out 6.5s forwards;
+    pointer-events: none;
+}
+
+/* Keyframes for the highlight animation */
+@keyframes navHighlightPulse {
+    0%, 100% {
+        opacity: 0;
+        transform: scaleX(0.8);
+    }
+    50% {
+        opacity: 1;
+        transform: scaleX(1);
+    }
+}
+
+@keyframes navGlowPulse {
+    0%, 100% {
+        opacity: 0;
+        transform: translateY(5px) scaleX(0.9);
+    }
+    50% {
+        opacity: 1;
+        transform: translateY(0) scaleX(1);
+    }
+}
+
+@keyframes navHighlightFade {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+/* Nav container styles */
+.nav-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 600px;
+    margin: 0 auto;
+    gap: 0.25rem;
+}
+
+.nav-spacer {
+    flex: 1;
+}
+
+/* Nav item button styles */
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    min-width: 60px;
+}
+
+.nav-item:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-item.active {
+    color: var(--accent-primary);
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.nav-item svg {
+    transition: transform 0.3s ease;
+}
+
+.nav-item:hover svg {
+    transform: translateY(-2px);
+}
+
+.nav-item.active svg {
+    transform: scale(1.1);
+}
+
+/* Sequential nav item highlight animation */
+.nav-item {
+    position: relative;
+}
+
+/* Individual nav item glow highlight */
+.nav-item::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    background: linear-gradient(135deg, 
+        rgba(59, 130, 246, 0.4) 0%, 
+        rgba(74, 222, 128, 0.3) 100%
+    );
+    opacity: 0;
+    z-index: -1;
+    animation: navItemHighlight 0.6s ease-in-out forwards;
+    animation-delay: calc(0.5s + var(--item-index, 0) * 0.3s);
+}
+
+/* Staggered delays for each nav item (Home, About, Projects, Certs, Skills, Contact) */
+.nav-item:nth-of-type(1) { --item-index: 0; }
+.nav-item:nth-of-type(2) { --item-index: 1; }
+.nav-item:nth-of-type(3) { --item-index: 2; }
+.nav-item:nth-of-type(4) { --item-index: 3; }
+.nav-item:nth-of-type(5) { --item-index: 4; }
+.nav-item:nth-of-type(6) { --item-index: 5; }
+
+@keyframes navItemHighlight {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+        box-shadow: 0 0 20px 5px rgba(59, 130, 246, 0.4), 
+                    0 0 30px 10px rgba(74, 222, 128, 0.2);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+    }
+}
+
+/* Mobile responsiveness for bottom nav */
+@media (max-width: 480px) {
+    .nav-item {
+        padding: 0.4rem 0.6rem;
+        min-width: 50px;
+        font-size: 0.65rem;
+    }
+
+    .nav-item svg {
+        width: 20px;
+        height: 20px;
+    }
+}
+
