@@ -58,5 +58,21 @@
     "demo_url": "https://www.youtube.com/watch?v=XpugaXmBV30",
     "demo_button_text": "Youtube",
     "confidential": false
+  },
+  {
+    "id": 4,
+    "title": "test auto project",
+    "description": "test auto description",
+    "category": "Automation Testing",
+    "tags": [
+      "palywright"
+    ],
+    "github_url": "https://github.com/mogomaa2025/DEPI_GRADUTION_PROJECT/tree/main/Automation-Demoblaze-V2",
+    "link_button_text": "Github",
+    "mockup_content": "yt1:https://youtu.be/qya40ibM_as?si=lOwKizENQuTBC6YJ",
+    "date": "2025-12-03",
+    "demo_url": "https://www.postman.com/galactic-station-85267/depi/collection/nmgi80w/simple-books-api-depi-final?action=share&creator=43348422",
+    "demo_button_text": "Demo",
+    "confidential": false
   }
 ]

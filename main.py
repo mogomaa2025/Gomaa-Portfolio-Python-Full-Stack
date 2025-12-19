@@ -377,32 +377,68 @@ def export_visitors():
 def admin_projects():
     sort_by = request.args.get('sort_by', None)
     config_path = os.path.join(DATA_DIR, 'config.json')
+
     # Load config
     try:
         with open(config_path, 'r') as f:
             config = json.load(f)
-    except:
-        config = {"project_sort_by": "date"}
-    # If sort_by is set in request, update config
+    except Exception:
+        config = {"project_sort_by": "date", "admin_project_sort_by": "manual"}
+
+    # Admin projects page has its own sort mode so that manual reordering is possible
+    # without affecting the public site projects sorting.
     if sort_by:
-        config['project_sort_by'] = sort_by
+        config['admin_project_sort_by'] = sort_by
         with open(config_path, 'w') as f:
             json.dump(config, f, indent=2)
     else:
-        sort_by = config.get('project_sort_by', 'date')
+        sort_by = (config.get('admin_project_sort_by') or 'manual').strip().lower()
+
+    # Load projects
     try:
         with open(PROJECTS_FILE, 'r') as f:
             projects = json.load(f)
-    except:
+    except Exception:
         projects = []
-    # Sort projects by selected field
+
+    # Sort projects by selected field (this defines the per-category order too)
+    # manual => keep file order, so move actions are reflected immediately
     if sort_by == 'id':
-        # Ensure id is always int and sort ascending (lowest id first)
         projects.sort(key=lambda p: int(p.get('id', 0)))
-    else:
-        # Sort by date descending (latest first)
+    elif sort_by == 'date':
         projects.sort(key=lambda p: p.get('date', ''), reverse=True)
-    return render_template('admin_projects.html', projects=projects)
+    else:
+        sort_by = 'manual'
+
+    # Load categories in admin-defined order
+    try:
+        with open(CATEGORIES_FILE, 'r', encoding='utf-8') as f:
+            categories = json.load(f)
+    except Exception:
+        categories = []
+
+    category_order = [c.get('name') for c in categories if c.get('name')]
+    category_set = set(category_order)
+
+    # Add any categories that exist on projects but are missing from categories.json
+    extra_categories = []
+    for p in projects:
+        cat = p.get('category')
+        if cat and cat not in category_set and cat not in extra_categories:
+            extra_categories.append(cat)
+
+    grouped = []
+    for cat_name in category_order + extra_categories:
+        grouped.append({
+            'category': cat_name,
+            'projects': [p for p in projects if p.get('category') == cat_name]
+        })
+
+    # Edge case: no categories configured and/or projects with empty category
+    if not grouped and projects:
+        grouped.append({'category': 'Uncategorized', 'projects': projects})
+
+    return render_template('admin_projects.html', grouped_projects=grouped, projects=projects, admin_sort_by=sort_by)
 
 @app.route('/admin/projects/add', methods=['GET', 'POST'])
 @admin_required
@@ -584,9 +620,8 @@ def delete_project(project_id):
     # Find and remove project
     projects = [p for p in projects if p.get('id') != project_id]
 
-    # Re-index IDs to keep ordering consistent when sorting by id
-    for idx, p in enumerate(projects):
-        p['id'] = idx + 1
+    # Keep project IDs stable (do not re-index globally).
+    # Reordering is handled separately via list order / per-category swaps.
 
     # Save to file
     with open(PROJECTS_FILE, 'w') as f:
@@ -598,12 +633,25 @@ def delete_project(project_id):
 @app.route('/admin/projects/move', methods=['POST'])
 @admin_required
 def move_project():
-    """Move a project up/down by swapping its position in projects.json."""
+    """Move a project up/down by swapping its position in projects.json.
+
+    Important: reordering is *per-category* and should not impact projects in other categories.
+    Also, the swap should follow the same ordering the admin UI is showing (based on current sort).
+    """
     try:
         with open(PROJECTS_FILE, 'r') as f:
             projects = json.load(f)
     except Exception:
         projects = []
+
+    # Determine current admin sort (same logic as admin_projects)
+    config_path = os.path.join(DATA_DIR, 'config.json')
+    try:
+        with open(config_path, 'r') as f:
+            config = json.load(f)
+    except Exception:
+        config = {"admin_project_sort_by": "manual"}
+    sort_by = (config.get('admin_project_sort_by') or 'manual').strip().lower()
 
     try:
         project_id = int(request.form.get('id'))
@@ -618,31 +666,53 @@ def move_project():
         except (TypeError, ValueError):
             return None
 
+    def _cat(p):
+        return (p.get('category') or '').strip().lower()
+
+    # Build the list of indices in the same order shown in the admin page.
+    indices = list(range(len(projects)))
+    if sort_by == 'id':
+        indices.sort(key=lambda i: int(projects[i].get('id', 0)))
+    elif sort_by == 'date':
+        indices.sort(key=lambda i: projects[i].get('date', ''), reverse=True)
+    else:
+        sort_by = 'manual'
     if project_id is not None:
-        index = next((i for i, p in enumerate(projects) if _pid(p.get('id')) == project_id), None)
-        if index is not None:
-            current_category = (projects[index].get('category') or '').strip().lower()
+        current_index = next((i for i in indices if _pid(projects[i].get('id')) == project_id), None)
+        if current_index is not None:
+            current_category = _cat(projects[current_index])
 
-            def _cat(p):
-                return (p.get('category') or '').strip().lower()
-
-            if direction == 'up':
-                # swap with previous project of the SAME category
-                prev_index = next((i for i in range(index - 1, -1, -1) if _cat(projects[i]) == current_category), None)
+            # Support UI directions: left/right (preferred) and up/down (legacy)
+            if direction in ('left', 'up'):
+                prev_index = next((i for i in reversed(indices[:indices.index(current_index)])
+                                  if _cat(projects[i]) == current_category), None)
                 if prev_index is not None:
-                    projects[prev_index], projects[index] = projects[index], projects[prev_index]
-            elif direction == 'down':
-                # swap with next project of the SAME category
-                next_index = next((i for i in range(index + 1, len(projects)) if _cat(projects[i]) == current_category), None)
+                    projects[prev_index], projects[current_index] = projects[current_index], projects[prev_index]
+            elif direction in ('right', 'down'):
+                next_index = next((i for i in indices[indices.index(current_index) + 1:]
+                                  if _cat(projects[i]) == current_category), None)
                 if next_index is not None:
-                    projects[next_index], projects[index] = projects[index], projects[next_index]
+                    projects[next_index], projects[current_index] = projects[current_index], projects[next_index]
 
-    # Normalize IDs to reflect the visual order (1..n)
-    for idx, p in enumerate(projects):
-        p['id'] = idx + 1
-
+    # Keep project IDs stable (do not re-index globally).
+    # This prevents moves in one category from affecting IDs in other categories.
     with open(PROJECTS_FILE, 'w') as f:
         json.dump(projects, f, indent=2)
+
+    # Ensure the public site reflects the manual order after a move.
+    # (Public /api/projects uses config['project_sort_by'].)
+    try:
+        config_path = os.path.join(DATA_DIR, 'config.json')
+        try:
+            with open(config_path, 'r') as f:
+                config = json.load(f)
+        except Exception:
+            config = {}
+        config['project_sort_by'] = 'manual'
+        with open(config_path, 'w') as f:
+            json.dump(config, f, indent=2)
+    except Exception:
+        pass
 
     return redirect(url_for('admin_projects'), code=303)
 
@@ -1055,12 +1125,17 @@ def api_get_projects():
     except:
         projects = []
     # Sort projects by selected field
+    # manual => keep file order (allows admin reordering to reflect on the public site)
     if sort_by == 'id':
         # Ensure id is always int and sort ascending (lowest id first)
         projects.sort(key=lambda p: int(p.get('id', 0)))
-    else:
+    elif sort_by == 'date':
         # Sort by date descending (latest first)
         projects.sort(key=lambda p: p.get('date', ''), reverse=True)
+    else:
+        # manual or unknown => keep file order
+        pass
+
     return jsonify(projects)
 
 @app.route('/api/skills')

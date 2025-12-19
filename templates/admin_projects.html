@@ -262,8 +262,9 @@
             <form method="get" id="sortForm" style="display:flex;align-items:center;gap:1rem;">
                 <label for="sort_by" style="color:#a5b4fc;font-size:0.95em;">Sort by:</label>
                 <select name="sort_by" id="sort_by" class="form-input" style="width:auto;padding:0.5rem 1rem;">
-                    <option value="date" {% if request.args.get('sort_by', 'date') == 'date' %}selected{% endif %}>Date</option>
-                    <option value="id" {% if request.args.get('sort_by') == 'id' %}selected{% endif %}>ID</option>
+                    <option value="manual" {% if admin_sort_by == 'manual' %}selected{% endif %}>Manual</option>
+                    <option value="date" {% if admin_sort_by == 'date' %}selected{% endif %}>Date</option>
+                    <option value="id" {% if admin_sort_by == 'id' %}selected{% endif %}>ID</option>
                 </select>
             </form>
             <a href="/admin/projects/add" class="add-project-btn">+ Add Project</a>
@@ -275,59 +276,76 @@
             });
         </script>
         
-        <div class="projects-grid">
-            {% for project in projects %}
-            <div class="project-card">
-                <div class="project-header">
-                    <h3 class="project-title">{{ project.title }}</h3>
-                    <span class="project-category">{{ project.category }}</span>
-                    <span class="project-id" style="font-size:0.8em;color:#fbbf24;margin-left:1em;">ID: {{ project.id }}</span>
-                </div>
-                <p class="project-description">{{ project.description }}</p>
-                <div class="project-tags">
-                    {% for tag in project.tags %}
-                    <span class="project-tag">{{ tag }}</span>
-                    {% endfor %}
-                </div>
-                <div class="project-date" style="font-size:0.85em;color:#a5b4fc;margin-bottom:0.5em;">
-                    <span>Date: {{ project.date if project.date else 'N/A' }}</span>
-                </div>
-                <!-- Show Demo and Confidential Info -->
-                <div class="project-links" style="margin-bottom:0.5em;">
-                    {% if project.confidential %}
-                        <span style="color:#f87171;font-size:0.95em;">Confidential Project</span>
-                    {% else %}
-                        {% if project.github_url %}
-                            <a href="{{ project.github_url }}" class="action-btn" target="_blank">{{ project.link_button_text or 'GitHub' }}</a>
-                        {% endif %}
-                        {% if project.demo_url %}
-                            <a href="{{ project.demo_url }}" class="action-btn" target="_blank">{{ project.demo_button_text or 'Demo' }}</a>
-                        {% endif %}
-                    {% endif %}
-                </div>
-                <div class="project-actions">
-                    <form method="POST" action="/admin/projects/move" style="display:inline;">
-                        <input type="hidden" name="id" value="{{ project.id }}">
-                        <input type="hidden" name="direction" value="up">
-                        <button type="submit" class="move-btn" {% if not projects[:loop.index0]|selectattr('category','equalto',project.category)|list %}disabled{% endif %} title="Move up">↑</button>
-                    </form>
-                    <form method="POST" action="/admin/projects/move" style="display:inline;">
-                        <input type="hidden" name="id" value="{{ project.id }}">
-                        <input type="hidden" name="direction" value="down">
-                        <button type="submit" class="move-btn" {% if not projects[loop.index:]|selectattr('category','equalto',project.category)|list %}disabled{% endif %} title="Move down">↓</button>
-                    </form>
-                    <a href="/admin/projects/edit/{{ project.id }}" class="action-btn edit-btn">Edit</a>
-                    <button onclick="deleteProject({{ project.id }}, '{{ project.title }}')" class="action-btn delete-btn">Delete</button>
-                </div>
-            </div>
+        {% if projects %}
+            {% for group in grouped_projects %}
+                {% if group.projects %}
+                    <div style="margin-top: 1.5rem;">
+                        <h3 style="margin-bottom: 0.75rem; color: #e2e8f0; font-size: 1.05rem; font-weight: 700;">
+                            {{ group.category }}
+                            <span style="opacity:0.6;font-weight:600;">({{ group.projects|length }})</span>
+                        </h3>
+
+                        <div class="projects-grid">
+                            {% for project in group.projects %}
+                            <div class="project-card">
+                                <div class="project-header">
+                                    <h3 class="project-title">{{ project.title }}</h3>
+                                    <span class="project-category">{{ project.category }}</span>
+                                    <span class="project-id" style="font-size:0.8em;color:#fbbf24;margin-left:1em;">ID: {{ project.id }}</span>
+                                </div>
+
+                                <p class="project-description">{{ project.description }}</p>
+
+                                <div class="project-tags">
+                                    {% for tag in project.tags %}
+                                    <span class="project-tag">{{ tag }}</span>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="project-date" style="font-size:0.85em;color:#a5b4fc;margin-bottom:0.5em;">
+                                    <span>Date: {{ project.date if project.date else 'N/A' }}</span>
+                                </div>
+
+                                <!-- Show Demo and Confidential Info -->
+                                <div class="project-links" style="margin-bottom:0.5em;">
+                                    {% if project.confidential %}
+                                        <span style="color:#f87171;font-size:0.95em;">Confidential Project</span>
+                                    {% else %}
+                                        {% if project.github_url %}
+                                            <a href="{{ project.github_url }}" class="action-btn" target="_blank">{{ project.link_button_text or 'GitHub' }}</a>
+                                        {% endif %}
+                                        {% if project.demo_url %}
+                                            <a href="{{ project.demo_url }}" class="action-btn" target="_blank">{{ project.demo_button_text or 'Demo' }}</a>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+
+                                <div class="project-actions">
+                                    <form method="POST" action="/admin/projects/move" style="display:inline;">
+                                        <input type="hidden" name="id" value="{{ project.id }}">
+                                        <input type="hidden" name="direction" value="left">
+                                        <button type="submit" class="move-btn" {% if admin_sort_by != 'manual' or loop.first %}disabled{% endif %} title="Move left{% if admin_sort_by != 'manual' %} (switch sort to Manual){% endif %}">←</button>
+                                    </form>
+                                    <form method="POST" action="/admin/projects/move" style="display:inline;">
+                                        <input type="hidden" name="id" value="{{ project.id }}">
+                                        <input type="hidden" name="direction" value="right">
+                                        <button type="submit" class="move-btn" {% if admin_sort_by != 'manual' or loop.last %}disabled{% endif %} title="Move right{% if admin_sort_by != 'manual' %} (switch sort to Manual){% endif %}">→</button>
+                                    </form>
+                                    <a href="/admin/projects/edit/{{ project.id }}" class="action-btn edit-btn">Edit</a>
+                                    <button onclick="deleteProject({{ project.id }}, '{{ project.title }}')" class="action-btn delete-btn">Delete</button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
             {% endfor %}
-            {% if not projects %}
+        {% else %}
             <div style="grid-column: 1 / -1; text-align: center; color: rgba(255, 255, 255, 0.5); padding: 3rem;">
                 <h3>No projects found</h3>
                 <p>Click "Add Project" to create your first project.</p>
             </div>
-            {% endif %}
-        </div>
+        {% endif %}
     </div>
     
     <script>
