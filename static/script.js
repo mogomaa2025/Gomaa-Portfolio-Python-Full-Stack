@@ -1343,7 +1343,97 @@ class BugSquashAnimation {
         this.tester = null;
         this.isAnimating = false;
         this.container = null;
+        this.hintsShown = false;
         this.init();
+    }
+
+    showClickMeHints() {
+        if (this.hintsShown) return;
+        this.hintsShown = true;
+
+        const heroTitle = document.getElementById('hero-title');
+        const profileImage = document.getElementById('profile-image');
+        const logoText = document.getElementById('logo-text');
+        const nameHighlight = heroTitle ? heroTitle.querySelector('.name-highlight') : null;
+        
+        // Create arrow for logo text in top left (below it, pointing up)
+        if (logoText) {
+            const rect = logoText.getBoundingClientRect();
+            
+            const logoArrow = document.createElement('div');
+            logoArrow.className = 'click-me-hint';
+            logoArrow.innerHTML = `<div class="hint-arrow">⬆</div>`;
+            logoArrow.style.cssText = `
+                position: fixed;
+                top: ${rect.bottom + 5}px;
+                left: ${rect.left + rect.width / 2}px;
+                transform: translateX(-50%);
+                z-index: 9999;
+            `;
+            document.body.appendChild(logoArrow);
+            
+            // Animate in
+            setTimeout(() => logoArrow.classList.add('visible'), 100);
+            
+            // Remove after 4 seconds
+            setTimeout(() => {
+                logoArrow.classList.remove('visible');
+                setTimeout(() => logoArrow.remove(), 500);
+            }, 4000);
+        }
+        
+        // Create arrow hint for Mohamed Gomaa name (above it)
+        if (nameHighlight || heroTitle) {
+            const targetEl = nameHighlight || heroTitle;
+            const rect = targetEl.getBoundingClientRect();
+            
+            const nameHint = document.createElement('div');
+            nameHint.className = 'click-me-hint';
+            nameHint.innerHTML = `<div class="hint-arrow">⬇</div>`;
+            nameHint.style.cssText = `
+                position: fixed;
+                top: ${rect.top - 50}px;
+                left: ${rect.left + rect.width / 2}px;
+                transform: translateX(-50%);
+                z-index: 9999;
+            `;
+            document.body.appendChild(nameHint);
+
+            // Animate in
+            setTimeout(() => nameHint.classList.add('visible'), 100);
+
+            // Remove after 6 seconds
+            setTimeout(() => {
+                nameHint.classList.remove('visible');
+                setTimeout(() => nameHint.remove(), 500);
+            }, 2000);
+        }
+
+        // Create arrow hint for profile image (above it)
+        if (profileImage) {
+            const rect = profileImage.getBoundingClientRect();
+            
+            const imageHint = document.createElement('div');
+            imageHint.className = 'click-me-hint';
+            imageHint.innerHTML = `<div class="hint-arrow">⬇</div>`;
+            imageHint.style.cssText = `
+                position: fixed;
+                top: ${rect.top - 50}px;
+                left: ${rect.left + rect.width / 2}px;
+                transform: translateX(-50%);
+                z-index: 9999;
+            `;
+            document.body.appendChild(imageHint);
+
+            // Animate in with slight delay
+            setTimeout(() => imageHint.classList.add('visible'), 200);
+
+            // Remove after 4 seconds
+            setTimeout(() => {
+                imageHint.classList.remove('visible');
+                setTimeout(() => imageHint.remove(), 500);
+            }, 2000);
+        }
     }
 
     init() {
@@ -1479,13 +1569,16 @@ class BugSquashAnimation {
     }
 
     spawnBugs(profileImage) {
-        const bugCount = 5 + Math.floor(Math.random() * 4); // 5-8 bugs
+        const bugCount = 12 + Math.floor(Math.random() * 7); // 12-18 bugs
         const rect = profileImage.getBoundingClientRect();
-        const containerRect = this.container.getBoundingClientRect();
         
-        // Calculate center of the image relative to container
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
+        // Get viewport dimensions for spreading bugs across page
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        
+        // Calculate center of the image (for starting point)
+        const startX = rect.left + rect.width / 2;
+        const startY = rect.top + rect.height / 2;
 
         // Bug emoji options
         const bugEmojis = ['🐛', '🐜', '🪲', '🦗', '🕷️'];
@@ -1495,21 +1588,19 @@ class BugSquashAnimation {
                 const bug = document.createElement('div');
                 bug.className = 'bug-creature';
                 bug.innerHTML = bugEmojis[Math.floor(Math.random() * bugEmojis.length)];
+                bug.style.position = 'fixed';
+                bug.style.left = startX + 'px';
+                bug.style.top = startY + 'px';
+                bug.style.zIndex = '10000';
                 
-                // Start from center of image
-                bug.style.left = centerX + 'px';
-                bug.style.top = centerY + 'px';
-                
-                // Random direction to crawl
-                const angle = (Math.PI * 2 * i) / bugCount + (Math.random() * 0.5 - 0.25);
-                const distance = 120 + Math.random() * 80;
-                const endX = centerX + Math.cos(angle) * distance;
-                const endY = centerY + Math.sin(angle) * distance;
+                // Random end position across the whole page
+                const endX = Math.random() * (viewportWidth - 50) + 25;
+                const endY = Math.random() * (viewportHeight - 50) + 25;
                 
                 // Random speed
-                const duration = 1000 + Math.random() * 500;
+                const duration = 800 + Math.random() * 600;
                 
-                this.container.appendChild(bug);
+                document.body.appendChild(bug);
                 this.bugs.push({
                     element: bug,
                     endX: endX,
@@ -1517,33 +1608,187 @@ class BugSquashAnimation {
                     eliminated: false
                 });
 
-                // Animate bug crawling out
+                // Animate bug crawling out to random position
                 bug.animate([
-                    { transform: 'translate(-50%, -50%) scale(0) rotate(0deg)', opacity: 0 },
-                    { transform: 'translate(-50%, -50%) scale(1) rotate(0deg)', opacity: 1, offset: 0.1 },
-                    { 
-                        transform: `translate(calc(${endX - centerX}px - 50%), calc(${endY - centerY}px - 50%)) scale(1) rotate(${Math.random() * 360}deg)`, 
-                        opacity: 1 
-                    }
+                    { left: startX + 'px', top: startY + 'px', transform: 'translate(-50%, -50%) scale(0) rotate(0deg)', opacity: 0 },
+                    { left: startX + 'px', top: startY + 'px', transform: 'translate(-50%, -50%) scale(1) rotate(0deg)', opacity: 1, offset: 0.1 },
+                    { left: endX + 'px', top: endY + 'px', transform: 'translate(-50%, -50%) scale(1) rotate(' + (Math.random() * 720 - 360) + 'deg)', opacity: 1 }
                 ], {
                     duration: duration,
                     easing: 'ease-out',
                     fill: 'forwards'
                 });
 
-                // Update position for hit detection
+                // Update position for tester to find
                 setTimeout(() => {
                     bug.style.left = endX + 'px';
                     bug.style.top = endY + 'px';
                 }, duration);
 
-            }, i * 100); // Stagger bug spawns
+            }, i * 80); // Faster stagger
         }
 
         // Spawn tester after bugs are out
         setTimeout(() => {
-            this.spawnTester(centerX, centerY);
-        }, bugCount * 100 + 800);
+            this.spawnTesterFullPage(startX, startY);
+        }, bugCount * 80 + 600);
+    }
+
+    spawnTesterFullPage(startX, startY) {
+        const tester = document.createElement('div');
+        tester.className = 'tester-character';
+        tester.innerHTML = '🧑‍💻';
+        tester.style.position = 'fixed';
+        tester.style.left = startX + 'px';
+        tester.style.top = startY + 'px';
+        tester.style.zIndex = '10001';
+        document.body.appendChild(tester);
+        this.tester = tester;
+
+        // Animate tester appearing
+        tester.animate([
+            { transform: 'translate(-50%, -50%) scale(0) rotate(-180deg)', opacity: 0 },
+            { transform: 'translate(-50%, -50%) scale(1.5) rotate(0deg)', opacity: 1 }
+        ], {
+            duration: 400,
+            easing: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+            fill: 'forwards'
+        });
+
+        // Start eliminating bugs
+        setTimeout(() => {
+            this.eliminateBugsFullPage();
+        }, 500);
+    }
+
+    eliminateBugsFullPage() {
+        const bugsToEliminate = [...this.bugs].filter(b => !b.eliminated);
+        let delay = 0;
+
+        bugsToEliminate.forEach((bugData, index) => {
+            setTimeout(() => {
+                if (bugData.eliminated) return;
+                bugData.eliminated = true;
+
+                const bug = bugData.element;
+                const targetX = bugData.endX;
+                const targetY = bugData.endY;
+
+                // Move tester to bug position
+                this.tester.animate([
+                    { },
+                    { left: targetX + 'px', top: targetY + 'px' }
+                ], {
+                    duration: 150,
+                    easing: 'ease-in-out',
+                    fill: 'forwards'
+                });
+
+                // Squash the bug after tester arrives
+                setTimeout(() => {
+                    // Create squash effect
+                    const squash = document.createElement('div');
+                    squash.className = 'bug-squash-effect';
+                    squash.innerHTML = '💥';
+                    squash.style.position = 'fixed';
+                    squash.style.left = targetX + 'px';
+                    squash.style.top = targetY + 'px';
+                    squash.style.zIndex = '10002';
+                    document.body.appendChild(squash);
+
+                    // Animate squash
+                    squash.animate([
+                        { transform: 'translate(-50%, -50%) scale(0)', opacity: 1 },
+                        { transform: 'translate(-50%, -50%) scale(2)', opacity: 1, offset: 0.3 },
+                        { transform: 'translate(-50%, -50%) scale(0)', opacity: 0 }
+                    ], {
+                        duration: 300,
+                        easing: 'ease-out',
+                        fill: 'forwards'
+                    });
+
+                    // Remove bug
+                    bug.animate([
+                        { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
+                        { transform: 'translate(-50%, -50%) scale(0) rotate(720deg)', opacity: 0 }
+                    ], {
+                        duration: 200,
+                        easing: 'ease-in',
+                        fill: 'forwards'
+                    });
+
+                    setTimeout(() => {
+                        bug.remove();
+                        squash.remove();
+                    }, 300);
+
+                }, 150);
+
+            }, delay);
+
+            delay += 250; // Faster elimination
+        });
+
+        // Clean up after all bugs eliminated
+        setTimeout(() => {
+            this.finishAnimationFullPage();
+        }, delay + 400);
+    }
+
+    finishAnimationFullPage() {
+        if (this.tester) {
+            // Tester victory animation
+            this.tester.animate([
+                { transform: 'translate(-50%, -50%) scale(1.5)' },
+                { transform: 'translate(-50%, -50%) scale(2) rotate(360deg)', offset: 0.5 },
+                { transform: 'translate(-50%, -50%) scale(0)', opacity: 0 }
+            ], {
+                duration: 600,
+                easing: 'ease-in-out',
+                fill: 'forwards'
+            });
+
+            // Show success message in center of screen
+            const successMsg = document.createElement('div');
+            successMsg.className = 'bug-success-message';
+            successMsg.innerHTML = '✅ All Bugs Fixed!';
+            successMsg.style.position = 'fixed';
+            successMsg.style.left = '50%';
+            successMsg.style.top = '50%';
+            successMsg.style.transform = 'translate(-50%, -50%)';
+            successMsg.style.zIndex = '10003';
+            document.body.appendChild(successMsg);
+
+            successMsg.animate([
+                { transform: 'translate(-50%, -50%) scale(0)', opacity: 0 },
+                { transform: 'translate(-50%, -50%) scale(1)', opacity: 1, offset: 0.3 },
+                { transform: 'translate(-50%, -50%) scale(1)', opacity: 1, offset: 0.7 },
+                { transform: 'translate(-50%, -50%) scale(0.8)', opacity: 0 }
+            ], {
+                duration: 1200,
+                easing: 'ease-out',
+                fill: 'forwards'
+            });
+
+            setTimeout(() => {
+                this.tester.remove();
+                successMsg.remove();
+                this.cleanupFullPage();
+            }, 1200);
+        } else {
+            this.cleanupFullPage();
+        }
+    }
+
+    cleanupFullPage() {
+        this.bugs.forEach(b => {
+            if (b.element && b.element.parentNode) {
+                b.element.remove();
+            }
+        });
+        this.bugs = [];
+        this.tester = null;
+        this.isAnimating = false;
     }
 
     spawnTester(centerX, centerY) {
