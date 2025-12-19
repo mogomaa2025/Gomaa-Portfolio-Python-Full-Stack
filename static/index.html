@@ -348,10 +348,15 @@
             -moz-user-select: none;
             -ms-user-select: none;
             transition: transform 0.3s ease;
+            touch-action: none; /* Allow custom touch handling */
         }
         .modal-img.zoomed {
-            cursor: zoom-out;
-            transform: scale(1.5);
+            cursor: grab;
+            transform: scale(2);
+        }
+        .modal-img.zoomed.panning {
+            cursor: grabbing;
+            transition: none; /* Disable transition during panning */
         }
         .modal-img::before {
             content: '';
@@ -518,26 +523,116 @@
 
         // Handle image zooming
         let isZoomed = false;
+        // Pan state for zoomed images
+        let panX = 0, panY = 0;
+        let isPanning = false;
+        let panStartX = 0, panStartY = 0;
+        let lastPanX = 0, lastPanY = 0;
+
+        function updateImageTransform() {
+            if (isZoomed) {
+                modalImg.style.transform = `scale(2) translate(${panX}px, ${panY}px)`;
+            } else {
+                modalImg.style.transform = 'scale(1) translate(0, 0)';
+                panX = 0;
+                panY = 0;
+            }
+        }
+
+        function resetPan() {
+            panX = 0;
+            panY = 0;
+            lastPanX = 0;
+            lastPanY = 0;
+            isPanning = false;
+            modalImg.classList.remove('panning');
+        }
+
         if (modalImg && modalPrev && modalNext) {
+            // Toggle zoom on click/tap
             modalImg.addEventListener('click', (e) => {
                 e.stopPropagation();
-                isZoomed = !isZoomed;
-                modalImg.classList.toggle('zoomed', isZoomed);
+                // Only toggle zoom if not panning
+                if (!isPanning) {
+                    isZoomed = !isZoomed;
+                    modalImg.classList.toggle('zoomed', isZoomed);
+                    
+                    if (!isZoomed) {
+                        resetPan();
+                    }
+                    updateImageTransform();
 
-                // Disable slide navigation when zoomed
-                modalPrev.style.pointerEvents = isZoomed ? 'none' : 'auto';
-                modalNext.style.pointerEvents = isZoomed ? 'none' : 'auto';
-                modalPrev.style.opacity = isZoomed ? '0.3' : '1';
-                modalNext.style.opacity = isZoomed ? '0.3' : '1';
+                    // Disable slide navigation when zoomed
+                    modalPrev.style.pointerEvents = isZoomed ? 'none' : 'auto';
+                    modalNext.style.pointerEvents = isZoomed ? 'none' : 'auto';
+                    modalPrev.style.opacity = isZoomed ? '0.3' : '1';
+                    modalNext.style.opacity = isZoomed ? '0.3' : '1';
+                }
             });
 
-            // Add touch support for mobile devices
-            let touchStartX = 0;
+            // Touch support for panning when zoomed and swiping when not zoomed
+            let touchStartX = 0, touchStartY = 0;
+            let touchMoved = false;
+            
             modalImg.addEventListener('touchstart', (e) => {
                 touchStartX = e.touches[0].clientX;
-            });
+                touchStartY = e.touches[0].clientY;
+                touchMoved = false;
+                
+                if (isZoomed) {
+                    isPanning = true;
+                    panStartX = touchStartX;
+                    panStartY = touchStartY;
+                    lastPanX = panX;
+                    lastPanY = panY;
+                    modalImg.classList.add('panning');
+                    e.preventDefault(); // Prevent scrolling
+                }
+            }, { passive: false });
+
+            modalImg.addEventListener('touchmove', (e) => {
+                touchMoved = true;
+                
+                if (isZoomed && isPanning) {
+                    e.preventDefault();
+                    const currentX = e.touches[0].clientX;
+                    const currentY = e.touches[0].clientY;
+                    
+                    // Calculate new pan position (divide by scale factor for proper movement)
+                    const deltaX = (currentX - panStartX) / 2;
+                    const deltaY = (currentY - panStartY) / 2;
+                    
+                    // Apply pan with bounds limiting
+                    const maxPan = 100; // Maximum pan distance in pixels
+                    panX = Math.max(-maxPan, Math.min(maxPan, lastPanX + deltaX));
+                    panY = Math.max(-maxPan, Math.min(maxPan, lastPanY + deltaY));
+                    
+                    updateImageTransform();
+                }
+            }, { passive: false });
 
             modalImg.addEventListener('touchend', (e) => {
+                if (isZoomed) {
+                    isPanning = false;
+                    modalImg.classList.remove('panning');
+                    lastPanX = panX;
+                    lastPanY = panY;
+                    
+                    // If barely moved, treat as tap to unzoom
+                    if (!touchMoved) {
+                        isZoomed = false;
+                        modalImg.classList.remove('zoomed');
+                        resetPan();
+                        updateImageTransform();
+                        modalPrev.style.pointerEvents = 'auto';
+                        modalNext.style.pointerEvents = 'auto';
+                        modalPrev.style.opacity = '1';
+                        modalNext.style.opacity = '1';
+                    }
+                    return;
+                }
+                
+                // Handle swipe navigation when not zoomed
                 if (currentSlides.length <= 1) return;
 
                 const touchEndX = e.changedTouches[0].clientX;
@@ -549,6 +644,48 @@
                     } else {
                         showSlide(currentSlideIndex + 1); // Swipe left = next
                     }
+                }
+            });
+
+            // Mouse drag support for desktop
+            let mouseDown = false;
+            let mouseMoved = false;
+            
+            modalImg.addEventListener('mousedown', (e) => {
+                if (isZoomed) {
+                    mouseDown = true;
+                    mouseMoved = false;
+                    isPanning = true;
+                    panStartX = e.clientX;
+                    panStartY = e.clientY;
+                    lastPanX = panX;
+                    lastPanY = panY;
+                    modalImg.classList.add('panning');
+                    e.preventDefault();
+                }
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isZoomed && mouseDown && isPanning) {
+                    mouseMoved = true;
+                    const deltaX = (e.clientX - panStartX) / 2;
+                    const deltaY = (e.clientY - panStartY) / 2;
+                    
+                    const maxPan = 100;
+                    panX = Math.max(-maxPan, Math.min(maxPan, lastPanX + deltaX));
+                    panY = Math.max(-maxPan, Math.min(maxPan, lastPanY + deltaY));
+                    
+                    updateImageTransform();
+                }
+            });
+
+            document.addEventListener('mouseup', (e) => {
+                if (mouseDown) {
+                    mouseDown = false;
+                    isPanning = false;
+                    modalImg.classList.remove('panning');
+                    lastPanX = panX;
+                    lastPanY = panY;
                 }
             });
         }
@@ -572,6 +709,8 @@
             if (isZoomed) {
                 isZoomed = false;
                 modalImg.classList.remove('zoomed');
+                resetPan();
+                updateImageTransform();
                 modalPrev.style.pointerEvents = 'auto';
                 modalNext.style.pointerEvents = 'auto';
                 modalPrev.style.opacity = '1';
@@ -674,6 +813,8 @@
                         // If zoomed, first unzoom
                         isZoomed = false;
                         modalImg.classList.remove('zoomed');
+                        resetPan();
+                        updateImageTransform();
                         modalPrev.style.pointerEvents = 'auto';
                         modalNext.style.pointerEvents = 'auto';
                         modalPrev.style.opacity = '1';
@@ -691,6 +832,10 @@
                     // Toggle zoom with 'z' key
                     isZoomed = !isZoomed;
                     modalImg.classList.toggle('zoomed', isZoomed);
+                    if (!isZoomed) {
+                        resetPan();
+                    }
+                    updateImageTransform();
                     modalPrev.style.pointerEvents = isZoomed ? 'none' : 'auto';
                     modalNext.style.pointerEvents = isZoomed ? 'none' : 'auto';
                     modalPrev.style.opacity = isZoomed ? '0.3' : '1';
@@ -706,9 +851,11 @@
                 imageModal.style.display = 'none';
                 currentSlides = [];
                 slideIndicator.innerHTML = '';
-                // Reset zoom state
+                // Reset zoom state and pan
                 isZoomed = false;
                 modalImg.classList.remove('zoomed');
+                resetPan();
+                updateImageTransform();
                 modalPrev.style.pointerEvents = 'auto';
                 modalNext.style.pointerEvents = 'auto';
                 modalPrev.style.opacity = '1';
