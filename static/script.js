@@ -515,15 +515,108 @@ class PortfolioApp {
 
                     let mockupContentHTML = '';
                     if (project.mockup_content) {
-                        const content = project.mockup_content;
-                        // Handle multiple image slides
-                        if (content.includes('img1:')) {
+                        const content = String(project.mockup_content).trim();
+
+                        const parseKeyedMedia = (raw) => {
+                            // Supports space/newline separated tokens, and allows mixing:
+                            // img1:URL img2:URL
+                            // yt1:YOUTUBE_URL
+                            // vd1:VIDEO_URL
+                            // Ordering is by the number suffix (1,2,3...)
+                            const tokens = raw.split(/\s+/).filter(Boolean);
+                            const items = [];
+                            for (const t of tokens) {
+                                const idx = t.indexOf(':');
+                                if (idx === -1) continue;
+                                const key = t.slice(0, idx).toLowerCase();
+                                const val = t.slice(idx + 1).trim();
+                                if (!val) continue;
+
+                                const m = key.match(/^(img|yt|vd)(\d+)$/);
+                                if (!m) continue;
+                                items.push({ type: m[1], order: parseInt(m[2], 10), src: val });
+                            }
+                            items.sort((a, b) => (a.order - b.order) || (a.type.localeCompare(b.type)));
+                            return items;
+                        };
+
+                        const getYouTubeId = (url) => {
+                            try {
+                                const u = new URL(url);
+                                if (u.hostname.includes('youtube.com')) return u.searchParams.get('v');
+                                if (u.hostname.includes('youtu.be')) return u.pathname.replace('/', '');
+                                return null;
+                            } catch (e) {
+                                return null;
+                            }
+                        };
+
+                        const renderYouTube = (url) => {
+                            const videoId = getYouTubeId(url);
+                            if (!videoId) return null;
+
+                            // Lazy placeholder (saves space and avoids loading iframe until user clicks play)
+                            const thumb = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                            return `
+                              <div class="yt-placeholder" data-youtube-id="${videoId}" role="button" aria-label="Play YouTube video">
+                                <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb">
+                                <div class="yt-play-btn">▶</div>
+                              </div>
+                            `;
+                        };
+
+                        // New keyed formats (imgs + videos) - supports mixing
+                        const keyed = parseKeyedMedia(content);
+                        const renderCarouselItem = (item) => {
+                            if (!item) return '';
+                            if (item.type === 'img') {
+                                return `<img src="${item.src}" alt="${project.title} media" class="mockup-media">`;
+                            }
+                            if (item.type === 'yt') {
+                                // Lazy YouTube placeholder (self-contained)
+                                try {
+                                    const u = new URL(item.src);
+                                    let videoId = null;
+                                    if (u.hostname.includes('youtube.com')) videoId = u.searchParams.get('v');
+                                    else if (u.hostname.includes('youtu.be')) videoId = u.pathname.replace('/', '');
+                                    if (videoId) {
+                                        const thumb = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                                        return `
+                                          <div class="yt-placeholder" data-youtube-id="${videoId}" role="button" aria-label="Play YouTube video">
+                                            <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb">
+                                            <div class="yt-play-btn">▶</div>
+                                          </div>
+                                        `;
+                                    }
+                                } catch (e) {}
+                                return `<p>${item.src}</p>`;
+                            }
+                            if (item.type === 'vd') {
+                                return `<video src="${item.src}" class="mockup-media" controls playsinline></video>`;
+                            }
+                            return '';
+                        };
+
+                        if (keyed.length) {
+                            const encoded = encodeURIComponent(JSON.stringify(keyed));
+                            mockupContentHTML = `
+                              <div class="mockup-carousel" data-items="${encoded}" data-index="0">
+                                <div class="mockup-carousel-item">
+                                  ${renderCarouselItem(keyed[0])}
+                                </div>
+                                ${keyed.length > 1 ? `
+                                  <button type="button" class="mockup-carousel-btn mockup-carousel-btn-prev" data-dir="prev" aria-label="Previous">←</button>
+                                  <button type="button" class="mockup-carousel-btn mockup-carousel-btn-next" data-dir="next" aria-label="Next">→</button>
+                                  <div class="mockup-carousel-counter">1 / ${keyed.length}</div>
+                                ` : ''}
+                              </div>
+                            `;
+                        }
+                        // Handle multiple image slides (legacy: img1:...)
+                        else if (content.includes('img1:')) {
                             const slideUrls = [];
-                            // Match any imgN: followed by URL (where N is any number)
                             const pattern = /img\d+:(https?:\/\/[^\s]+(?:\s|$))/g;
                             let match;
-                            
-                            // Find all matches in the content
                             while ((match = pattern.exec(content)) !== null) {
                                 const url = match[1].trim();
                                 slideUrls.push(url);
@@ -535,13 +628,11 @@ class PortfolioApp {
                                          alt="${project.title} slides" 
                                          class="mockup-media" 
                                          data-external-slides="${slideUrls.join('|')}">
-                                    <div class="slide-hint">
-                                        Click to view slideshow (${slideUrls.length} images)
-                                    </div>
+                                    <div class="slide-hint">Click to view slideshow (${slideUrls.length} images)</div>
                                 </div>`;
                             }
                         }
-                        // Handle single external image
+                        // Handle single external image (legacy)
                         else if (content.startsWith('img:')) {
                             const imgUrl = content.substring(4);
                             mockupContentHTML = `<img src="${imgUrl}" alt="${project.title} mockup" class="mockup-media">`;
@@ -554,32 +645,23 @@ class PortfolioApp {
                                      alt="${project.title} slides" 
                                      class="mockup-media" 
                                      data-slides="${slidePath}">
-                                <div class="slide-hint">
-                                    Click to view slideshow
-                                </div>
+                                <div class="slide-hint">Click to view slideshow</div>
                             </div>`;
                         }
                         // Handle local images
                         else if (content.startsWith('image/')) {
-                            // Remove any duplicate "image/" in the path
                             const imagePath = content.replace(/^image\/image\//, 'image/');
                             mockupContentHTML = `<img src="/static/${imagePath}" alt="${project.title} mockup" class="mockup-media">`;
                         }
                         // Handle local videos
                         else if (content.startsWith('video/')) {
-                            // Remove any duplicate "video/" in the path
                             const videoPath = content.replace(/^video\/video\//, 'video/');
                             mockupContentHTML = `<video src="/static/${videoPath}" class="mockup-media" controls playsinline></video>`;
                         }
-                        // Handle YouTube videos
+                        // Handle YouTube videos (legacy: raw url)
                         else if (content.includes('youtube.com/watch') || content.includes('youtu.be/')) {
-                            let videoId;
-                            if (content.includes('youtube.com/watch')) {
-                                videoId = new URL(content).searchParams.get('v');
-                            } else {
-                                videoId = new URL(content).pathname.substring(1);
-                            }
-                            mockupContentHTML = `<iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen class="mockup-media"></iframe>`;
+                            const yt = renderYouTube(content);
+                            mockupContentHTML = yt || `<p>${content}</p>`;
                         }
                         // Handle plain text
                         else {
@@ -636,6 +718,126 @@ class PortfolioApp {
                         </div>
                     `;
                     projectsGrid.appendChild(projectCard);
+
+                    // Activate lazy YouTube placeholders (replace with iframe on click)
+                    projectCard.querySelectorAll('.yt-placeholder').forEach(ph => {
+                        ph.addEventListener('click', () => {
+                            const videoId = ph.dataset.youtubeId;
+                            if (!videoId) return;
+                            ph.outerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen class="mockup-media yt-iframe"></iframe>`;
+                        });
+                    });
+
+                    // Mixed-media carousel controls
+                    const carousel = projectCard.querySelector('.mockup-carousel');
+                    if (carousel) {
+                        const items = JSON.parse(decodeURIComponent(carousel.dataset.items || '%5B%5D'));
+                        const itemContainer = carousel.querySelector('.mockup-carousel-item');
+                        const counter = carousel.querySelector('.mockup-carousel-counter');
+
+                        const renderCarouselItem = (item) => {
+                            if (!item) return '';
+                            if (item.type === 'img') {
+                                return `<img src="${item.src}" alt="${project.title} media" class="mockup-media">`;
+                            }
+                            if (item.type === 'yt') {
+                                // Lazy YouTube placeholder (self-contained)
+                                try {
+                                    const u = new URL(item.src);
+                                    let videoId = null;
+                                    if (u.hostname.includes('youtube.com')) videoId = u.searchParams.get('v');
+                                    else if (u.hostname.includes('youtu.be')) videoId = u.pathname.replace('/', '');
+                                    if (videoId) {
+                                        const thumb = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                                        return `
+                                          <div class="yt-placeholder" data-youtube-id="${videoId}" role="button" aria-label="Play YouTube video">
+                                            <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb">
+                                            <div class="yt-play-btn">▶</div>
+                                          </div>
+                                        `;
+                                    }
+                                } catch (e) {}
+                                return `<p>${item.src}</p>`;
+                            }
+                            if (item.type === 'vd') {
+                                return `<video src="${item.src}" class="mockup-media" controls playsinline></video>`;
+                            }
+                            return '';
+                        };
+
+                        const stopMediaInCard = (rootEl) => {
+                            const root = rootEl || projectCard;
+                            // Pause any HTML5 video
+                            root.querySelectorAll('video').forEach(v => {
+                                try { v.pause(); } catch (e) {}
+                                try { v.currentTime = 0; } catch (e) {}
+                            });
+
+                            // Stop YouTube iframes by replacing them back with a placeholder
+                            root.querySelectorAll('iframe.yt-iframe, iframe[src*="youtube.com/embed/"]').forEach(fr => {
+                                try {
+                                    const src = fr.getAttribute('src') || '';
+                                    const m = src.match(/embed\/([^?&/]+)/);
+                                    const videoId = m ? m[1] : null;
+                                    if (videoId) {
+                                        const thumb = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                                        fr.outerHTML = `
+                                          <div class="yt-placeholder" data-youtube-id="${videoId}" role="button" aria-label="Play YouTube video">
+                                            <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb">
+                                            <div class="yt-play-btn">▶</div>
+                                          </div>
+                                        `;
+                                    } else {
+                                        // fallback: blank it
+                                        fr.setAttribute('src', '');
+                                    }
+                                } catch (e) {}
+                            });
+                        };
+
+                        const activateYouTubePlaceholders = (root) => {
+                            (root || carousel).querySelectorAll('.yt-placeholder').forEach(ph => {
+                                // Prevent double-binding
+                                if (ph.dataset.bound === '1') return;
+                                ph.dataset.bound = '1';
+                                ph.addEventListener('click', () => {
+                                    // When starting a video, stop others in the same project card
+                                    stopMediaInCard(projectCard);
+
+                                    const videoId = ph.dataset.youtubeId;
+                                    if (!videoId) return;
+                                    ph.outerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen class="mockup-media yt-iframe"></iframe>`;
+                                });
+                            });
+                        };
+
+                        const setIndex = (newIndex) => {
+                            if (!items.length) return;
+
+                            // Stop currently playing media before switching slides
+                            stopMediaInCard(projectCard);
+
+                            const idx = (newIndex + items.length) % items.length;
+                            carousel.dataset.index = String(idx);
+                            if (itemContainer) itemContainer.innerHTML = renderCarouselItem(items[idx]);
+                            if (counter) counter.textContent = `${idx + 1} / ${items.length}`;
+                            // Newly injected HTML needs handlers
+                            activateYouTubePlaceholders(carousel);
+                        };
+
+                        // Event delegation so controls keep working after innerHTML changes
+                        carousel.addEventListener('click', (e) => {
+                            const btn = e.target.closest('.mockup-carousel-btn');
+                            if (!btn) return;
+                            e.preventDefault();
+                            const dir = btn.dataset.dir;
+                            const cur = parseInt(carousel.dataset.index || '0', 10) || 0;
+                            setIndex(dir === 'next' ? cur + 1 : cur - 1);
+                        });
+
+                        // Initial bind
+                        activateYouTubePlaceholders(carousel);
+                    }
 
                     const video = projectCard.querySelector('video');
                     if (video) {

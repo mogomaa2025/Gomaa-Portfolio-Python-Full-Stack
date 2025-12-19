@@ -172,6 +172,21 @@
             color: rgba(255, 255, 255, 0.6);
             margin-top: 0.25rem;
         }
+
+        .help-tip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            margin-left: 0.5rem;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 0.75rem;
+            cursor: help;
+            user-select: none;
+        }
         
         @media (max-width: 768px) {
             .admin-container {
@@ -263,7 +278,16 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="mockup_content" class="form-label">Mockup Content</label>
+                    <label for="mockup_content" class="form-label">
+                        Mockup Content
+                        <span class="help-tip" title="Formats (space/newline separated, mixing allowed):
+img1:IMAGE_URL img2:IMAGE_URL img3:IMAGE_URL
+yt1:YOUTUBE_URL (https://youtu.be/VIDEOID or https://www.youtube.com/watch?v=VIDEOID)
+vd1:VIDEO_URL (direct mp4/webm link)
+Order is by the number (1,2,3...). You can mix types: img1:... yt2:... vd3:...">
+                            (?)
+                        </span>
+                    </label>
                     <textarea id="mockup_content" name="mockup_content" class="form-textarea" style="min-height:120px;">{{ project.mockup_content if project.mockup_content is string else project.mockup_content | tojson(indent=2) }}</textarea>
                     <div class="tag-help">For images, use format: img1:URL img2:URL img3:URL (one per line). For other content, use JSON format.</div>
                 </div>
