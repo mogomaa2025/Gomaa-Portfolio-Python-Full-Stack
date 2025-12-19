@@ -1351,12 +1351,91 @@ class BugSquashAnimation {
         const checkImage = setInterval(() => {
             const profileImage = document.getElementById('profile-image');
             const imageContainer = document.querySelector('.profile-image-container');
+            const heroTitle = document.getElementById('hero-title');
+            const logoText = document.getElementById('logo-text');
             
             if (profileImage && imageContainer) {
                 clearInterval(checkImage);
                 this.setupClickHandler(profileImage, imageContainer);
+                
+                // Also setup handler for hero title (name)
+                if (heroTitle) {
+                    this.setupHeroTitleHandler(heroTitle, profileImage, imageContainer);
+                }
+                
+                // Also setup handler for logo text in header (top left)
+                if (logoText) {
+                    this.setupLogoHandler(logoText, profileImage, imageContainer);
+                }
             }
         }, 100);
+    }
+
+    setupLogoHandler(logoText, profileImage, imageContainer) {
+        logoText.style.cursor = 'pointer';
+        logoText.classList.add('bug-trigger');
+        
+        // Add click handler
+        logoText.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!this.isAnimating) {
+                logoText.classList.add('bug-shake-text');
+                setTimeout(() => {
+                    logoText.classList.remove('bug-shake-text');
+                }, 300);
+                this.startAnimation(profileImage);
+            }
+        });
+
+        // Add touch handler for mobile
+        logoText.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!this.isAnimating) {
+                logoText.classList.add('bug-shake-text');
+                setTimeout(() => {
+                    logoText.classList.remove('bug-shake-text');
+                }, 300);
+                this.startAnimation(profileImage);
+            }
+        });
+    }
+
+    setupHeroTitleHandler(heroTitle, profileImage, imageContainer) {
+        // Make the name highlight clickable
+        const nameHighlight = heroTitle.querySelector('.name-highlight');
+        const targetElement = nameHighlight || heroTitle;
+        
+        targetElement.style.cursor = 'pointer';
+        targetElement.classList.add('bug-trigger');
+        
+        // Add click handler
+        targetElement.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!this.isAnimating) {
+                // Add shake to the title
+                targetElement.classList.add('bug-shake-text');
+                setTimeout(() => {
+                    targetElement.classList.remove('bug-shake-text');
+                }, 300);
+                this.startAnimation(profileImage);
+            }
+        });
+
+        // Add touch handler for mobile
+        targetElement.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!this.isAnimating) {
+                targetElement.classList.add('bug-shake-text');
+                setTimeout(() => {
+                    targetElement.classList.remove('bug-shake-text');
+                }, 300);
+                this.startAnimation(profileImage);
+            }
+        });
     }
 
     setupClickHandler(profileImage, imageContainer) {

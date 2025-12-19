@@ -2345,3 +2345,86 @@ button.category-tab-btn.active {
     }
 }
 
+/* Text shake animation for name/title */
+.bug-shake-text {
+    display: inline-block;
+    animation: bug-shake-text 0.3s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes bug-shake-text {
+    0%, 100% { transform: translateX(0); }
+    10% { transform: translateX(-3px); }
+    20% { transform: translateX(3px); }
+    30% { transform: translateX(-3px); }
+    40% { transform: translateX(3px); }
+    50% { transform: translateX(-2px); }
+    60% { transform: translateX(2px); }
+    70% { transform: translateX(-1px); }
+    80% { transform: translateX(1px); }
+    90% { transform: translateX(0); }
+}
+
+/* Clickable name highlight styling */
+.name-highlight.bug-trigger,
+.hero-title.bug-trigger {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.name-highlight.bug-trigger:hover,
+.hero-title.bug-trigger:hover {
+    text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+    filter: brightness(1.2);
+}
+
+/* Hint for name on desktop */
+.name-highlight.bug-trigger::after {
+    content: '🐛';
+    position: absolute;
+    right: -30px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.name-highlight.bug-trigger:hover::after {
+    opacity: 1;
+    animation: bug-bounce 0.6s ease-in-out infinite;
+}
+
+@keyframes bug-bounce {
+    0%, 100% { transform: translateY(-50%) scale(1); }
+    50% { transform: translateY(-50%) scale(1.2); }
+}
+
+/* Logo text (top left) bug trigger */
+.logo-text.bug-trigger {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.logo-text.bug-trigger:hover {
+    filter: brightness(1.2);
+    text-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
+}
+
+.logo-text.bug-trigger::after {
+    content: '🐛';
+    position: absolute;
+    right: -25px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.logo-text.bug-trigger:hover::after {
+    opacity: 1;
+    animation: bug-bounce 0.6s ease-in-out infinite;
+}
+
