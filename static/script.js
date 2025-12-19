@@ -470,6 +470,47 @@ class PortfolioApp {
         this.updateActiveNavItem(section);
         this.currentSection = section;
         this.trackVisit(section);
+        
+        // Show/hide logo highlight based on section
+        this.updateLogoHighlight(section);
+    }
+
+    updateLogoHighlight(section) {
+        const logoText = document.getElementById('logo-text');
+        if (!logoText) return;
+        
+        // Get or create the hint element
+        let logoHint = document.getElementById('logo-click-hint');
+        
+        if (section === 'home') {
+            // Hide hint on home page
+            if (logoHint) {
+                logoHint.classList.remove('visible');
+            }
+            logoText.classList.remove('logo-highlighted');
+        } else {
+            // Show hint on other sections (if not already clicked)
+            if (!this.logoHintClicked) {
+                if (!logoHint) {
+                    logoHint = document.createElement('div');
+                    logoHint.id = 'logo-click-hint';
+                    logoHint.className = 'logo-click-hint';
+                    logoHint.innerHTML = 'Click Here!';
+                    logoText.parentElement.style.position = 'relative';
+                    logoText.parentElement.appendChild(logoHint);
+                    
+                    // Add click handler to dismiss
+                    logoText.addEventListener('click', () => {
+                        this.logoHintClicked = true;
+                        logoHint.classList.remove('visible');
+                        logoText.classList.remove('logo-highlighted');
+                    }, { once: true });
+                }
+                
+                logoText.classList.add('logo-highlighted');
+                setTimeout(() => logoHint.classList.add('visible'), 100);
+            }
+        }
     }
 
     updateActiveNavItem(section) {
