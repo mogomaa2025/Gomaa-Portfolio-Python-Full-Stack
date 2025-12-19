@@ -153,6 +153,21 @@ def init_data_files():
 
 init_data_files()
 
+@app.template_filter('format_duration')
+def format_duration(seconds):
+    if not seconds:
+        return "0s"
+    seconds = int(seconds)
+    if seconds < 60:
+        return f"{seconds}s"
+    minutes = seconds // 60
+    remaining_seconds = seconds % 60
+    if minutes < 60:
+        return f"{minutes}m {remaining_seconds}s"
+    hours = minutes // 60
+    remaining_minutes = minutes % 60
+    return f"{hours}h {remaining_minutes}m"
+
 # Visitor tracking middleware
 @app.before_request
 def track_visitor():
@@ -1192,6 +1207,7 @@ def api_get_skill_categories():
 def track_visit():
     data = request.json
     page = data.get('page')
+    visit_id = data.get('visit_id')
 
     if not page:
         return jsonify({'status': 'error', 'message': 'Page not specified'}), 400
@@ -1210,19 +1226,26 @@ def track_visit():
     except (FileNotFoundError, json.JSONDecodeError):
         visitors = []
 
-    # Check if this IP has already visited this page (tab)
-    if any(v.get('ip') == ip and v.get('path') == page for v in visitors):
-        return jsonify({'status': 'exists', 'message': 'Visit already recorded'})
+    # Check if this IP has already visited this page (tab) - without a visit_id
+    if not visit_id:
+        if any(v.get('ip') == ip and v.get('path') == page for v in visitors):
+            return jsonify({'status': 'exists', 'message': 'Visit already recorded'})
+    else:
+        # If visit_id is provided, check if THAT specific visit is already recorded
+        if any(v.get('visit_id') == visit_id for v in visitors):
+            return jsonify({'status': 'exists', 'message': 'Visit ID already recorded'})
 
     visitor_data = {
         'ip': ip,
+        'visit_id': visit_id,
         'timestamp': datetime.now().isoformat(),
         'path': page,
         'method': request.method,
         'user_agent': request.headers.get('User-Agent', ''),
         'referrer': request.referrer or '',
         'country': None,
-        'city': None
+        'city': None,
+        'duration': 0
     }
     visitors.append(visitor_data)
     
@@ -1234,6 +1257,36 @@ def track_visit():
         json.dump(visitors, f, indent=2)
 
     return jsonify({'status': 'ok', 'message': 'Visit tracked'})
+
+@app.route('/api/update_visit_duration', methods=['POST'])
+def update_visit_duration():
+    data = request.json
+    visit_id = data.get('visit_id')
+    duration = data.get('duration', 0)
+
+    if not visit_id:
+        return jsonify({'status': 'error', 'message': 'Visit ID not specified'}), 400
+
+    try:
+        with open(VISITORS_FILE, 'r') as f:
+            visitors = json.load(f)
+    except:
+        return jsonify({'status': 'error', 'message': 'Could not load visitors'}), 500
+
+    # Find the visit and update duration
+    updated = False
+    for v in visitors:
+        if v.get('visit_id') == visit_id:
+            v['duration'] = duration
+            updated = True
+            break
+    
+    if updated:
+        with open(VISITORS_FILE, 'w') as f:
+            json.dump(visitors, f, indent=2)
+        return jsonify({'status': 'ok', 'message': 'Duration updated'})
+    
+    return jsonify({'status': 'not_found', 'message': 'Visit ID not found'})
 
 @app.route('/admin/certifications')
 @admin_required

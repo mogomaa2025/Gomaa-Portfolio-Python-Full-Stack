@@ -238,7 +238,7 @@
         
         .visitor-info {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr 1fr 100px;
             gap: 1rem;
             align-items: center;
         }
@@ -266,6 +266,13 @@
             border-radius: 4px;
             font-size: 0.8rem;
             font-weight: 500;
+        }
+        
+        .visitor-duration {
+            color: #4ade80;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-align: right;
         }
         
         .hourly-chart {
@@ -403,6 +410,7 @@
                         <div class="visitor-time">{{ visitor.timestamp[:19] }}</div>
                         <div class="visitor-path">{{ visitor.path }}</div>
                         <div class="visitor-method">{{ visitor.method }}</div>
+                        <div class="visitor-duration">{{ visitor.get('duration', 0)|format_duration }}</div>
                     </div>
                 </div>
                 {% endfor %}

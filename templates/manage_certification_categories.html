@@ -108,7 +108,7 @@
                             <input type="hidden" name="direction" value="down">
                             <button type="submit" class="btn btn-move" {% if loop.last %}disabled style="opacity:0.3"{% endif %}>↓</button>
                         </form>
-                        <button onclick="editCategory({{ cat.id }}, '{{ cat.name }}')" class="btn btn-edit">Edit</button>
+                        <button onclick="editCategory(this.dataset.id, this.dataset.name)" class="btn btn-edit">Edit</button>
                         <form method="POST" style="display: inline;" onsubmit="return confirm('Delete category?')">
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="id" value="{{ cat.id }}">

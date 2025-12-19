@@ -18,6 +18,11 @@ class PortfolioApp {
         this.currentTextIndex = 0;
         this.currentCharIndex = 0;
         this.isDeleting = false;
+        
+        // Visit tracking state
+        this.currentVisitId = null;
+        this.currentVisitStartTime = null;
+        this.visitUpdateInterval = null;
         this.typingSpeed = 100;
         this.deletingSpeed = 50;
         this.pauseTime = 2000;
@@ -246,6 +251,14 @@ class PortfolioApp {
 
 
     setupEventListeners() {
+        // Track final stay duration when leaving or hiding the page
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                this.updateVisitDuration();
+            }
+        });
+        window.addEventListener('beforeunload', () => this.updateVisitDuration());
+
         // Theme toggle
         const themeToggle = document.querySelector('.theme-toggle');
         if (themeToggle) {
@@ -560,12 +573,22 @@ class PortfolioApp {
     }
 
     trackVisit(page) {
+        // Send final update for previous visit if it exists
+        this.updateVisitDuration();
+
+        // Start new visit
+        this.currentVisitId = 'v_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        this.currentVisitStartTime = Date.now();
+
         fetch('/api/track_visit', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ page: page }),
+            body: JSON.stringify({ 
+                page: page,
+                visit_id: this.currentVisitId
+            }),
         })
         .then(response => response.json())
         .then(data => {
@@ -576,6 +599,32 @@ class PortfolioApp {
         .catch((error) => {
             console.error('Error tracking visit:', error);
         });
+
+        // Setup periodic updates every 10 seconds while on the same section
+        if (this.visitUpdateInterval) clearInterval(this.visitUpdateInterval);
+        this.visitUpdateInterval = setInterval(() => this.updateVisitDuration(), 10000);
+    }
+
+    updateVisitDuration() {
+        if (!this.currentVisitId || !this.currentVisitStartTime) return;
+
+        const duration = Math.floor((Date.now() - this.currentVisitStartTime) / 1000);
+        
+        // Use keepalive or a fallback for when the page is closing
+        const body = JSON.stringify({
+            visit_id: this.currentVisitId,
+            duration: duration
+        });
+
+        if (navigator.sendBeacon) {
+            navigator.sendBeacon('/api/update_visit_duration', body);
+        } else {
+            fetch('/api/update_visit_duration', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: body,
+            }).catch(e => {});
+        }
     }
 
     loadCertificationCategoriesAndFilters() {

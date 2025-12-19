@@ -138,7 +138,7 @@
                                 <button type="submit" class="action-link move-btn" {% if loop.last %}disabled style="opacity:0.3"{% endif %}>↓</button>
                             </form>
                             <a href="/admin/certifications/edit/{{ cert.id }}" class="action-link edit-link">Edit</a>
-                            <button onclick="deleteCert({{ cert.id }}, '{{ cert.name }}')" class="action-link delete-btn">Delete</button>
+                            <button onclick="deleteCert(this.dataset.id, this.dataset.name);" data-id="{{ cert.id }}" data-name="{{ cert.name }}" class="action-link delete-btn">Delete</button>
                         </div>
                     </div>
                     {% endfor %}
