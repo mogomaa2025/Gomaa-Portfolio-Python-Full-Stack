@@ -503,7 +503,7 @@
         }
     </style>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=20251219c"></script>
     <script>
         // Image modal functionality
         const imageModal = document.getElementById('image-modal');
@@ -518,38 +518,40 @@
 
         // Handle image zooming
         let isZoomed = false;
-        modalImg.addEventListener('click', (e) => {
-            e.stopPropagation();
-            isZoomed = !isZoomed;
-            modalImg.classList.toggle('zoomed', isZoomed);
-            
-            // Disable slide navigation when zoomed
-            modalPrev.style.pointerEvents = isZoomed ? 'none' : 'auto';
-            modalNext.style.pointerEvents = isZoomed ? 'none' : 'auto';
-            modalPrev.style.opacity = isZoomed ? '0.3' : '1';
-            modalNext.style.opacity = isZoomed ? '0.3' : '1';
-        });
+        if (modalImg && modalPrev && modalNext) {
+            modalImg.addEventListener('click', (e) => {
+                e.stopPropagation();
+                isZoomed = !isZoomed;
+                modalImg.classList.toggle('zoomed', isZoomed);
 
-        // Add touch support for mobile devices
-        let touchStartX = 0;
-        modalImg.addEventListener('touchstart', (e) => {
-            touchStartX = e.touches[0].clientX;
-        });
+                // Disable slide navigation when zoomed
+                modalPrev.style.pointerEvents = isZoomed ? 'none' : 'auto';
+                modalNext.style.pointerEvents = isZoomed ? 'none' : 'auto';
+                modalPrev.style.opacity = isZoomed ? '0.3' : '1';
+                modalNext.style.opacity = isZoomed ? '0.3' : '1';
+            });
 
-        modalImg.addEventListener('touchend', (e) => {
-            if (currentSlides.length <= 1) return;
-            
-            const touchEndX = e.changedTouches[0].clientX;
-            const touchDiff = touchEndX - touchStartX;
-            
-            if (Math.abs(touchDiff) > 50) { // Minimum swipe distance
-                if (touchDiff > 0) {
-                    showSlide(currentSlideIndex - 1); // Swipe right = previous
-                } else {
-                    showSlide(currentSlideIndex + 1); // Swipe left = next
+            // Add touch support for mobile devices
+            let touchStartX = 0;
+            modalImg.addEventListener('touchstart', (e) => {
+                touchStartX = e.touches[0].clientX;
+            });
+
+            modalImg.addEventListener('touchend', (e) => {
+                if (currentSlides.length <= 1) return;
+
+                const touchEndX = e.changedTouches[0].clientX;
+                const touchDiff = touchEndX - touchStartX;
+
+                if (Math.abs(touchDiff) > 50) { // Minimum swipe distance
+                    if (touchDiff > 0) {
+                        showSlide(currentSlideIndex - 1); // Swipe right = previous
+                    } else {
+                        showSlide(currentSlideIndex + 1); // Swipe left = next
+                    }
                 }
-            }
-        });
+            });
+        }
 
         function updateSlideIndicators(total, current) {
             slideIndicator.innerHTML = '';
@@ -657,8 +659,8 @@
         });
 
         // Navigation buttons
-        modalPrev.addEventListener('click', () => showSlide(currentSlideIndex - 1));
-        modalNext.addEventListener('click', () => showSlide(currentSlideIndex + 1));
+        if (modalPrev) modalPrev.addEventListener('click', () => showSlide(currentSlideIndex - 1));
+        if (modalNext) modalNext.addEventListener('click', () => showSlide(currentSlideIndex + 1));
 
         // Keyboard navigation and zoom
         document.addEventListener('keydown', function(e) {
@@ -698,7 +700,7 @@
         });
 
         // Close modal on button click
-        modalClose.addEventListener('click', function() {
+        if (modalClose) modalClose.addEventListener('click', function() {
             imageModal.style.opacity = 0;
             setTimeout(() => { 
                 imageModal.style.display = 'none';
@@ -715,7 +717,7 @@
         });
 
         // Close modal when clicking outside the image
-        imageModal.addEventListener('click', function(e) {
+        if (imageModal) imageModal.addEventListener('click', function(e) {
             if (e.target === imageModal) {
                 imageModal.style.opacity = 0;
                 setTimeout(() => { 
@@ -726,7 +728,8 @@
             }
         });
 
-        document.getElementById('projects-social-link').addEventListener('click', function(e) {
+        const projectsSocialLink = document.getElementById('projects-social-link');
+        if (projectsSocialLink) projectsSocialLink.addEventListener('click', function(e) {
             e.preventDefault();
             const navBtn = document.querySelector('.nav-item[data-section="projects"]');
             if (navBtn) navBtn.click();

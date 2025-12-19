@@ -9,7 +9,7 @@ from werkzeug.utils import secure_filename
 # DON'T CHANGE THIS !!!
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from flask import Flask, send_from_directory, request, session, jsonify, render_template_string, redirect, url_for, render_template
+from flask import Flask, send_from_directory, request, session, jsonify, render_template_string, redirect, url_for, render_template, make_response
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 app.config['SECRET_KEY'] = 'asdf#FGSgvasgf$5$WGT'
@@ -771,10 +771,45 @@ def manage_categories():
         elif action == 'delete':
             cat_id = int(request.form.get('id'))
             categories = [c for c in categories if c['id'] != cat_id]
+        elif action == 'move':
+            # Move a category up/down by swapping its position in the list.
+            # Be tolerant of IDs stored as strings/ints.
+            try:
+                cat_id = int(request.form.get('id'))
+            except (TypeError, ValueError):
+                cat_id = None
+
+            direction = (request.form.get('direction') or '').strip().lower()
+
+            def _cat_id(value):
+                try:
+                    return int(value)
+                except (TypeError, ValueError):
+                    return None
+
+            if cat_id is not None:
+                index = next((i for i, c in enumerate(categories) if _cat_id(c.get('id')) == cat_id), None)
+                if index is not None:
+                    if direction == 'up' and index > 0:
+                        categories[index - 1], categories[index] = categories[index], categories[index - 1]
+                    elif direction == 'down' and index < len(categories) - 1:
+                        categories[index + 1], categories[index] = categories[index], categories[index + 1]
+
+        # Normalize IDs to reflect the visual order (1..n). This makes the order
+        # consistent even if some parts of the UI sort by id.
+        for idx, c in enumerate(categories):
+            c['id'] = idx + 1
+
         with open(CATEGORIES_FILE, 'w') as f:
             json.dump(categories, f, indent=2)
-        return redirect(url_for('manage_categories'))
-    return render_template('manage_categories.html', categories=categories)
+        # Use 303 to force a GET after POST and avoid some browser caching behavior.
+        return redirect(url_for('manage_categories'), code=303)
+
+    resp = make_response(render_template('manage_categories.html', categories=categories))
+    resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    resp.headers['Pragma'] = 'no-cache'
+    resp.headers['Expires'] = '0'
+    return resp
 
 @app.route('/admin/skill-categories', methods=['GET', 'POST'])
 @admin_required
@@ -976,6 +1011,22 @@ def api_get_skills():
     except:
         return jsonify([])
 
+@app.route('/api/categories')
+def api_get_categories():
+    """Return project categories in the admin-defined order."""
+    try:
+        with open(CATEGORIES_FILE, 'r', encoding='utf-8') as f:
+            categories = json.load(f)
+    except Exception:
+        categories = []
+
+    resp = make_response(jsonify(categories))
+    resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    resp.headers['Pragma'] = 'no-cache'
+    resp.headers['Expires'] = '0'
+    return resp
+
+
 @app.route('/api/skill-categories')
 def api_get_skill_categories():
     try:
@@ -1048,7 +1099,11 @@ def serve(path):
     else:
         index_path = os.path.join(static_folder_path, 'index.html')
         if os.path.exists(index_path):
-            return send_from_directory(static_folder_path, 'index.html')
+            resp = make_response(send_from_directory(static_folder_path, 'index.html'))
+            resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+            resp.headers['Pragma'] = 'no-cache'
+            resp.headers['Expires'] = '0'
+            return resp
         else:
             return "index.html not found", 404
 

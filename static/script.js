@@ -33,9 +33,11 @@ class PortfolioApp {
     }
 
     loadCategoriesAndRenderFilters() {
-        fetch('/static/data/categories.json')
+        fetch('/api/categories')
             .then(res => res.json())
             .then(categories => {
+                // Render categories in the exact order returned by /api/categories
+                // (which reflects the saved order in data/categories.json).
                 const container = document.getElementById('filter-buttons-container');
                 if (!container) return;
                 container.innerHTML = '';
@@ -434,35 +436,11 @@ class PortfolioApp {
                         categoriesSet.add(project.category);
                     }
                 });
-                // If no categories.json or admin panel, fallback to project categories
-                if (categoriesSet.size > 0) {
-                    const container = document.getElementById('filter-buttons-container');
-                    if (container) {
-                        container.innerHTML = '';
-                        // Always add 'All' button
-                        const allBtn = document.createElement('button');
-                        allBtn.className = 'filter-btn active';
-                        allBtn.dataset.filter = 'all';
-                        allBtn.textContent = 'All';
-                        allBtn.addEventListener('click', (e) => {
-                            this.filterProjects('all');
-                            this.updateActiveFilter(e.target);
-                        });
-                        container.appendChild(allBtn);
-                        // Add category buttons
-                        Array.from(categoriesSet).forEach(catName => {
-                            const btn = document.createElement('button');
-                            btn.className = 'filter-btn';
-                            btn.dataset.filter = catName.toLowerCase();
-                            btn.textContent = catName;
-                            btn.addEventListener('click', (e) => {
-                                this.filterProjects(catName.toLowerCase());
-                                this.updateActiveFilter(e.target);
-                            });
-                            container.appendChild(btn);
-                        });
-                    }
-                }
+                // NOTE:
+                // Filter buttons are rendered from /api/categories in loadCategoriesAndRenderFilters(),
+                // to respect the admin-defined order.
+                // So we do not rebuild filter buttons here from project data.
+                void categoriesSet;
                 projects.forEach(project => {
                     const projectCard = document.createElement('div');
                     projectCard.className = `project-card visible`;
@@ -605,7 +583,8 @@ class PortfolioApp {
                         });
                     }
                 });
-                this.updateFilterButtons(projects);
+                // Filter buttons are rendered from /api/categories in loadCategoriesAndRenderFilters().
+                // (Do not overwrite them here.)
             });
     }
 

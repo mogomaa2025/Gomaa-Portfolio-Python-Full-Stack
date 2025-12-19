@@ -14,9 +14,11 @@
         button { background: #4ade80; color: #181a20; font-weight: 600; cursor: pointer; }
         table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
         th, td { padding: 0.5rem; border-bottom: 1px solid #333; }
-        .actions { display: flex; gap: 0.5rem; }
+        .actions { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
         .edit-btn { background: #3b82f6; color: #fff; }
         .delete-btn { background: #ef4444; color: #fff; }
+        .move-btn { background: #181a20; color: #fff; border: 1px solid #444; padding: 0.35rem 0.6rem; }
+        .move-btn[disabled] { opacity: 0.35; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -34,21 +36,33 @@
             <tbody>
                 {% for cat in categories %}
                 <tr>
-                    <form method="POST" style="display:inline;">
-                        <td>
+                    <td>
+                        <form method="POST" style="display:flex;gap:0.5rem;align-items:center;">
                             <input type="hidden" name="action" value="edit">
                             <input type="hidden" name="id" value="{{ cat.id }}">
                             <input type="text" name="name" value="{{ cat.name }}" required style="width:80%;">
-                        </td>
-                        <td class="actions">
                             <button type="submit" class="edit-btn">Edit</button>
-                    </form>
-                    <form method="POST" style="display:inline;">
-                        <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="id" value="{{ cat.id }}">
-                        <button type="submit" class="delete-btn" onclick="return confirm('Delete this category?')">Delete</button>
-                    </form>
-                        </td>
+                        </form>
+                    </td>
+                    <td class="actions">
+                        <form method="POST" style="display:inline;">
+                            <input type="hidden" name="action" value="move">
+                            <input type="hidden" name="id" value="{{ cat.id }}">
+                            <input type="hidden" name="direction" value="up">
+                            <button type="submit" class="move-btn" {% if loop.first %}disabled{% endif %} title="Move up">↑</button>
+                        </form>
+                        <form method="POST" style="display:inline;">
+                            <input type="hidden" name="action" value="move">
+                            <input type="hidden" name="id" value="{{ cat.id }}">
+                            <input type="hidden" name="direction" value="down">
+                            <button type="submit" class="move-btn" {% if loop.last %}disabled{% endif %} title="Move down">↓</button>
+                        </form>
+                        <form method="POST" style="display:inline;">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="id" value="{{ cat.id }}">
+                            <button type="submit" class="delete-btn" onclick="return confirm('Delete this category?')">Delete</button>
+                        </form>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
