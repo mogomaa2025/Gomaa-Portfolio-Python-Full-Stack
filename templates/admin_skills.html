@@ -184,7 +184,7 @@
             color: white;
         }
         
-        .move-up-btn, .move-down-btn {
+        .move-left-btn, .move-right-btn {
             background: rgba(255, 255, 255, 0.1);
             color: white;
             border: 1px solid rgba(255, 255, 255, 0.2);
@@ -200,7 +200,7 @@
             font-size: 1.1rem;
         }
         
-        .move-up-btn:hover, .move-down-btn:hover {
+        .move-left-btn:hover, .move-right-btn:hover {
             background: rgba(100, 255, 218, 0.2);
             color: #64ffda;
             border-color: #64ffda;
@@ -229,6 +229,26 @@
         .save-order-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+        }
+
+        .category-tab-btn {
+            padding: 0.5rem 1.2rem;
+            border: none;
+            border-radius: 8px;
+            background: #23263a;
+            color: #64ffda;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .category-tab-btn:hover {
+            background: rgba(100, 255, 218, 0.2);
+        }
+
+        .category-tab-btn.active {
+            background: #64ffda;
+            color: #1e1e2e;
         }
         
         @media (max-width: 768px) {
@@ -275,10 +295,9 @@
         </div>
         
         <div class="category-tabs" style="display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem;">
-            <button class="category-tab-btn active" data-category="all" style="padding:0.5rem 1.2rem;border:none;border-radius:8px;background:#64ffda;color:#1e1e2e;font-weight:600;cursor:pointer;transition:all 0.2s;">All</button>
             {% set categories = skill_categories | map(attribute='name') | list if skill_categories else [] %}
             {% for cat in categories %}
-                <button class="category-tab-btn" data-category="{{ cat }}" style="padding:0.5rem 1.2rem;border:none;border-radius:8px;background:#23263a;color:#64ffda;font-weight:600;cursor:pointer;transition:all 0.2s;">{{ cat }}</button>
+                <button class="category-tab-btn{% if loop.first %} active{% endif %}" data-category="{{ cat }}">{{ cat }}</button>
             {% endfor %}
         </div>
         
@@ -286,12 +305,14 @@
             {% for skill in skills %}
                 <div class="skill-card" data-skill-category="{{ skill.category }}" data-skill-id="{{ skill.id }}">
                     <div class="skill-controls">
-                        <button type="button" class="move-up-btn" onclick="moveSkill(this, 'up')" title="Move Up">↑</button>
-                        <button type="button" class="move-down-btn" onclick="moveSkill(this, 'down')" title="Move Down">↓</button>
+                        <button type="button" class="move-left-btn" onclick="moveSkill(this, 'left')" title="Move Left">←</button>
+                        <button type="button" class="move-right-btn" onclick="moveSkill(this, 'right')" title="Move Right">→</button>
                     </div>
                     <div class="skill-icon" style="display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;">
                         {# --- SVG CODE SUPPORT --- #}
                         {% if skill.icon and skill.icon.strip()[0:1] in ['<'] and skill.icon.strip()[1:4]|lower == 'svg' %}
+                            {{ skill.icon | safe }}
+                        {% elif skill.icon and skill.icon.strip()[0:1] in ['<'] and skill.icon.strip()[1:4]|lower == 'img' %}
                             {{ skill.icon | safe }}
                         {% elif skill.icon and (skill.icon.lower().endswith('.svg') or skill.icon.lower().startswith('data:image/svg+xml')) %}
                             <img src="{{ skill.icon }}" alt="icon" style="width:32px;height:32px;max-width:100%;max-height:100%;display:block;vertical-align:middle;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.08));stroke-linejoin:round;" onload="(function(img){fetch(img.src).then(function(r){return r.text()}).then(function(svg){if(svg.indexOf('svg')===1){var span=document.createElement('span');span.innerHTML=svg;var s=span.firstChild;s.style.width='32px';s.style.height='32px';s.style.maxWidth='100%';s.style.maxHeight='100%';s.style.display='block';s.style.verticalAlign='middle';s.setAttribute('stroke-linejoin','round');img.replaceWith(s);}})})(this)" />
@@ -333,7 +354,7 @@
             const card = btn.closest('.skill-card');
             const grid = card.parentNode;
             
-            if (direction === 'up') {
+            if (direction === 'left') {
                 const prev = card.previousElementSibling;
                 if (prev) {
                     grid.insertBefore(card, prev);
@@ -423,6 +444,11 @@
                     }
                 });
             });
+
+            // Filter by first category on page load
+            if (activeTab && activeTab.dataset.category) {
+                filterSkills(activeTab.dataset.category);
+            }
         });
     </script>
 </body>

@@ -203,8 +203,9 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="icon" class="form-label">Icon (Emoji or FontAwesome)</label>
-                    <input type="text" id="icon" name="icon" class="form-input" value="{{ skill.icon }}">
+                    <label for="icon" class="form-label">Icon (SVG, IMG tag, or Emoji)</label>
+                    <input type="text" id="icon" name="icon" class="form-input" value="{{ skill.icon }}" placeholder='<svg>...</svg> or <img src="..." width="32" height="32"> or 🚀'>
+                    <small style="color: rgba(255,255,255,0.5); font-size: 0.85rem; margin-top: 0.25rem; display: block;">Supports: SVG code, &lt;img&gt; tag, or emoji</small>
                 </div>
                 
                 <div class="form-actions">

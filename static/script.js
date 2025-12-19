@@ -31,6 +31,9 @@ class PortfolioApp {
     }
 
     init() {
+        // Start intro animation immediately
+        this.initIntroAnimation();
+        
         this.setupEventListeners();
         this.setupGlobalYouTubeHandler(); // Global event delegation for YouTube placeholders
         // Note: Video fullscreen in portrait mode is handled via modal in index.html
@@ -47,6 +50,84 @@ class PortfolioApp {
         this.initImageModal();
         this.trackVisit('home');
     }
+
+    // ===== AMAZING INTRO ANIMATION =====
+    initIntroAnimation() {
+        const introOverlay = document.getElementById('intro-overlay');
+        const particlesContainer = document.getElementById('intro-particles');
+        const app = document.querySelector('.app');
+        
+        if (!introOverlay || !particlesContainer || !app) return;
+        
+        // Create floating particles
+        this.createParticles(particlesContainer, 30);
+        
+        // Timeline sequence - FAST VERSION
+        // 0.0s - Intro appears with logo animation
+        // 0.8s - Loader finishes
+        // 1.2s - Start reveal sequence
+        // 1.8s - Curtains fully open, show app
+        // 2.2s - Remove overlay completely
+        
+        setTimeout(() => {
+            // Start curtain reveal
+            introOverlay.classList.add('reveal');
+            app.classList.add('visible');
+        }, 1200);
+        
+        setTimeout(() => {
+            // Mark as complete (will fade out)
+            introOverlay.classList.add('complete');
+            introOverlay.classList.add('hidden');
+            
+            // Trigger hero content animations
+            const heroContent = document.querySelector('.hero-content');
+            if (heroContent) {
+                heroContent.classList.add('animate');
+            }
+            
+            // Add highlight glow to bottom nav
+            const bottomNav = document.querySelector('.bottom-nav');
+            if (bottomNav) {
+                bottomNav.classList.add('intro-highlight');
+                setTimeout(() => {
+                    bottomNav.classList.remove('intro-highlight');
+                }, 1500);
+            }
+        }, 1800);
+        
+        // Remove overlay from DOM after animation completes
+        setTimeout(() => {
+            introOverlay.remove();
+        }, 2500);
+    }
+    
+    createParticles(container, count) {
+        for (let i = 0; i < count; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'intro-particle';
+            
+            // Random positioning
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            
+            // Random size variation
+            const size = 3 + Math.random() * 6;
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            
+            // Random animation delay for visual variety
+            particle.style.animationDelay = Math.random() * 4 + 's';
+            particle.style.animationDuration = (3 + Math.random() * 3) + 's';
+            
+            // Random opacity
+            particle.style.opacity = 0.3 + Math.random() * 0.7;
+            
+            container.appendChild(particle);
+        }
+    }
+    // ===== END INTRO ANIMATION =====
+
 
     // Note: Video fullscreen in portrait mode is handled via modal in index.html
 
@@ -1244,7 +1325,11 @@ class PortfolioApp {
             case 'code': // fallback for 'Code' (Java)
                 return "<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='16 18 22 12 16 6'></polyline><polyline points='8 6 2 12 8 18'></polyline></svg>";
             default:
-                return skill.icon && skill.icon.startsWith('<svg') ? skill.icon : '⚡';
+                // Support inline SVG or img tags
+                if (skill.icon && (skill.icon.trim().toLowerCase().startsWith('<svg') || skill.icon.trim().toLowerCase().startsWith('<img'))) {
+                    return skill.icon;
+                }
+                return '⚡';
         }
     }
 }

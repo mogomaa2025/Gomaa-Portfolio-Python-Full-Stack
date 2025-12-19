@@ -10,6 +10,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Intro Overlay for Amazing Opening Transition -->
+    <div class="intro-overlay" id="intro-overlay">
+        <div class="intro-particles" id="intro-particles"></div>
+        <div class="intro-content">
+            <div class="intro-logo">
+                <span class="intro-logo-text">G</span>
+                <span class="intro-logo-full">omaa</span>
+            </div>
+            <div class="intro-tagline">Portfolio</div>
+            <div class="intro-loader">
+                <div class="loader-bar"></div>
+            </div>
+        </div>
+        <div class="intro-curtain intro-curtain-left"></div>
+        <div class="intro-curtain intro-curtain-right"></div>
+    </div>
+
     <div class="app">
         <!-- Header with theme toggle and source code link -->
         <header class="header">
@@ -666,7 +683,7 @@
         }
     </style>
 
-    <script src="script.js?v=20251219e"></script>
+    <script src="script.js?v=20251219intro"></script>
     <script>
         // Image modal functionality
         const imageModal = document.getElementById('image-modal');

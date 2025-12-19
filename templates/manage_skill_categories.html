@@ -14,9 +14,11 @@
         button { background: #4ade80; color: #181a20; font-weight: 600; cursor: pointer; }
         table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
         th, td { padding: 0.5rem; border-bottom: 1px solid #333; }
-        .actions { display: flex; gap: 0.5rem; }
+        .actions { display: flex; gap: 0.5rem; align-items: center; }
         .edit-btn { background: #3b82f6; color: #fff; }
         .delete-btn { background: #ef4444; color: #fff; }
+        .move-btn { background: #374151; color: #fff; border: 1px solid #4b5563; cursor: pointer; padding: 0.4rem 0.6rem; border-radius: 6px; font-size: 1rem; transition: all 0.2s; }
+        .move-btn:hover { background: #4ade80; color: #181a20; border-color: #4ade80; }
     </style>
 </head>
 <body>
@@ -42,6 +44,18 @@
                         </td>
                         <td class="actions">
                             <button type="submit" class="edit-btn">Edit</button>
+                    </form>
+                    <form method="POST" style="display:inline;">
+                        <input type="hidden" name="action" value="move">
+                        <input type="hidden" name="id" value="{{ cat.id }}">
+                        <input type="hidden" name="direction" value="up">
+                        <button type="submit" class="move-btn" title="Move Up">↑</button>
+                    </form>
+                    <form method="POST" style="display:inline;">
+                        <input type="hidden" name="action" value="move">
+                        <input type="hidden" name="id" value="{{ cat.id }}">
+                        <input type="hidden" name="direction" value="down">
+                        <button type="submit" class="move-btn" title="Move Down">↓</button>
                     </form>
                     <form method="POST" style="display:inline;">
                         <input type="hidden" name="action" value="delete">

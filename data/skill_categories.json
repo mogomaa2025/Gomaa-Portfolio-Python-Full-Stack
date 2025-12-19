@@ -5,18 +5,22 @@
   },
   {
     "id": 2,
-    "name": "Web"
+    "name": "AI"
   },
   {
     "id": 3,
-    "name": "Mobile"
+    "name": "Web"
   },
   {
     "id": 4,
-    "name": "Database"
+    "name": "Mobile"
   },
   {
     "id": 5,
+    "name": "Database"
+  },
+  {
+    "id": 6,
     "name": "IT"
   }
 ]

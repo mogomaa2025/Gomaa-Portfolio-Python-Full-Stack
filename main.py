@@ -997,6 +997,33 @@ def manage_skill_categories():
         elif action == 'delete':
             cat_id = int(request.form.get('id'))
             skill_categories = [c for c in skill_categories if c['id'] != cat_id]
+        elif action == 'move':
+            # Move a skill category up/down by swapping its position in the list.
+            try:
+                cat_id = int(request.form.get('id'))
+            except (TypeError, ValueError):
+                cat_id = None
+
+            direction = (request.form.get('direction') or '').strip().lower()
+
+            def _cat_id(value):
+                try:
+                    return int(value)
+                except (TypeError, ValueError):
+                    return None
+
+            if cat_id is not None:
+                index = next((i for i, c in enumerate(skill_categories) if _cat_id(c.get('id')) == cat_id), None)
+                if index is not None:
+                    if direction == 'up' and index > 0:
+                        skill_categories[index - 1], skill_categories[index] = skill_categories[index], skill_categories[index - 1]
+                    elif direction == 'down' and index < len(skill_categories) - 1:
+                        skill_categories[index + 1], skill_categories[index] = skill_categories[index], skill_categories[index + 1]
+
+        # Normalize IDs to reflect the visual order (1..n)
+        for idx, c in enumerate(skill_categories):
+            c['id'] = idx + 1
+
         with open(SKILL_CATEGORIES_FILE, 'w') as f:
             json.dump(skill_categories, f, indent=2)
         return redirect(url_for('manage_skill_categories'))
