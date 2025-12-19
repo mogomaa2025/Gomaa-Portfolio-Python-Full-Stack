@@ -2200,3 +2200,148 @@ button.category-tab-btn.active {
     }
 }
 
+/* ===== BUG SQUASH ANIMATION STYLES ===== */
+.bug-squash-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 100;
+    overflow: visible;
+}
+
+/* Shake effect when clicking the profile image */
+.profile-image.bug-shake {
+    animation: bug-shake 0.3s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes bug-shake {
+    0%, 100% { transform: translateX(0) rotate(0); }
+    10% { transform: translateX(-5px) rotate(-2deg); }
+    20% { transform: translateX(5px) rotate(2deg); }
+    30% { transform: translateX(-5px) rotate(-2deg); }
+    40% { transform: translateX(5px) rotate(2deg); }
+    50% { transform: translateX(-3px) rotate(-1deg); }
+    60% { transform: translateX(3px) rotate(1deg); }
+    70% { transform: translateX(-2px) rotate(0); }
+    80% { transform: translateX(2px) rotate(0); }
+    90% { transform: translateX(-1px) rotate(0); }
+}
+
+/* Bug creature styling */
+.bug-creature {
+    position: absolute;
+    font-size: 1.8rem;
+    z-index: 101;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    pointer-events: none;
+    user-select: none;
+}
+
+/* Bug wiggle animation for crawling effect */
+.bug-creature::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    animation: bug-wiggle 0.2s ease-in-out infinite alternate;
+}
+
+@keyframes bug-wiggle {
+    0% { transform: rotate(-5deg); }
+    100% { transform: rotate(5deg); }
+}
+
+/* Tester character styling */
+.tester-character {
+    position: absolute;
+    font-size: 2.5rem;
+    z-index: 102;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+    pointer-events: none;
+    user-select: none;
+}
+
+/* Squash effect styling */
+.bug-squash-effect {
+    position: absolute;
+    font-size: 2rem;
+    z-index: 103;
+    pointer-events: none;
+    user-select: none;
+    filter: drop-shadow(0 0 10px rgba(255, 150, 0, 0.8));
+}
+
+/* Success message styling */
+.bug-success-message {
+    position: absolute;
+    z-index: 104;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    white-space: nowrap;
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    pointer-events: none;
+    user-select: none;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* Make profile image interactive */
+.profile-image-container .profile-image {
+    transition: all 0.3s ease, transform 0.1s ease;
+}
+
+.profile-image-container:hover .profile-image {
+    box-shadow: 0 25px 50px rgba(59, 130, 246, 0.4), 
+                0 0 0 3px rgba(74, 222, 128, 0.3);
+}
+
+/* Hint text on hover for desktop */
+.profile-image-container::after {
+    content: '🐛 Click me!';
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.profile-image-container:hover::after {
+    opacity: 1;
+}
+
+/* Hide hint on mobile - let users discover it */
+@media (max-width: 768px) {
+    .profile-image-container::after {
+        display: none;
+    }
+    
+    .bug-creature {
+        font-size: 1.5rem;
+    }
+    
+    .tester-character {
+        font-size: 2rem;
+    }
+    
+    .bug-success-message {
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+    }
+}
+

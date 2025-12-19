@@ -1334,7 +1334,298 @@ class PortfolioApp {
     }
 }
 
+// ===== BUG SQUASH ANIMATION =====
+// Fun Easter egg: Click on profile image to spawn bugs that get squashed by a tester!
+
+class BugSquashAnimation {
+    constructor() {
+        this.bugs = [];
+        this.tester = null;
+        this.isAnimating = false;
+        this.container = null;
+        this.init();
+    }
+
+    init() {
+        // Wait for the profile image to be available
+        const checkImage = setInterval(() => {
+            const profileImage = document.getElementById('profile-image');
+            const imageContainer = document.querySelector('.profile-image-container');
+            
+            if (profileImage && imageContainer) {
+                clearInterval(checkImage);
+                this.setupClickHandler(profileImage, imageContainer);
+            }
+        }, 100);
+    }
+
+    setupClickHandler(profileImage, imageContainer) {
+        // Create a container for the bugs and tester
+        this.container = document.createElement('div');
+        this.container.className = 'bug-squash-container';
+        imageContainer.style.position = 'relative';
+        imageContainer.appendChild(this.container);
+
+        // Add click/tap handler
+        profileImage.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (!this.isAnimating) {
+                this.startAnimation(profileImage);
+            }
+        });
+
+        // Add touch handler for mobile
+        profileImage.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if (!this.isAnimating) {
+                this.startAnimation(profileImage);
+            }
+        });
+
+        // Add cursor style to indicate clickability
+        profileImage.style.cursor = 'pointer';
+    }
+
+    startAnimation(profileImage) {
+        this.isAnimating = true;
+        
+        // Add shake effect to image
+        profileImage.classList.add('bug-shake');
+        
+        // Spawn bugs after a brief delay
+        setTimeout(() => {
+            profileImage.classList.remove('bug-shake');
+            this.spawnBugs(profileImage);
+        }, 300);
+    }
+
+    spawnBugs(profileImage) {
+        const bugCount = 5 + Math.floor(Math.random() * 4); // 5-8 bugs
+        const rect = profileImage.getBoundingClientRect();
+        const containerRect = this.container.getBoundingClientRect();
+        
+        // Calculate center of the image relative to container
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+
+        // Bug emoji options
+        const bugEmojis = ['🐛', '🐜', '🪲', '🦗', '🕷️'];
+
+        for (let i = 0; i < bugCount; i++) {
+            setTimeout(() => {
+                const bug = document.createElement('div');
+                bug.className = 'bug-creature';
+                bug.innerHTML = bugEmojis[Math.floor(Math.random() * bugEmojis.length)];
+                
+                // Start from center of image
+                bug.style.left = centerX + 'px';
+                bug.style.top = centerY + 'px';
+                
+                // Random direction to crawl
+                const angle = (Math.PI * 2 * i) / bugCount + (Math.random() * 0.5 - 0.25);
+                const distance = 120 + Math.random() * 80;
+                const endX = centerX + Math.cos(angle) * distance;
+                const endY = centerY + Math.sin(angle) * distance;
+                
+                // Random speed
+                const duration = 1000 + Math.random() * 500;
+                
+                this.container.appendChild(bug);
+                this.bugs.push({
+                    element: bug,
+                    endX: endX,
+                    endY: endY,
+                    eliminated: false
+                });
+
+                // Animate bug crawling out
+                bug.animate([
+                    { transform: 'translate(-50%, -50%) scale(0) rotate(0deg)', opacity: 0 },
+                    { transform: 'translate(-50%, -50%) scale(1) rotate(0deg)', opacity: 1, offset: 0.1 },
+                    { 
+                        transform: `translate(calc(${endX - centerX}px - 50%), calc(${endY - centerY}px - 50%)) scale(1) rotate(${Math.random() * 360}deg)`, 
+                        opacity: 1 
+                    }
+                ], {
+                    duration: duration,
+                    easing: 'ease-out',
+                    fill: 'forwards'
+                });
+
+                // Update position for hit detection
+                setTimeout(() => {
+                    bug.style.left = endX + 'px';
+                    bug.style.top = endY + 'px';
+                }, duration);
+
+            }, i * 100); // Stagger bug spawns
+        }
+
+        // Spawn tester after bugs are out
+        setTimeout(() => {
+            this.spawnTester(centerX, centerY);
+        }, bugCount * 100 + 800);
+    }
+
+    spawnTester(centerX, centerY) {
+        const tester = document.createElement('div');
+        tester.className = 'tester-character';
+        tester.innerHTML = '🧑‍💻';
+        tester.style.left = centerX + 'px';
+        tester.style.top = centerY + 'px';
+        this.container.appendChild(tester);
+        this.tester = tester;
+
+        // Animate tester appearing
+        tester.animate([
+            { transform: 'translate(-50%, -50%) scale(0) rotate(-180deg)', opacity: 0 },
+            { transform: 'translate(-50%, -50%) scale(1.5) rotate(0deg)', opacity: 1 }
+        ], {
+            duration: 400,
+            easing: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+            fill: 'forwards'
+        });
+
+        // Start eliminating bugs
+        setTimeout(() => {
+            this.eliminateBugs(centerX, centerY);
+        }, 500);
+    }
+
+    eliminateBugs(centerX, centerY) {
+        const bugsToEliminate = [...this.bugs].filter(b => !b.eliminated);
+        let delay = 0;
+
+        bugsToEliminate.forEach((bugData, index) => {
+            setTimeout(() => {
+                if (bugData.eliminated) return;
+                bugData.eliminated = true;
+
+                const bug = bugData.element;
+                const bugRect = bug.getBoundingClientRect();
+                const containerRect = this.container.getBoundingClientRect();
+                
+                // Move tester to bug position
+                const targetX = parseFloat(bug.style.left) || bugData.endX;
+                const targetY = parseFloat(bug.style.top) || bugData.endY;
+
+                this.tester.animate([
+                    { transform: this.tester.style.transform || 'translate(-50%, -50%) scale(1.5)' },
+                    { transform: `translate(calc(${targetX - centerX}px - 50%), calc(${targetY - centerY}px - 50%)) scale(1.5)` }
+                ], {
+                    duration: 200,
+                    easing: 'ease-in-out',
+                    fill: 'forwards'
+                });
+
+                // Squash the bug after tester arrives
+                setTimeout(() => {
+                    // Create squash effect
+                    const squash = document.createElement('div');
+                    squash.className = 'bug-squash-effect';
+                    squash.innerHTML = '💥';
+                    squash.style.left = targetX + 'px';
+                    squash.style.top = targetY + 'px';
+                    this.container.appendChild(squash);
+
+                    // Animate squash
+                    squash.animate([
+                        { transform: 'translate(-50%, -50%) scale(0)', opacity: 1 },
+                        { transform: 'translate(-50%, -50%) scale(2)', opacity: 1, offset: 0.3 },
+                        { transform: 'translate(-50%, -50%) scale(0)', opacity: 0 }
+                    ], {
+                        duration: 400,
+                        easing: 'ease-out',
+                        fill: 'forwards'
+                    });
+
+                    // Remove bug
+                    bug.animate([
+                        { transform: bug.style.transform, opacity: 1 },
+                        { transform: 'translate(-50%, -50%) scale(0) rotate(720deg)', opacity: 0 }
+                    ], {
+                        duration: 300,
+                        easing: 'ease-in',
+                        fill: 'forwards'
+                    });
+
+                    setTimeout(() => {
+                        bug.remove();
+                        squash.remove();
+                    }, 400);
+
+                }, 200);
+
+            }, delay);
+
+            delay += 350; // Time between each squash
+        });
+
+        // Clean up after all bugs eliminated
+        setTimeout(() => {
+            this.finishAnimation(centerX, centerY);
+        }, delay + 500);
+    }
+
+    finishAnimation(centerX, centerY) {
+        if (this.tester) {
+            // Tester victory animation
+            this.tester.animate([
+                { transform: 'translate(-50%, -50%) scale(1.5)' },
+                { transform: `translate(0, 0) scale(2)`, offset: 0.3 },
+                { transform: `translate(0, 0) scale(2) rotate(360deg)`, offset: 0.6 },
+                { transform: 'translate(-50%, -50%) scale(0)', opacity: 0 }
+            ], {
+                duration: 800,
+                easing: 'ease-in-out',
+                fill: 'forwards'
+            });
+
+            // Show success message
+            const successMsg = document.createElement('div');
+            successMsg.className = 'bug-success-message';
+            successMsg.innerHTML = '✅ All Bugs Fixed!';
+            successMsg.style.left = centerX + 'px';
+            successMsg.style.top = centerY + 'px';
+            this.container.appendChild(successMsg);
+
+            successMsg.animate([
+                { transform: 'translate(-50%, -50%) scale(0)', opacity: 0 },
+                { transform: 'translate(-50%, -50%) scale(1)', opacity: 1, offset: 0.3 },
+                { transform: 'translate(-50%, -50%) scale(1)', opacity: 1, offset: 0.7 },
+                { transform: 'translate(-50%, -100%) scale(0.8)', opacity: 0 }
+            ], {
+                duration: 1500,
+                easing: 'ease-out',
+                fill: 'forwards'
+            });
+
+            setTimeout(() => {
+                this.tester.remove();
+                successMsg.remove();
+                this.cleanup();
+            }, 1500);
+        } else {
+            this.cleanup();
+        }
+    }
+
+    cleanup() {
+        this.bugs = [];
+        this.tester = null;
+        this.isAnimating = false;
+        // Clean any remaining elements
+        this.container.innerHTML = '';
+    }
+}
+
+// Initialize bug squash animation
+let bugSquashAnimation = null;
+
 // Initialize the Portfolio App
 document.addEventListener('DOMContentLoaded', () => {
     const app = new PortfolioApp();
+    
+    // Initialize bug squash Easter egg
+    bugSquashAnimation = new BugSquashAnimation();
 });
