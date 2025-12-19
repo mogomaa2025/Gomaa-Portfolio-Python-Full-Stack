@@ -26,6 +26,8 @@ SKILL_CATEGORIES_FILE = os.path.join(DATA_DIR, 'skill_categories.json')
 CONFIG_FILE = os.path.join(DATA_DIR, 'config.json')
 ABOUT_FILE = os.path.join(DATA_DIR, 'about.json')
 CONTACT_FILE = os.path.join(DATA_DIR, 'contact.json')
+CERTIFICATIONS_FILE = os.path.join(DATA_DIR, 'certifications.json')
+CERTIFICATION_CATEGORIES_FILE = os.path.join(DATA_DIR, 'certification_categories.json')
 
 # Create data directory if it doesn't exist
 os.makedirs(DATA_DIR, exist_ok=True)
@@ -134,6 +136,20 @@ def init_data_files():
         }
         with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
             json.dump(default_config, f, indent=2)
+            
+    if not os.path.exists(CERTIFICATIONS_FILE):
+        with open(CERTIFICATIONS_FILE, 'w', encoding='utf-8') as f:
+            json.dump([], f, indent=2)
+            
+    if not os.path.exists(CERTIFICATION_CATEGORIES_FILE):
+        default_cert_categories = [
+            {"id": 1, "name": "IT"},
+            {"id": 2, "name": "Testing"},
+            {"id": 3, "name": "Security"},
+            {"id": 4, "name": "DevOps"}
+        ]
+        with open(CERTIFICATION_CATEGORIES_FILE, 'w', encoding='utf-8') as f:
+            json.dump(default_cert_categories, f, indent=2)
 
 init_data_files()
 
@@ -1218,6 +1234,221 @@ def track_visit():
         json.dump(visitors, f, indent=2)
 
     return jsonify({'status': 'ok', 'message': 'Visit tracked'})
+
+@app.route('/admin/certifications')
+@admin_required
+def admin_certifications():
+    try:
+        with open(CERTIFICATIONS_FILE, 'r') as f:
+            certifications = json.load(f)
+    except Exception:
+        certifications = []
+
+    try:
+        with open(CERTIFICATION_CATEGORIES_FILE, 'r', encoding='utf-8') as f:
+            categories = json.load(f)
+    except Exception:
+        categories = []
+
+    category_order = [c.get('name') for c in categories if c.get('name')]
+    category_set = set(category_order)
+
+    # Add any categories that exist on certifications but are missing from categories.json
+    extra_categories = []
+    for c in certifications:
+        cat = c.get('category')
+        if cat and cat not in category_set and cat not in extra_categories:
+            extra_categories.append(cat)
+
+    grouped = []
+    for cat_name in category_order + extra_categories:
+        grouped.append({
+            'category': cat_name,
+            'certifications': [c for c in certifications if c.get('category') == cat_name]
+        })
+
+    if not grouped and certifications:
+        grouped.append({'category': 'Uncategorized', 'certifications': certifications})
+
+    return render_template('admin_certifications.html', grouped_certifications=grouped, certifications=certifications)
+
+@app.route('/admin/certifications/add', methods=['GET', 'POST'])
+@admin_required
+def add_certification():
+    if request.method == 'POST':
+        try:
+            with open(CERTIFICATIONS_FILE, 'r') as f:
+                certifications = json.load(f)
+            
+            data = request.form
+            new_id = max([c.get('id', 0) for c in certifications], default=0) + 1
+            
+            new_certification = {
+                "id": new_id,
+                "name": data.get('name', ''),
+                "issuer": data.get('issuer', ''),
+                "category": data.get('category', ''),
+                "date": data.get('date', ''),
+                "url": data.get('url', ''),
+                "image": data.get('image', '')
+            }
+            
+            certifications.append(new_certification)
+            with open(CERTIFICATIONS_FILE, 'w') as f:
+                json.dump(certifications, f, indent=2)
+                
+            return redirect(url_for('admin_certifications'))
+        except Exception as e:
+            return str(e), 500
+
+    try:
+        with open(CERTIFICATION_CATEGORIES_FILE, 'r') as f:
+            categories = json.load(f)
+    except:
+        categories = []
+    return render_template('add_certification.html', categories=categories)
+
+@app.route('/admin/certifications/edit/<int:cert_id>', methods=['GET', 'POST'])
+@admin_required
+def edit_certification(cert_id):
+    try:
+        with open(CERTIFICATIONS_FILE, 'r') as f:
+            certifications = json.load(f)
+    except:
+        certifications = []
+    
+    cert = next((c for c in certifications if c.get('id') == cert_id), None)
+    if not cert:
+        return redirect(url_for('admin_certifications'))
+    
+    if request.method == 'POST':
+        data = request.form
+        cert.update({
+            "name": data.get('name', ''),
+            "issuer": data.get('issuer', ''),
+            "category": data.get('category', ''),
+            "date": data.get('date', ''),
+            "url": data.get('url', ''),
+            "image": data.get('image', '')
+        })
+        
+        with open(CERTIFICATIONS_FILE, 'w') as f:
+            json.dump(certifications, f, indent=2)
+        return redirect(url_for('admin_certifications'))
+
+    try:
+        with open(CERTIFICATION_CATEGORIES_FILE, 'r') as f:
+            categories = json.load(f)
+    except:
+        categories = []
+    return render_template('edit_certification.html', certification=cert, categories=categories)
+
+@app.route('/admin/certifications/delete/<int:cert_id>', methods=['POST'])
+@admin_required
+def delete_certification(cert_id):
+    try:
+        with open(CERTIFICATIONS_FILE, 'r') as f:
+            certifications = json.load(f)
+        certifications = [c for c in certifications if c.get('id') != cert_id]
+        with open(CERTIFICATIONS_FILE, 'w') as f:
+            json.dump(certifications, f, indent=2)
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
+@app.route('/admin/certifications/move', methods=['POST'])
+@admin_required
+def move_certification():
+    try:
+        with open(CERTIFICATIONS_FILE, 'r') as f:
+            certifications = json.load(f)
+        
+        cert_id = int(request.form.get('id'))
+        direction = request.form.get('direction').lower()
+        
+        def _cat(c): return (c.get('category') or '').strip().lower()
+        
+        idx = next((i for i, c in enumerate(certifications) if c.get('id') == cert_id), None)
+        if idx is not None:
+            current_cat = _cat(certifications[idx])
+            if direction == 'up':
+                prev_idx = next((i for i in range(idx-1, -1, -1) if _cat(certifications[i]) == current_cat), None)
+                if prev_idx is not None:
+                    certifications[prev_idx], certifications[idx] = certifications[idx], certifications[prev_idx]
+            elif direction == 'down':
+                next_idx = next((i for i in range(idx+1, len(certifications)) if _cat(certifications[i]) == current_cat), None)
+                if next_idx is not None:
+                    certifications[next_idx], certifications[idx] = certifications[idx], certifications[next_idx]
+            
+            with open(CERTIFICATIONS_FILE, 'w') as f:
+                json.dump(certifications, f, indent=2)
+        return redirect(url_for('admin_certifications'))
+    except Exception as e:
+        return str(e), 500
+
+@app.route('/admin/certifications/categories', methods=['GET', 'POST'])
+@admin_required
+def manage_certification_categories():
+    try:
+        with open(CERTIFICATION_CATEGORIES_FILE, 'r') as f:
+            categories = json.load(f)
+    except:
+        categories = []
+        
+    if request.method == 'POST':
+        action = request.form.get('action')
+        if action == 'add':
+            name = request.form.get('name').strip()
+            if name and not any(c['name'].lower() == name.lower() for c in categories):
+                new_id = max([c['id'] for c in categories], default=0) + 1
+                categories.append({'id': new_id, 'name': name})
+        elif action == 'edit':
+            cat_id = int(request.form.get('id'))
+            name = request.form.get('name').strip()
+            for c in categories:
+                if c['id'] == cat_id:
+                    c['name'] = name
+        elif action == 'delete':
+            cat_id = int(request.form.get('id'))
+            categories = [c for c in categories if c['id'] != cat_id]
+        elif action == 'move':
+            cat_id = int(request.form.get('id'))
+            direction = request.form.get('direction')
+            idx = next((i for i, c in enumerate(categories) if c['id'] == cat_id), None)
+            if idx is not None:
+                if direction == 'up' and idx > 0:
+                    categories[idx-1], categories[idx] = categories[idx], categories[idx-1]
+                elif direction == 'down' and idx < len(categories) - 1:
+                    categories[idx+1], categories[idx] = categories[idx], categories[idx+1]
+        
+        # Normalize IDs
+        for i, c in enumerate(categories):
+            c['id'] = i + 1
+            
+        with open(CERTIFICATION_CATEGORIES_FILE, 'w') as f:
+            json.dump(categories, f, indent=2)
+        return redirect(url_for('manage_certification_categories'))
+        
+    return render_template('manage_certification_categories.html', categories=categories)
+
+# API routes for certifications
+@app.route('/api/certifications')
+def api_get_certifications():
+    try:
+        with open(CERTIFICATIONS_FILE, 'r') as f:
+            certifications = json.load(f)
+        return jsonify(certifications)
+    except:
+        return jsonify([])
+
+@app.route('/api/certification-categories')
+def api_get_certification_categories():
+    try:
+        with open(CERTIFICATION_CATEGORIES_FILE, 'r') as f:
+            categories = json.load(f)
+        return jsonify(categories)
+    except:
+        return jsonify([])
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')

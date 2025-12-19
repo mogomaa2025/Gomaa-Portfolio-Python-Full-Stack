@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certifications Management - Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a0b2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .admin-header {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .admin-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6, #4ade80);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        .nav-link:hover { background: rgba(255, 255, 255, 0.1); color: white; }
+        .admin-container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .page-title { font-size: 2rem; font-weight: 700; }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: white;
+        }
+        .btn-primary { background: linear-gradient(135deg, #3b82f6, #4ade80); }
+        .btn-secondary { background: rgba(255, 255, 255, 0.1); }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3); }
+        .cert-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+        .cert-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .cert-card:hover { transform: translateY(-4px); background: rgba(255, 255, 255, 0.08); }
+        .cert-issuer { color: #93c5fd; font-weight: 600; font-size: 0.9rem; }
+        .cert-name { font-size: 1.2rem; font-weight: 700; margin: 0.5rem 0; }
+        .cert-category {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            background: rgba(74, 222, 128, 0.1);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+            border-radius: 8px;
+            font-size: 0.75rem;
+            color: #86efac;
+        }
+        .cert-date { color: rgba(255,255,255,0.6); font-size: 0.85rem; margin-top: 0.5rem; }
+        .cert-actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
+        .action-link {
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .edit-link { background: rgba(59, 130, 246, 0.2); color: #93c5fd; }
+        .delete-btn { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: none; cursor: pointer; }
+        .move-btn { background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <h1 class="admin-title">Portfolio Admin</h1>
+        <nav class="admin-nav">
+            <a href="/admin" class="nav-link">Dashboard</a>
+            <a href="/" class="nav-link">View Site</a>
+            <a href="/admin/logout" class="nav-link">Logout</a>
+        </nav>
+    </header>
+    
+    <div class="admin-container">
+        <div class="page-header">
+            <div>
+                <h2 class="page-title">Certifications</h2>
+                <p style="color: rgba(255,255,255,0.6)">Manage your professional certifications</p>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <a href="/admin/certifications/categories" class="btn btn-secondary">Manage Categories</a>
+                <a href="/admin/certifications/add" class="btn btn-primary">+ Add Certification</a>
+            </div>
+        </div>
+        
+        {% for group in grouped_certifications %}
+            <div style="margin-bottom: 2.5rem;">
+                <h3 style="margin-bottom: 1rem; color: #e2e8f0; border-left: 4px solid #3b82f6; padding-left: 1rem;">
+                    {{ group.category }} <span style="opacity: 0.5; font-size: 0.9rem;">({{ group.certifications|length }})</span>
+                </h3>
+                <div class="cert-grid">
+                    {% for cert in group.certifications %}
+                    <div class="cert-card">
+                        <div class="cert-issuer">{{ cert.issuer }}</div>
+                        <div class="cert-name">{{ cert.name }}</div>
+                        <span class="cert-category">{{ cert.category }}</span>
+                        <div class="cert-date">Issued: {{ cert.date }}</div>
+                        
+                        <div class="cert-actions">
+                            <form action="/admin/certifications/move" method="POST" style="display:inline;">
+                                <input type="hidden" name="id" value="{{ cert.id }}">
+                                <input type="hidden" name="direction" value="up">
+                                <button type="submit" class="action-link move-btn" {% if loop.first %}disabled style="opacity:0.3"{% endif %}>↑</button>
+                            </form>
+                            <form action="/admin/certifications/move" method="POST" style="display:inline;">
+                                <input type="hidden" name="id" value="{{ cert.id }}">
+                                <input type="hidden" name="direction" value="down">
+                                <button type="submit" class="action-link move-btn" {% if loop.last %}disabled style="opacity:0.3"{% endif %}>↓</button>
+                            </form>
+                            <a href="/admin/certifications/edit/{{ cert.id }}" class="action-link edit-link">Edit</a>
+                            <button onclick="deleteCert({{ cert.id }}, '{{ cert.name }}')" class="action-link delete-btn">Delete</button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        function deleteCert(id, name) {
+            if (confirm(`Delete certification "${name}"?`)) {
+                fetch(`/admin/certifications/delete/${id}`, { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) location.reload();
+                    else alert('Error: ' + data.message);
+                });
+            }
+        }
+    </script>
+</body>
+</html>

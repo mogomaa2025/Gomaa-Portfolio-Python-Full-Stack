@@ -36,6 +36,8 @@ class PortfolioApp {
         this.loadConfig();
         this.loadAboutSection();
         this.loadContactSection();
+        this.loadCertificationCategoriesAndFilters();
+        this.loadCertifications();
         this.trackVisit('home');
     }
 
@@ -572,6 +574,94 @@ class PortfolioApp {
         .catch((error) => {
             console.error('Error tracking visit:', error);
         });
+    }
+
+    loadCertificationCategoriesAndFilters() {
+        Promise.all([
+            fetch('/api/certification-categories').then(res => res.json()),
+            fetch('/api/config').then(res => res.json()).catch(() => ({}))
+        ])
+        .then(([categories, config]) => {
+            const container = document.getElementById('cert-filter-buttons-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const firstCategory = (Array.isArray(categories) && categories.length > 0)
+                ? String(categories[0].name || '').toLowerCase()
+                : null;
+            
+            // Add "All" button
+            const allBtn = document.createElement('button');
+            allBtn.className = 'filter-btn active';
+            allBtn.dataset.filter = 'all';
+            allBtn.textContent = 'All';
+            allBtn.addEventListener('click', (e) => {
+                this.filterCertifications('all');
+                this.updateActiveCertFilter(e.target);
+            });
+            container.appendChild(allBtn);
+
+            categories.forEach(cat => {
+                const btn = document.createElement('button');
+                const filterVal = String(cat.name || '').toLowerCase();
+                btn.className = 'filter-btn';
+                btn.dataset.filter = filterVal;
+                btn.textContent = cat.name;
+                btn.addEventListener('click', (e) => {
+                    this.filterCertifications(filterVal);
+                    this.updateActiveCertFilter(e.target);
+                });
+                container.appendChild(btn);
+            });
+        });
+    }
+
+    loadCertifications() {
+        fetch('/api/certifications')
+            .then(res => res.json())
+            .then(certs => {
+                const grid = document.querySelector('.certifications-grid');
+                if (!grid) return;
+                grid.innerHTML = '';
+
+                certs.forEach(cert => {
+                    const card = document.createElement('div');
+                    card.className = 'cert-card visible';
+                    card.dataset.category = (cert.category || '').toLowerCase();
+                    
+                    card.innerHTML = `
+                        <div class="cert-content">
+                            <div class="cert-issuer">${cert.issuer}</div>
+                            <h3 class="cert-name">${cert.name}</h3>
+                            <div class="cert-meta">
+                                <span class="cert-date">${cert.date}</span>
+                                ${cert.url ? `<a href="${cert.url}" target="_blank" class="cert-link">View Certificate</a>` : ''}
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            });
+    }
+
+    filterCertifications(filter) {
+        const cards = document.querySelectorAll('.cert-card');
+        cards.forEach(card => {
+            const cat = (card.dataset.category || '').toLowerCase();
+            if (filter === 'all' || cat === filter) {
+                card.classList.remove('hidden');
+                card.classList.add('visible');
+            } else {
+                card.classList.remove('visible');
+                card.classList.add('hidden');
+            }
+        });
+    }
+
+    updateActiveCertFilter(activeButton) {
+        const container = document.getElementById('cert-filter-buttons-container');
+        container.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        activeButton.classList.add('active');
     }
 
     loadProjects() {
