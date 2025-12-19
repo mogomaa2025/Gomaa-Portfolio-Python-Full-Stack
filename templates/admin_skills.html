@@ -122,6 +122,15 @@
             margin-bottom: 1rem;
             display: block;
         }
+
+        .skill-icon svg {
+            width: 32px !important;
+            height: 32px !important;
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+            stroke-linejoin: round;
+        }
         
         .skill-name {
             font-size: 1.25rem;
@@ -280,23 +289,21 @@
                         <button type="button" class="move-up-btn" onclick="moveSkill(this, 'up')" title="Move Up">↑</button>
                         <button type="button" class="move-down-btn" onclick="moveSkill(this, 'down')" title="Move Down">↓</button>
                     </div>
-                    <span class="skill-icon" style="display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;">
+                    <div class="skill-icon" style="display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;">
                         {# --- SVG CODE SUPPORT --- #}
-                        {% if skill.icon and skill.icon.strip().startswith('<svg') %}
-                            <span style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;">
-                                {{ skill.icon | replace('<svg', '<svg style="width:32px;height:32px;max-width:100%;max-height:100%;display:block;stroke-linejoin:round;"', 1) | safe }}
-                            </span>
+                        {% if skill.icon and skill.icon.strip()[0:1] in ['<'] and skill.icon.strip()[1:4]|lower == 'svg' %}
+                            {{ skill.icon | safe }}
                         {% elif skill.icon and (skill.icon.lower().endswith('.svg') or skill.icon.lower().startswith('data:image/svg+xml')) %}
-                            <img src="{{ skill.icon }}" alt="icon" style="width:32px;height:32px;max-width:100%;max-height:100%;display:block;vertical-align:middle;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.08));stroke-linejoin:round;" onload="(function(img){fetch(img.src).then(r=>r.text()).then(svg=>{if(svg.startsWith('<svg')){var span=document.createElement('span');span.innerHTML=svg;var s=span.firstChild;s.style.width='32px';s.style.height='32px';s.style.maxWidth='100%';s.style.maxHeight='100%';s.style.display='block';s.style.verticalAlign='middle';s.setAttribute('stroke-linejoin','round');img.replaceWith(s);}})})(this)" />
+                            <img src="{{ skill.icon }}" alt="icon" style="width:32px;height:32px;max-width:100%;max-height:100%;display:block;vertical-align:middle;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.08));stroke-linejoin:round;" onload="(function(img){fetch(img.src).then(function(r){return r.text()}).then(function(svg){if(svg.indexOf('svg')===1){var span=document.createElement('span');span.innerHTML=svg;var s=span.firstChild;s.style.width='32px';s.style.height='32px';s.style.maxWidth='100%';s.style.maxHeight='100%';s.style.display='block';s.style.verticalAlign='middle';s.setAttribute('stroke-linejoin','round');img.replaceWith(s);}})})(this)" />
                         {% else %}
                             {{ render_icon(skill.icon.lower() if skill.icon else '') }}
                         {% endif %}
-                    </span>
+                    </div>
                     <h3 class="skill-name">{{ skill.name }}</h3>
                     <p class="skill-category">{{ skill.category }}</p>
                     <div class="skill-actions">
                         <a href="/admin/skills/edit/{{ skill.id }}" class="edit-btn">Edit</a>
-                        <button class="delete-btn" onclick="deleteSkill({{ skill.id }})">Delete</button>
+                        <button class="delete-btn" data-skill-id="{{ skill.id }}" onclick="deleteSkill(this.dataset.skillId)">Delete</button>
                     </div>
                 </div>
             {% endfor %}
