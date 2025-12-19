@@ -1,6 +1,7 @@
 // Portfolio Website JavaScript
 class PortfolioApp {
     constructor() {
+        window.portfolioApp = this;
         this.currentSection = 'home';
         // Projects filtering state
         this._initialProjectFilter = null;
@@ -38,6 +39,7 @@ class PortfolioApp {
         this.loadContactSection();
         this.loadCertificationCategoriesAndFilters();
         this.loadCertifications();
+        this.initImageModal();
         this.trackVisit('home');
     }
 
@@ -590,21 +592,10 @@ class PortfolioApp {
                 ? String(categories[0].name || '').toLowerCase()
                 : null;
             
-            // Add "All" button
-            const allBtn = document.createElement('button');
-            allBtn.className = 'filter-btn active';
-            allBtn.dataset.filter = 'all';
-            allBtn.textContent = 'All';
-            allBtn.addEventListener('click', (e) => {
-                this.filterCertifications('all');
-                this.updateActiveCertFilter(e.target);
-            });
-            container.appendChild(allBtn);
-
-            categories.forEach(cat => {
+            categories.forEach((cat, index) => {
                 const btn = document.createElement('button');
                 const filterVal = String(cat.name || '').toLowerCase();
-                btn.className = 'filter-btn';
+                btn.className = 'filter-btn' + (index === 0 ? ' active' : '');
                 btn.dataset.filter = filterVal;
                 btn.textContent = cat.name;
                 btn.addEventListener('click', (e) => {
@@ -613,6 +604,11 @@ class PortfolioApp {
                 });
                 container.appendChild(btn);
             });
+
+            // Default to first category if available
+            if (firstCategory) {
+                this.filterCertifications(firstCategory);
+            }
         });
     }
 
@@ -629,10 +625,17 @@ class PortfolioApp {
                     card.className = 'cert-card visible';
                     card.dataset.category = (cert.category || '').toLowerCase();
                     
+                    let imageUrl = cert.image || '';
+                    if (imageUrl.startsWith('img1:')) {
+                        imageUrl = imageUrl.replace('img1:', '').trim();
+                    }
+
                     card.innerHTML = `
+                        ${imageUrl ? `<div class="cert-image-container"><img src="${imageUrl}" alt="${cert.name}" class="cert-image" onclick="window.portfolioApp.openImageModal('${imageUrl}', '${cert.name}')"></div>` : ''}
                         <div class="cert-content">
                             <div class="cert-issuer">${cert.issuer}</div>
                             <h3 class="cert-name">${cert.name}</h3>
+                            ${cert.certification_id ? `<div class="cert-id-tag">ID: ${cert.certification_id}</div>` : ''}
                             <div class="cert-meta">
                                 <span class="cert-date">${cert.date}</span>
                                 ${cert.url ? `<a href="${cert.url}" target="_blank" class="cert-link">View Certificate</a>` : ''}
@@ -642,6 +645,50 @@ class PortfolioApp {
                     grid.appendChild(card);
                 });
             });
+    }
+
+    initImageModal() {
+        // Add modal HTML if not present
+        if (!document.getElementById('cert-image-modal')) {
+            const modal = document.createElement('div');
+            modal.id = 'cert-image-modal';
+            modal.className = 'image-modal';
+            modal.innerHTML = `
+                <div class="modal-overlay" onclick="window.portfolioApp.closeImageModal()"></div>
+                <div class="modal-content">
+                    <span class="modal-close" onclick="window.portfolioApp.closeImageModal()">&times;</span>
+                    <img id="cert-modal-img" src="" alt="">
+                    <h4 id="cert-modal-caption"></h4>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Handle Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') this.closeImageModal();
+        });
+    }
+
+    openImageModal(src, caption) {
+        const modal = document.getElementById('cert-image-modal');
+        const img = document.getElementById('cert-modal-img');
+        const cap = document.getElementById('cert-modal-caption');
+        
+        if (modal && img && cap) {
+            img.src = src;
+            cap.textContent = caption;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Disable scroll
+        }
+    }
+
+    closeImageModal() {
+        const modal = document.getElementById('cert-image-modal');
+        if (modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = ''; // Re-enable scroll
+        }
     }
 
     filterCertifications(filter) {

@@ -1288,6 +1288,7 @@ def add_certification():
                 "name": data.get('name', ''),
                 "issuer": data.get('issuer', ''),
                 "category": data.get('category', ''),
+                "certification_id": data.get('certification_id', ''),
                 "date": data.get('date', ''),
                 "url": data.get('url', ''),
                 "image": data.get('image', '')
@@ -1327,6 +1328,7 @@ def edit_certification(cert_id):
             "name": data.get('name', ''),
             "issuer": data.get('issuer', ''),
             "category": data.get('category', ''),
+            "certification_id": data.get('certification_id', ''),
             "date": data.get('date', ''),
             "url": data.get('url', ''),
             "image": data.get('image', '')
