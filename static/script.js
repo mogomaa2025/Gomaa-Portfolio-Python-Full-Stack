@@ -2,6 +2,11 @@
 class PortfolioApp {
     constructor() {
         this.currentSection = 'home';
+        // Projects filtering state
+        this._initialProjectFilter = null;
+        this._initialProjectFilterApplied = false;
+        this._projectsLoaded = false;
+        this._categoriesLoaded = false;
         this.currentTheme = 'dark';
         this.isTerminalMode = false;
         this.typingTexts = [
@@ -33,36 +38,59 @@ class PortfolioApp {
     }
 
     loadCategoriesAndRenderFilters() {
-        fetch('/api/categories')
-            .then(res => res.json())
-            .then(categories => {
+        Promise.all([
+            fetch('/api/categories').then(res => res.json()),
+            fetch('/api/config').then(res => res.json()).catch(() => ({}))
+        ])
+            .then(([categories, config]) => {
                 // Render categories in the exact order returned by /api/categories
                 // (which reflects the saved order in data/categories.json).
                 const container = document.getElementById('filter-buttons-container');
                 if (!container) return;
                 container.innerHTML = '';
-                // Always add 'All' button
-                const allBtn = document.createElement('button');
-                allBtn.className = 'filter-btn active';
-                allBtn.dataset.filter = 'all';
-                allBtn.textContent = 'All';
-                allBtn.addEventListener('click', (e) => {
-                    this.filterProjects('all');
-                    this.updateActiveFilter(e.target);
-                });
-                container.appendChild(allBtn);
+
+                const showAll = (config && typeof config.show_all_category_filter !== 'undefined')
+                    ? Boolean(config.show_all_category_filter)
+                    : false;
+
+                // Decide which filter should be applied by default on page load.
+                // Requirement: default should be the first category tab (not "all").
+                const firstCategory = (Array.isArray(categories) && categories.length > 0)
+                    ? String(categories[0].name || '').toLowerCase()
+                    : null;
+                this._initialProjectFilter = firstCategory;
+
+                if (showAll) {
+                    const allBtn = document.createElement('button');
+                    // Not active by default (we default to first category)
+                    allBtn.className = 'filter-btn';
+                    allBtn.dataset.filter = 'all';
+                    allBtn.textContent = 'All';
+                    allBtn.addEventListener('click', (e) => {
+                        this.filterProjects('all');
+                        this.updateActiveFilter(e.target);
+                    });
+                    container.appendChild(allBtn);
+                }
+
                 // Add category buttons
-                categories.forEach(cat => {
+                categories.forEach((cat, idx) => {
                     const btn = document.createElement('button');
-                    btn.className = 'filter-btn';
-                    btn.dataset.filter = cat.name.toLowerCase();
+                    const filterVal = String(cat.name || '').toLowerCase();
+                    btn.className = `filter-btn${idx === 0 ? ' active' : ''}`;
+                    btn.dataset.filter = filterVal;
                     btn.textContent = cat.name;
                     btn.addEventListener('click', (e) => {
-                        this.filterProjects(cat.name.toLowerCase());
+                        this.filterProjects(filterVal);
                         this.updateActiveFilter(e.target);
                     });
                     container.appendChild(btn);
                 });
+
+                this._categoriesLoaded = true;
+
+                // If projects already loaded, apply the default filter now.
+                this.applyInitialProjectsFilterIfReady();
             });
     }
 
@@ -332,6 +360,44 @@ class PortfolioApp {
         }
     }
 
+    applyInitialProjectsFilterIfReady() {
+        if (this._initialProjectFilterApplied) return;
+        if (!this._projectsLoaded) return;
+        if (!this._categoriesLoaded) return;
+
+        const projectCards = Array.from(document.querySelectorAll('.project-card'));
+        const hasProjectsForFilter = (filter) => {
+            const f = String(filter || '').toLowerCase();
+            return projectCards.some(c => (c.dataset.category || '').toLowerCase() === f);
+        };
+
+        // Prefer the first category, but if it has no projects, fall back to the first category that does.
+        let desiredFilter = this._initialProjectFilter;
+        if (!desiredFilter || !hasProjectsForFilter(desiredFilter)) {
+            const categoryButtons = Array.from(document.querySelectorAll('#filter-buttons-container .filter-btn'))
+                .filter(b => (b.dataset.filter || '').toLowerCase() !== 'all');
+
+            const firstWithProjects = categoryButtons
+                .map(b => (b.dataset.filter || '').toLowerCase())
+                .find(f => hasProjectsForFilter(f));
+
+            desiredFilter = firstWithProjects || null;
+        }
+
+        if (desiredFilter) {
+            this.filterProjects(desiredFilter);
+            const btn = document.querySelector(`.filter-btn[data-filter="${CSS.escape(desiredFilter)}"]`);
+            if (btn) this.updateActiveFilter(btn);
+        } else {
+            // No categories have projects; if an "All" button exists, show all (which will still show none).
+            this.filterProjects('all');
+            const allBtn = document.querySelector('.filter-btn[data-filter="all"]');
+            if (allBtn) this.updateActiveFilter(allBtn);
+        }
+
+        this._initialProjectFilterApplied = true;
+    }
+
     filterProjects(filter) {
         const projectCards = document.querySelectorAll('.project-card');
         
@@ -443,7 +509,8 @@ class PortfolioApp {
                 void categoriesSet;
                 projects.forEach(project => {
                     const projectCard = document.createElement('div');
-                    projectCard.className = `project-card visible`;
+                    // Start hidden to prevent showing "all" categories before the initial filter is applied.
+                    projectCard.className = 'project-card hidden';
                     projectCard.dataset.category = project.category;
 
                     let mockupContentHTML = '';
@@ -585,6 +652,9 @@ class PortfolioApp {
                 });
                 // Filter buttons are rendered from /api/categories in loadCategoriesAndRenderFilters().
                 // (Do not overwrite them here.)
+
+                this._projectsLoaded = true;
+                this.applyInitialProjectsFilterIfReady();
             });
     }
 

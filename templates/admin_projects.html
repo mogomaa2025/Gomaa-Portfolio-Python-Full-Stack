@@ -173,6 +173,28 @@
         .project-actions {
             display: flex;
             gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .move-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 0.4rem 0.65rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .move-btn:hover {
+            background: rgba(100, 255, 218, 0.15);
+            border-color: rgba(100, 255, 218, 0.35);
+        }
+
+        .move-btn[disabled] {
+            opacity: 0.35;
+            cursor: not-allowed;
         }
         
         .action-btn {
@@ -284,6 +306,16 @@
                     {% endif %}
                 </div>
                 <div class="project-actions">
+                    <form method="POST" action="/admin/projects/move" style="display:inline;">
+                        <input type="hidden" name="id" value="{{ project.id }}">
+                        <input type="hidden" name="direction" value="up">
+                        <button type="submit" class="move-btn" {% if not projects[:loop.index0]|selectattr('category','equalto',project.category)|list %}disabled{% endif %} title="Move up">↑</button>
+                    </form>
+                    <form method="POST" action="/admin/projects/move" style="display:inline;">
+                        <input type="hidden" name="id" value="{{ project.id }}">
+                        <input type="hidden" name="direction" value="down">
+                        <button type="submit" class="move-btn" {% if not projects[loop.index:]|selectattr('category','equalto',project.category)|list %}disabled{% endif %} title="Move down">↓</button>
+                    </form>
                     <a href="/admin/projects/edit/{{ project.id }}" class="action-btn edit-btn">Edit</a>
                     <button onclick="deleteProject({{ project.id }}, '{{ project.title }}')" class="action-btn delete-btn">Delete</button>
                 </div>

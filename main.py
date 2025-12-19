@@ -129,7 +129,8 @@ def init_data_files():
             "profile_image": "profile.jpg",
             "about_text": "Welcome to my portfolio! This is a brief introduction about myself.",
             "contact_text": "Feel free to reach out to me at myemail@example.com",
-            "project_sort_by": "date"
+            "project_sort_by": "date",
+            "show_all_category_filter": False
         }
         with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
             json.dump(default_config, f, indent=2)
@@ -213,6 +214,10 @@ def admin_home():
                 config['profile_image_url'] = profile_image_url
                 config['profile_image'] = '' # Clear file if URL is provided
         
+        # Category filter UI option
+        # Checkbox sends value only when checked
+        config['show_all_category_filter'] = bool(request.form.get('show_all_category_filter'))
+
         # Handle social links
         social_icons = request.form.getlist('social_link_icon')
         social_urls = request.form.getlist('social_link_url')
@@ -575,15 +580,71 @@ def delete_project(project_id):
             projects = json.load(f)
     except:
         projects = []
-    
+
     # Find and remove project
     projects = [p for p in projects if p.get('id') != project_id]
-    
+
+    # Re-index IDs to keep ordering consistent when sorting by id
+    for idx, p in enumerate(projects):
+        p['id'] = idx + 1
+
     # Save to file
     with open(PROJECTS_FILE, 'w') as f:
         json.dump(projects, f, indent=2)
-    
+
     return jsonify({"success": True, "message": "Project deleted successfully"})
+
+
+@app.route('/admin/projects/move', methods=['POST'])
+@admin_required
+def move_project():
+    """Move a project up/down by swapping its position in projects.json."""
+    try:
+        with open(PROJECTS_FILE, 'r') as f:
+            projects = json.load(f)
+    except Exception:
+        projects = []
+
+    try:
+        project_id = int(request.form.get('id'))
+    except (TypeError, ValueError):
+        project_id = None
+
+    direction = (request.form.get('direction') or '').strip().lower()
+
+    def _pid(value):
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return None
+
+    if project_id is not None:
+        index = next((i for i, p in enumerate(projects) if _pid(p.get('id')) == project_id), None)
+        if index is not None:
+            current_category = (projects[index].get('category') or '').strip().lower()
+
+            def _cat(p):
+                return (p.get('category') or '').strip().lower()
+
+            if direction == 'up':
+                # swap with previous project of the SAME category
+                prev_index = next((i for i in range(index - 1, -1, -1) if _cat(projects[i]) == current_category), None)
+                if prev_index is not None:
+                    projects[prev_index], projects[index] = projects[index], projects[prev_index]
+            elif direction == 'down':
+                # swap with next project of the SAME category
+                next_index = next((i for i in range(index + 1, len(projects)) if _cat(projects[i]) == current_category), None)
+                if next_index is not None:
+                    projects[next_index], projects[index] = projects[index], projects[next_index]
+
+    # Normalize IDs to reflect the visual order (1..n)
+    for idx, p in enumerate(projects):
+        p['id'] = idx + 1
+
+    with open(PROJECTS_FILE, 'w') as f:
+        json.dump(projects, f, indent=2)
+
+    return redirect(url_for('admin_projects'), code=303)
 
 @app.route('/admin/projects/categories')
 @admin_required
