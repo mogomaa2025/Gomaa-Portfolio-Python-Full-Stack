@@ -27,6 +27,7 @@ class PortfolioApp {
     init() {
         this.setupEventListeners();
         this.setupGlobalYouTubeHandler(); // Global event delegation for YouTube placeholders
+        // Note: Video fullscreen in portrait mode is handled via modal in index.html
         this.startTypingAnimation();
         this.showSection('home');
         this.loadCategoriesAndRenderFilters(); // NEW: dynamically render filter buttons
@@ -37,6 +38,8 @@ class PortfolioApp {
         this.loadContactSection();
         this.trackVisit('home');
     }
+
+    // Note: Video fullscreen in portrait mode is handled via modal in index.html
 
     // Global event delegation for YouTube placeholders - works for any dynamically created placeholders
     setupGlobalYouTubeHandler() {
@@ -644,9 +647,12 @@ class PortfolioApp {
                             // Lazy placeholder (saves space and avoids loading iframe until user clicks play)
                             const thumb = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
                             return `
-                              <div class="yt-placeholder" data-youtube-id="${videoId}" role="button" aria-label="Play YouTube video">
-                                <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb">
-                                <div class="yt-play-btn">▶</div>
+                              <div class="video-wrapper" data-youtube-id="${videoId}">
+                                <div class="yt-placeholder" data-youtube-id="${videoId}" role="button" aria-label="Play YouTube video">
+                                  <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb">
+                                  <div class="yt-play-btn">▶</div>
+                                </div>
+                                <button type="button" class="video-fullscreen-btn" aria-label="Fullscreen">⛶</button>
                               </div>
                             `;
                         };
@@ -668,9 +674,12 @@ class PortfolioApp {
                                     if (videoId) {
                                         const thumb = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
                                         return `
-                                          <div class="yt-placeholder" data-youtube-id="${videoId}" role="button" aria-label="Play YouTube video">
-                                            <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb">
-                                            <div class="yt-play-btn">▶</div>
+                                          <div class="video-wrapper" data-youtube-id="${videoId}">
+                                            <div class="yt-placeholder" data-youtube-id="${videoId}" role="button" aria-label="Play YouTube video">
+                                              <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb">
+                                              <div class="yt-play-btn">▶</div>
+                                            </div>
+                                            <button type="button" class="video-fullscreen-btn" aria-label="Fullscreen">⛶</button>
                                           </div>
                                         `;
                                     }
@@ -678,7 +687,10 @@ class PortfolioApp {
                                 return `<p>${item.src}</p>`;
                             }
                             if (item.type === 'vd') {
-                                return `<video src="${item.src}" class="mockup-media" controls playsinline></video>`;
+                                return `<div class="video-wrapper" data-video-src="${item.src}">
+                                    <video src="${item.src}" class="mockup-media" controls playsinline></video>
+                                    <button type="button" class="video-fullscreen-btn" aria-label="Fullscreen">⛶</button>
+                                </div>`;
                             }
                             return '';
                         };
@@ -742,7 +754,10 @@ class PortfolioApp {
                         // Handle local videos
                         else if (content.startsWith('video/')) {
                             const videoPath = content.replace(/^video\/video\//, 'video/');
-                            mockupContentHTML = `<video src="/static/${videoPath}" class="mockup-media" controls playsinline></video>`;
+                            mockupContentHTML = `<div class="video-wrapper" data-video-src="/static/${videoPath}">
+                                <video src="/static/${videoPath}" class="mockup-media" controls playsinline></video>
+                                <button type="button" class="video-fullscreen-btn" aria-label="Fullscreen">⛶</button>
+                            </div>`;
                         }
                         // Handle YouTube videos (legacy: raw url)
                         else if (content.includes('youtube.com/watch') || content.includes('youtu.be/')) {
