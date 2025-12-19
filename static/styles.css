@@ -356,6 +356,11 @@ body::before {
     padding: 2rem;
 }
 
+/* Projects section needs more width for media display */
+#projects-section .section-content {
+    max-width: 1000px;
+}
+
 .section-title {
     font-size: clamp(2.5rem, 5vw, 4rem);
     font-weight: 700;
@@ -583,13 +588,13 @@ body::before {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    width: 42px;
-    height: 42px;
+    width: 32px;
+    height: 32px;
     border-radius: 999px;
     border: 1px solid rgba(255, 255, 255, 0.25);
     background: rgba(0, 0, 0, 0.45);
     color: rgba(255, 255, 255, 0.95);
-    font-size: 20px;
+    font-size: 14px;
     cursor: pointer;
     z-index: 5;
     display: flex;
@@ -602,34 +607,34 @@ body::before {
     background: rgba(0, 0, 0, 0.6);
 }
 
-.mockup-carousel-btn-prev { left: 10px; }
-.mockup-carousel-btn-next { right: 10px; }
+.mockup-carousel-btn-prev { left: 8px; }
+.mockup-carousel-btn-next { right: 8px; }
 
 .mockup-carousel-counter {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 8px;
+    right: 8px;
     z-index: 5;
-    padding: 4px 10px;
+    padding: 3px 8px;
     border-radius: 999px;
     background: rgba(0, 0, 0, 0.45);
     border: 1px solid rgba(255, 255, 255, 0.2);
     color: rgba(255, 255, 255, 0.9);
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     backdrop-filter: blur(4px);
 }
 
 @media (max-width: 480px) {
     .mockup-carousel-btn {
-        width: 48px;
-        height: 48px;
-        font-size: 22px;
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
     }
 }
 
-.mockup-content img {
+.mockup-content img:not(.yt-thumb) {
     max-width: 100%;
-    max-height: 320px;
+    max-height: 500px;
     margin: 0 auto;
     display: block;
     object-fit: contain;
@@ -655,12 +660,16 @@ body::before {
 .yt-placeholder {
     width: 100%;
     max-width: 100%;
+    min-width: 100%;
     aspect-ratio: 16 / 9;
     border-radius: 6px;
     overflow: hidden;
     position: relative;
     cursor: pointer;
     background: rgba(0,0,0,0.25);
+    /* Ensure no height constraints */
+    max-height: none !important;
+    height: auto;
 }
 
 .yt-placeholder .yt-thumb {
@@ -668,6 +677,9 @@ body::before {
     height: 100%;
     display: block;
     object-fit: cover;
+    /* Override any inherited max-height from .mockup-content img */
+    max-height: none !important;
+    max-width: none !important;
 }
 
 .yt-placeholder .yt-play-btn {
@@ -700,9 +712,34 @@ body::before {
 
 .mockup-media {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    max-width: 100%;
     border-radius: 6px;
+}
+
+/* For images in mockup (excluding YouTube thumbnails) */
+img.mockup-media:not(.yt-thumb) {
+    height: auto;
+    max-height: 500px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+}
+
+/* For videos in mockup */
+video.mockup-media {
+    height: auto;
+    display: block;
+}
+
+/* For YouTube iframes */
+iframe.mockup-media,
+iframe.yt-iframe {
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: 16 / 9;
+    height: auto;
+    display: block;
+    border: none;
 }
 
 .terminal-mockup {
@@ -721,9 +758,7 @@ body::before {
     margin: 0.25rem 0;
 }
 
-.project-info {
-    /* This class is now a simple container */
-}
+
 
 .project-title {
     font-size: 1.5rem;
@@ -1276,6 +1311,52 @@ button.category-tab-btn.active {
     .nav-item span {
         font-size: 0.7rem;
     }
+
+    /* Ensure YouTube videos and iframes are properly sized on tablets/mobile */
+    .yt-placeholder,
+    .mockup-content iframe,
+    iframe.yt-iframe,
+    iframe.mockup-media,
+    .mockup-content video,
+    video.mockup-media {
+        width: 100%;
+        min-width: 100%;
+        max-width: 100%;
+    }
+
+    .yt-placeholder,
+    .mockup-content iframe,
+    iframe.yt-iframe,
+    iframe.mockup-media {
+        aspect-ratio: 16 / 9;
+        height: auto;
+    }
+
+    .project-mockup {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .mockup-content {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Make project section wider on tablets */
+    #projects-section .section-content {
+        max-width: 100%;
+        padding: 1.5rem 1rem;
+    }
+
+    /* Reduce project card margin */
+    .project-card {
+        margin: 0;
+    }
+
+    /* Reduce project preview padding */
+    .project-preview {
+        padding: 1rem;
+    }
 }
 
 @media (max-width: 480px) {
@@ -1305,7 +1386,7 @@ button.category-tab-btn.active {
     }
     
     .project-card {
-        margin: 0 0.5rem;
+        margin: 0;
     }
     
     .social-links {
@@ -1315,5 +1396,49 @@ button.category-tab-btn.active {
     .social-link {
         width: 40px;
         height: 40px;
+    }
+
+    /* Make section content use full width on mobile for projects */
+    #projects-section .section-content {
+        max-width: 100%;
+        padding: 1rem 0.5rem;
+    }
+
+    /* Ensure YouTube videos are properly sized on mobile */
+    .yt-placeholder,
+    .mockup-content iframe,
+    iframe.yt-iframe,
+    iframe.mockup-media {
+        width: 100% !important;
+        min-width: 100% !important;
+        aspect-ratio: 16 / 9 !important;
+        height: auto !important;
+    }
+
+    .mockup-content video,
+    video.mockup-media {
+        width: 100% !important;
+        min-width: 100% !important;
+        height: auto !important;
+    }
+
+    .mockup-content {
+        padding: 0.25rem;
+    }
+
+    .project-mockup {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    /* Make mockup content images larger on mobile */
+    .mockup-content img:not(.yt-thumb) {
+        max-height: none !important;
+        width: 100%;
+    }
+
+    /* Reduce project preview padding on mobile */
+    .project-preview {
+        padding: 0.75rem;
     }
 }

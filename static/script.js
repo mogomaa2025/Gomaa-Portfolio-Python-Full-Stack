@@ -26,6 +26,7 @@ class PortfolioApp {
 
     init() {
         this.setupEventListeners();
+        this.setupGlobalYouTubeHandler(); // Global event delegation for YouTube placeholders
         this.startTypingAnimation();
         this.showSection('home');
         this.loadCategoriesAndRenderFilters(); // NEW: dynamically render filter buttons
@@ -35,6 +36,52 @@ class PortfolioApp {
         this.loadAboutSection();
         this.loadContactSection();
         this.trackVisit('home');
+    }
+
+    // Global event delegation for YouTube placeholders - works for any dynamically created placeholders
+    setupGlobalYouTubeHandler() {
+        document.addEventListener('click', (e) => {
+            // Find if click was on or inside a YouTube placeholder
+            const placeholder = e.target.closest('.yt-placeholder');
+            if (!placeholder) return;
+            
+            // Only handle placeholders inside project cards
+            if (!placeholder.closest('.project-card')) return;
+            
+            const videoId = placeholder.dataset.youtubeId;
+            if (!videoId) return;
+            
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Stop all other media first
+            // Pause all videos
+            document.querySelectorAll('.project-card video').forEach(v => {
+                try { v.pause(); } catch (err) {}
+                try { v.currentTime = 0; } catch (err) {}
+            });
+            
+            // Stop other YouTube iframes (convert back to placeholders)
+            document.querySelectorAll('.project-card iframe.yt-iframe, .project-card iframe[src*="youtube.com/embed/"]').forEach(fr => {
+                try {
+                    const src = fr.getAttribute('src') || '';
+                    const m = src.match(/embed\/([^?&/]+)/);
+                    const otherId = m ? m[1] : null;
+                    if (otherId) {
+                        const thumb = `https://img.youtube.com/vi/${otherId}/hqdefault.jpg`;
+                        fr.outerHTML = `
+                          <div class="yt-placeholder" data-youtube-id="${otherId}" role="button" aria-label="Play YouTube video">
+                            <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb">
+                            <div class="yt-play-btn">▶</div>
+                          </div>
+                        `;
+                    }
+                } catch (err) {}
+            });
+            
+            // Replace clicked placeholder with iframe
+            placeholder.outerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen class="mockup-media yt-iframe"></iframe>`;
+        });
     }
 
     loadCategoriesAndRenderFilters() {
@@ -401,6 +448,9 @@ class PortfolioApp {
     filterProjects(filter) {
         const projectCards = document.querySelectorAll('.project-card');
         
+        // Stop all playing media before switching categories
+        this.stopAllMedia();
+        
         projectCards.forEach(card => {
             const category = (card.dataset.category || '').toLowerCase();
             const shouldShow = filter === 'all' || category === filter.toLowerCase();
@@ -414,6 +464,42 @@ class PortfolioApp {
             }
         });
     }
+
+    // Stop all videos and YouTube iframes across all project cards
+    stopAllMedia(excludeElement = null) {
+        // Pause and reset all HTML5 videos
+        document.querySelectorAll('.project-card video').forEach(v => {
+            if (v === excludeElement) return;
+            try { v.pause(); } catch (e) {}
+            try { v.currentTime = 0; } catch (e) {}
+        });
+
+        // Stop YouTube iframes by replacing them back with placeholders
+        document.querySelectorAll('.project-card iframe.yt-iframe, .project-card iframe[src*="youtube.com/embed/"]').forEach(fr => {
+            if (fr === excludeElement) return;
+            try {
+                const src = fr.getAttribute('src') || '';
+                const m = src.match(/embed\/([^?&/]+)/);
+                const videoId = m ? m[1] : null;
+                if (videoId) {
+                    const thumb = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                    fr.outerHTML = `
+                      <div class="yt-placeholder" data-youtube-id="${videoId}" role="button" aria-label="Play YouTube video">
+                        <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb">
+                        <div class="yt-play-btn">▶</div>
+                      </div>
+                    `;
+                } else {
+                    // fallback: blank it
+                    fr.setAttribute('src', '');
+                }
+            } catch (e) {}
+        });
+        // Note: Global event delegation handles new placeholder clicks automatically
+    }
+
+    // Note: YouTube placeholder click handling is done via global event delegation in setupGlobalYouTubeHandler()
+
 
     updateActiveFilter(activeButton) {
         const filterButtons = document.querySelectorAll('.filter-btn');
@@ -719,14 +805,8 @@ class PortfolioApp {
                     `;
                     projectsGrid.appendChild(projectCard);
 
-                    // Activate lazy YouTube placeholders (replace with iframe on click)
-                    projectCard.querySelectorAll('.yt-placeholder').forEach(ph => {
-                        ph.addEventListener('click', () => {
-                            const videoId = ph.dataset.youtubeId;
-                            if (!videoId) return;
-                            ph.outerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen class="mockup-media yt-iframe"></iframe>`;
-                        });
-                    });
+                    // Note: YouTube placeholder click handling is done via global event delegation
+                    // in setupGlobalYouTubeHandler(), so no manual binding is needed here
 
                     // Mixed-media carousel controls
                     const carousel = projectCard.querySelector('.mockup-carousel');
@@ -795,21 +875,8 @@ class PortfolioApp {
                             });
                         };
 
-                        const activateYouTubePlaceholders = (root) => {
-                            (root || carousel).querySelectorAll('.yt-placeholder').forEach(ph => {
-                                // Prevent double-binding
-                                if (ph.dataset.bound === '1') return;
-                                ph.dataset.bound = '1';
-                                ph.addEventListener('click', () => {
-                                    // When starting a video, stop others in the same project card
-                                    stopMediaInCard(projectCard);
-
-                                    const videoId = ph.dataset.youtubeId;
-                                    if (!videoId) return;
-                                    ph.outerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen class="mockup-media yt-iframe"></iframe>`;
-                                });
-                            });
-                        };
+                        // Note: YouTube placeholder click handling is done via global event delegation
+                        // So we don't need to manually bind handlers here
 
                         const setIndex = (newIndex) => {
                             if (!items.length) return;
@@ -821,8 +888,7 @@ class PortfolioApp {
                             carousel.dataset.index = String(idx);
                             if (itemContainer) itemContainer.innerHTML = renderCarouselItem(items[idx]);
                             if (counter) counter.textContent = `${idx + 1} / ${items.length}`;
-                            // Newly injected HTML needs handlers
-                            activateYouTubePlaceholders(carousel);
+                            // Global event delegation handles YouTube placeholder clicks automatically
                         };
 
                         // Event delegation so controls keep working after innerHTML changes
@@ -835,12 +901,38 @@ class PortfolioApp {
                             setIndex(dir === 'next' ? cur + 1 : cur - 1);
                         });
 
-                        // Initial bind
-                        activateYouTubePlaceholders(carousel);
+                        // No initial bind needed - global event delegation handles it
                     }
 
                     const video = projectCard.querySelector('video');
                     if (video) {
+                        // Stop all other videos when this video starts playing
+                        video.addEventListener('play', () => {
+                            // Pause all other videos
+                            document.querySelectorAll('.project-card video').forEach(v => {
+                                if (v !== video) {
+                                    try { v.pause(); } catch (e) {}
+                                }
+                            });
+                            // Also stop any YouTube iframes
+                            document.querySelectorAll('.project-card iframe.yt-iframe, .project-card iframe[src*="youtube.com/embed/"]').forEach(fr => {
+                                try {
+                                    const src = fr.getAttribute('src') || '';
+                                    const m = src.match(/embed\/([^?&/]+)/);
+                                    const videoId = m ? m[1] : null;
+                                    if (videoId) {
+                                        const thumb = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                                        fr.outerHTML = `
+                                          <div class="yt-placeholder" data-youtube-id="${videoId}" role="button" aria-label="Play YouTube video">
+                                            <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb">
+                                            <div class="yt-play-btn">▶</div>
+                                          </div>
+                                        `;
+                                    }
+                                } catch (e) {}
+                            });
+                        });
+                        
                         video.addEventListener('dblclick', () => {
                             if (video.requestFullscreen) {
                                 video.requestFullscreen();
