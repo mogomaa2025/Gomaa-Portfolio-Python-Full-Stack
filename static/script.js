@@ -919,6 +919,7 @@ class PortfolioApp {
                             // img1:URL img2:URL
                             // yt1:YOUTUBE_URL
                             // vd1:VIDEO_URL
+                            // em1:EMBED_URL (for iframe embeds like Jumpshare, Loom, etc.)
                             // Ordering is by the number suffix (1,2,3...)
                             const tokens = raw.split(/\s+/).filter(Boolean);
                             const items = [];
@@ -929,7 +930,7 @@ class PortfolioApp {
                                 const val = t.slice(idx + 1).trim();
                                 if (!val) continue;
 
-                                const m = key.match(/^(img|yt|vd)(\d+)$/);
+                                const m = key.match(/^(img|yt|vd|em)(\d+)$/);
                                 if (!m) continue;
                                 items.push({ type: m[1], order: parseInt(m[2], 10), src: val });
                             }
@@ -998,6 +999,12 @@ class PortfolioApp {
                                 return `<div class="video-wrapper" data-video-src="${item.src}">
                                     <video src="${item.src}" class="mockup-media" controls playsinline></video>
                                     <button type="button" class="video-fullscreen-btn" aria-label="Fullscreen">⛶</button>
+                                </div>`;
+                            }
+                            if (item.type === 'em') {
+                                // Embed iframe (Jumpshare, Loom, etc.)
+                                return `<div class="embed-wrapper">
+                                    <iframe src="${item.src}" class="mockup-media embed-iframe" frameborder="0" allowfullscreen webkitallowfullscreen mozallowfullscreen allow="autoplay; fullscreen"></iframe>
                                 </div>`;
                             }
                             return '';
