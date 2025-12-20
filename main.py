@@ -1253,26 +1253,39 @@ def track_visit():
     except (FileNotFoundError, json.JSONDecodeError):
         visitors = []
 
-    # Check if this IP has already visited this page (tab) - without a visit_id
-    if not visit_id:
-        if any(v.get('ip') == ip and v.get('path') == page for v in visitors):
-            return jsonify({'status': 'exists', 'message': 'Visit already recorded'})
-    else:
-        # If visit_id is provided, check if THAT specific visit is already recorded
-        if any(v.get('visit_id') == visit_id for v in visitors):
-            return jsonify({'status': 'exists', 'message': 'Visit ID already recorded'})
-
+    # Find existing visit from same IP on same page (consolidate visits)
+    existing_visit = None
+    for v in visitors:
+        if v.get('ip') == ip and v.get('path') == page:
+            existing_visit = v
+            break
+    
+    if existing_visit:
+        # Update existing record: increment visit count and update timestamp
+        existing_visit['visit_count'] = existing_visit.get('visit_count', 1) + 1
+        existing_visit['last_visit'] = datetime.now().isoformat()
+        existing_visit['visit_id'] = visit_id  # Update to latest visit_id for duration tracking
+        # Total duration is accumulated via update_visit_duration
+        
+        with open(VISITORS_FILE, 'w') as f:
+            json.dump(visitors, f, indent=2)
+        
+        return jsonify({'status': 'updated', 'message': 'Visit count updated', 'visit_count': existing_visit['visit_count']})
+    
+    # New visitor - create new record
     visitor_data = {
         'ip': ip,
         'visit_id': visit_id,
         'timestamp': datetime.now().isoformat(),
+        'last_visit': datetime.now().isoformat(),
         'path': page,
         'method': request.method,
         'user_agent': request.headers.get('User-Agent', ''),
         'referrer': request.referrer or '',
         'country': None,
         'city': None,
-        'duration': 0
+        'duration': 0,
+        'visit_count': 1
     }
     visitors.append(visitor_data)
     
@@ -1287,7 +1300,16 @@ def track_visit():
 
 @app.route('/api/update_visit_duration', methods=['POST'])
 def update_visit_duration():
-    data = request.json
+    # Handle both application/json and text/plain (from navigator.sendBeacon)
+    try:
+        if request.is_json:
+            data = request.json
+        else:
+            # sendBeacon sends as text/plain, so parse manually
+            data = json.loads(request.get_data(as_text=True))
+    except:
+        return jsonify({'status': 'error', 'message': 'Invalid data'}), 400
+    
     visit_id = data.get('visit_id')
     duration = data.get('duration', 0)
 
@@ -1300,11 +1322,13 @@ def update_visit_duration():
     except:
         return jsonify({'status': 'error', 'message': 'Could not load visitors'}), 500
 
-    # Find the visit and update duration
+    # Find the visit and accumulate duration (add to existing duration)
     updated = False
     for v in visitors:
         if v.get('visit_id') == visit_id:
-            v['duration'] = duration
+            # Accumulate duration instead of replacing
+            current_duration = v.get('duration', 0)
+            v['duration'] = current_duration + duration
             updated = True
             break
     

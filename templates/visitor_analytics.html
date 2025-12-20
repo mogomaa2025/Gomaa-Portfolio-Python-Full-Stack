@@ -238,7 +238,7 @@
         
         .visitor-info {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr 100px;
+            grid-template-columns: 1fr 1fr 1fr 80px 80px 100px;
             gap: 1rem;
             align-items: center;
         }
@@ -409,6 +409,7 @@
                         <div class="visitor-ip">{{ visitor.ip }}</div>
                         <div class="visitor-time">{{ visitor.timestamp[:19] }}</div>
                         <div class="visitor-path">{{ visitor.path }}</div>
+                        <div class="visitor-method" style="text-align:center;">{{ visitor.get('visit_count', 1) }}x</div>
                         <div class="visitor-method">{{ visitor.method }}</div>
                         <div class="visitor-duration">{{ visitor.get('duration', 0)|format_duration }}</div>
                     </div>
