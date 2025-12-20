@@ -200,19 +200,6 @@ class PortfolioApp {
                     : null;
                 this._initialProjectFilter = firstCategory;
 
-                if (showAll) {
-                    const allBtn = document.createElement('button');
-                    // Not active by default (we default to first category)
-                    allBtn.className = 'filter-btn';
-                    allBtn.dataset.filter = 'all';
-                    allBtn.textContent = 'All';
-                    allBtn.addEventListener('click', (e) => {
-                        this.filterProjects('all');
-                        this.updateActiveFilter(e.target);
-                    });
-                    container.appendChild(allBtn);
-                }
-
                 // Add category buttons
                 categories.forEach((cat, idx) => {
                     const btn = document.createElement('button');
