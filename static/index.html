@@ -962,9 +962,31 @@
                         showSlide(0);
                     }
                 } else {
-                    // Handle single image
-                    currentSlides = [e.target.src];
-                    showSlide(0);
+                    // Handle single image - check if it's part of a carousel
+                    const carousel = e.target.closest('.mockup-carousel');
+                    if (carousel && carousel.dataset.items) {
+                        try {
+                            const items = JSON.parse(decodeURIComponent(carousel.dataset.items));
+                            const imgItems = items.filter(item => item.type === 'img');
+                            if (imgItems.length > 1) {
+                                currentSlides = imgItems.map(item => item.src);
+                                // Find current image index
+                                const clickedSrc = e.target.src;
+                                currentSlideIndex = currentSlides.findIndex(src => clickedSrc.includes(src) || src.includes(clickedSrc.split('/').pop())) || 0;
+                                showSlide(currentSlideIndex);
+                            } else {
+                                currentSlides = [e.target.src];
+                                showSlide(0);
+                            }
+                        } catch (err) {
+                            currentSlides = [e.target.src];
+                            showSlide(0);
+                        }
+                    } else {
+                        // Truly single image
+                        currentSlides = [e.target.src];
+                        showSlide(0);
+                    }
                 }
                 
                 imageModal.style.display = 'flex';
