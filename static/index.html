@@ -454,7 +454,7 @@
             background: #f87171;
         }
         .modal-nav {
-            position: absolute;
+            position: fixed;
             top: 50%;
             transform: translateY(-50%);
             background: rgba(34,34,34,0.8);
@@ -465,7 +465,7 @@
             height: 48px;
             font-size: 1.8rem;
             cursor: pointer;
-            z-index: 10;
+            z-index: 1010;
             transition: all 0.2s ease;
             opacity: 1;
             display: flex;
@@ -485,6 +485,24 @@
         }
         .modal-content:hover .modal-nav {
             opacity: 1;
+        }
+        .modal-nav.highlight {
+            opacity: 1 !important;
+            display: flex !important;
+            animation: arrowPulse 1.5s ease-in-out infinite;
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.8), 0 0 50px rgba(59, 130, 246, 0.4);
+        }
+        @keyframes arrowPulse {
+            0%, 100% { 
+                background: rgba(59, 130, 246, 0.9);
+                transform: translateY(-50%) scale(1);
+                box-shadow: 0 0 25px rgba(59, 130, 246, 0.8), 0 0 50px rgba(59, 130, 246, 0.4);
+            }
+            50% { 
+                background: rgba(100, 181, 246, 1);
+                transform: translateY(-50%) scale(1.15);
+                box-shadow: 0 0 35px rgba(59, 130, 246, 1), 0 0 70px rgba(59, 130, 246, 0.6);
+            }
         }
         .modal-slide-container {
             position: relative;
@@ -936,6 +954,11 @@
             if (currentSlides.length > 1) {
                 modalPrev.style.display = 'flex';
                 modalNext.style.display = 'flex';
+                // Add highlight to arrows until user interacts
+                if (!modalPrev.dataset.interacted) {
+                    modalPrev.classList.add('highlight');
+                    modalNext.classList.add('highlight');
+                }
             } else {
                 modalPrev.style.display = 'none';
                 modalNext.style.display = 'none';
@@ -1030,9 +1053,22 @@
             }
         });
 
-        // Navigation buttons
-        if (modalPrev) modalPrev.addEventListener('click', () => showSlide(currentSlideIndex - 1));
-        if (modalNext) modalNext.addEventListener('click', () => showSlide(currentSlideIndex + 1));
+        // Navigation buttons - remove highlight on interaction
+        function removeArrowHighlight() {
+            modalPrev.classList.remove('highlight');
+            modalNext.classList.remove('highlight');
+            modalPrev.dataset.interacted = 'true';
+            modalNext.dataset.interacted = 'true';
+        }
+        
+        if (modalPrev) modalPrev.addEventListener('click', () => {
+            removeArrowHighlight();
+            showSlide(currentSlideIndex - 1);
+        });
+        if (modalNext) modalNext.addEventListener('click', () => {
+            removeArrowHighlight();
+            showSlide(currentSlideIndex + 1);
+        });
 
         // Keyboard navigation and zoom
         document.addEventListener('keydown', function(e) {
