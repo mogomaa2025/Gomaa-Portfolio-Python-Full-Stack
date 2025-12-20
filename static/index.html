@@ -1144,6 +1144,37 @@
                 closeVideoModal();
             }
         });
+
+        // Embed iframe fullscreen handler - opens in video modal for better touch/zoom
+        document.addEventListener('click', function(e) {
+            const embedFullscreenBtn = e.target.closest('.embed-fullscreen-btn');
+            if (!embedFullscreenBtn) return;
+            
+            const wrapper = embedFullscreenBtn.closest('.embed-wrapper');
+            if (!wrapper) return;
+            
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const iframe = wrapper.querySelector('.embed-iframe');
+            if (!iframe) return;
+            
+            const embedSrc = iframe.src;
+            
+            // Hide both players initially
+            modalVideo.style.display = 'none';
+            modalYoutube.style.display = 'none';
+            
+            // Use the YouTube iframe for embed since it has same allowances
+            modalYoutube.src = embedSrc;
+            modalYoutube.style.display = 'block';
+            
+            // Show the modal
+            videoModal.style.display = 'flex';
+            setTimeout(() => {
+                videoModal.classList.add('visible');
+            }, 10);
+        });
     </script>
 </body>
 </html>
