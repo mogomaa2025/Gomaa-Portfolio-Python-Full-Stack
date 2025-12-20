@@ -238,7 +238,7 @@
         
         .visitor-info {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr 100px 80px 80px 100px;
+            grid-template-columns: 1fr 1fr 1fr 100px 80px 80px 100px 50px;
             gap: 1rem;
             align-items: center;
         }
@@ -254,6 +254,22 @@
             font-size: 0.75rem;
             font-weight: 500;
             color: #c4b5fd;
+        }
+        
+        .visitor-delete-btn {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s ease;
+        }
+        
+        .visitor-delete-btn:hover {
+            background: rgba(239, 68, 68, 0.4);
+            color: white;
         }
         
         .visitor-ip {
@@ -433,6 +449,7 @@
                         <div class="visitor-method" style="text-align:center;">{{ visitor.get('visit_count', 1) }}x</div>
                         <div class="visitor-method">{{ visitor.method }}</div>
                         <div class="visitor-duration">{{ visitor.get('duration', 0)|format_duration }}</div>
+                        <button class="visitor-delete-btn" onclick="deleteVisitor('{{ visitor.get('visit_id', '') }}', '{{ visitor.timestamp }}')">🗑️</button>
                     </div>
                 </div>
                 {% endfor %}
@@ -467,6 +484,29 @@
                 })
                 .catch(error => {
                     alert('Error clearing logs: ' + error);
+                });
+            }
+        }
+        
+        function deleteVisitor(visitId, timestamp) {
+            if (confirm('Delete this visitor entry?')) {
+                fetch('/admin/visitors/delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ visit_id: visitId, timestamp: timestamp })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Error: ' + error);
                 });
             }
         }

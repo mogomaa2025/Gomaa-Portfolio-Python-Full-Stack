@@ -428,6 +428,38 @@ def clear_visitors():
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
 
+@app.route('/admin/visitors/delete', methods=['POST'])
+@admin_required
+def delete_visitor():
+    """Delete a specific visitor by visit_id or timestamp."""
+    try:
+        data = request.get_json() if request.is_json else {}
+        visit_id = data.get('visit_id')
+        timestamp = data.get('timestamp')
+        
+        with open(VISITORS_FILE, 'r') as f:
+            visitors = json.load(f)
+        
+        original_count = len(visitors)
+        
+        # Filter out the matching visitor
+        if visit_id:
+            visitors = [v for v in visitors if v.get('visit_id') != visit_id]
+        elif timestamp:
+            visitors = [v for v in visitors if v.get('timestamp') != timestamp]
+        else:
+            return jsonify({"success": False, "message": "No visit_id or timestamp provided"})
+        
+        if len(visitors) == original_count:
+            return jsonify({"success": False, "message": "Visitor not found"})
+        
+        with open(VISITORS_FILE, 'w') as f:
+            json.dump(visitors, f, indent=2)
+        
+        return jsonify({"success": True, "message": "Visitor deleted successfully"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
 @app.route('/admin/visitors/export')
 @admin_required
 def export_visitors():

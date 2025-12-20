@@ -1,1 +1,66 @@
-[]
+[
+  {
+    "ip": "197.48.134.76",
+    "visit_id": "v_1766202154878_7keq6qtaj",
+    "timestamp": "2025-12-20T03:42:35.840238",
+    "last_visit": "2025-12-20T03:42:35.840248",
+    "path": "projects",
+    "method": "POST",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "referrer": "https://gowano2025.pythonanywhere.com/",
+    "country": null,
+    "city": null,
+    "duration": 0,
+    "visit_count": 1,
+    "device_type": "PC",
+    "os_type": "Windows"
+  },
+  {
+    "ip": "197.48.134.76",
+    "visit_id": "v_1766202155529_napmi410c",
+    "timestamp": "2025-12-20T03:42:36.493005",
+    "last_visit": "2025-12-20T03:42:36.493015",
+    "path": "certifications",
+    "method": "POST",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "referrer": "https://gowano2025.pythonanywhere.com/",
+    "country": null,
+    "city": null,
+    "duration": 0,
+    "visit_count": 1,
+    "device_type": "PC",
+    "os_type": "Windows"
+  },
+  {
+    "ip": "197.48.134.76",
+    "visit_id": "v_1766202156108_dgkpa27x9",
+    "timestamp": "2025-12-20T03:42:37.083481",
+    "last_visit": "2025-12-20T03:42:37.083492",
+    "path": "skills",
+    "method": "POST",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "referrer": "https://gowano2025.pythonanywhere.com/",
+    "country": null,
+    "city": null,
+    "duration": 0,
+    "visit_count": 1,
+    "device_type": "PC",
+    "os_type": "Windows"
+  },
+  {
+    "ip": "197.48.134.76",
+    "visit_id": "v_1766202156679_gsfqmt3v1",
+    "timestamp": "2025-12-20T03:42:37.637400",
+    "last_visit": "2025-12-20T03:42:37.637410",
+    "path": "contact",
+    "method": "POST",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "referrer": "https://gowano2025.pythonanywhere.com/",
+    "country": null,
+    "city": null,
+    "duration": 1,
+    "visit_count": 1,
+    "device_type": "PC",
+    "os_type": "Windows"
+  }
+]
