@@ -724,11 +724,14 @@
         }
 
         if (modalImg && modalPrev && modalNext) {
-            // Toggle zoom on click/tap
+            // Check if device supports touch
+            const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            
+            // Toggle zoom on click (only for non-touch devices)
             modalImg.addEventListener('click', (e) => {
                 e.stopPropagation();
-                // Only toggle zoom if not panning
-                if (!isPanning) {
+                // Only toggle zoom if not panning and NOT a touch device
+                if (!isPanning && !isTouchDevice) {
                     isZoomed = !isZoomed;
                     modalImg.classList.toggle('zoomed', isZoomed);
                     
@@ -745,11 +748,23 @@
                 }
             });
 
-            // Touch support for panning when zoomed and swiping when not zoomed
+            // Touch support for panning when zoomed, swiping when not zoomed, and pinch-to-zoom
             let touchStartX = 0, touchStartY = 0;
             let touchMoved = false;
+            let initialPinchDistance = 0;
+            let isPinching = false;
             
             modalImg.addEventListener('touchstart', (e) => {
+                // Check for pinch gesture (2 fingers)
+                if (e.touches.length === 2) {
+                    isPinching = true;
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    initialPinchDistance = Math.sqrt(dx * dx + dy * dy);
+                    e.preventDefault();
+                    return;
+                }
+                
                 touchStartX = e.touches[0].clientX;
                 touchStartY = e.touches[0].clientY;
                 touchMoved = false;
@@ -766,6 +781,35 @@
             }, { passive: false });
 
             modalImg.addEventListener('touchmove', (e) => {
+                // Handle pinch-to-zoom
+                if (e.touches.length === 2 && isPinching) {
+                    e.preventDefault();
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    const currentPinchDistance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // Zoom in if pinching out, zoom out if pinching in
+                    if (currentPinchDistance > initialPinchDistance * 1.2 && !isZoomed) {
+                        isZoomed = true;
+                        modalImg.classList.add('zoomed');
+                        updateImageTransform();
+                        modalPrev.style.pointerEvents = 'none';
+                        modalNext.style.pointerEvents = 'none';
+                        modalPrev.style.opacity = '0.3';
+                        modalNext.style.opacity = '0.3';
+                    } else if (currentPinchDistance < initialPinchDistance * 0.8 && isZoomed) {
+                        isZoomed = false;
+                        modalImg.classList.remove('zoomed');
+                        resetPan();
+                        updateImageTransform();
+                        modalPrev.style.pointerEvents = 'auto';
+                        modalNext.style.pointerEvents = 'auto';
+                        modalPrev.style.opacity = '1';
+                        modalNext.style.opacity = '1';
+                    }
+                    return;
+                }
+                
                 touchMoved = true;
                 
                 if (isZoomed && isPanning) {
@@ -787,23 +831,18 @@
             }, { passive: false });
 
             modalImg.addEventListener('touchend', (e) => {
+                // End pinch gesture
+                if (isPinching) {
+                    isPinching = false;
+                    initialPinchDistance = 0;
+                    return;
+                }
+                
                 if (isZoomed) {
                     isPanning = false;
                     modalImg.classList.remove('panning');
                     lastPanX = panX;
                     lastPanY = panY;
-                    
-                    // If barely moved, treat as tap to unzoom
-                    if (!touchMoved) {
-                        isZoomed = false;
-                        modalImg.classList.remove('zoomed');
-                        resetPan();
-                        updateImageTransform();
-                        modalPrev.style.pointerEvents = 'auto';
-                        modalNext.style.pointerEvents = 'auto';
-                        modalPrev.style.opacity = '1';
-                        modalNext.style.opacity = '1';
-                    }
                     return;
                 }
                 
@@ -901,29 +940,14 @@
                 modalNext.style.display = 'flex';
                 modalPrev.style.opacity = '1';
                 modalNext.style.opacity = '1';
-                
-                // Add indicator for navigation
-                const zoomIndicator = document.getElementById('zoom-indicator');
-                zoomIndicator.classList.add('visible');
-                zoomIndicator.innerHTML = `
-                    <span>Image ${currentSlideIndex + 1} of ${currentSlides.length}</span>
-                    <span style="opacity: 0.7">Use arrows or click sides to navigate</span>
-                `;
-                setTimeout(() => {
-                    zoomIndicator.classList.remove('visible');
-                }, 3000);
             } else {
                 modalPrev.style.display = 'none';
                 modalNext.style.display = 'none';
             }
-            
-            // Show zoom indicator briefly
-            const zoomIndicator = document.getElementById('zoom-indicator');
-            zoomIndicator.classList.add('visible');
-            setTimeout(() => {
-                zoomIndicator.classList.remove('visible');
-            }, 3000);
         }
+        
+        // Track if zoom tip was shown in this session
+        let zoomTipShown = false;
 
         // Event delegation for project images
         document.addEventListener('click', async function(e) {
@@ -990,7 +1014,23 @@
                 }
                 
                 imageModal.style.display = 'flex';
-                setTimeout(() => { imageModal.style.opacity = 1; }, 10);
+                setTimeout(() => { 
+                    imageModal.style.opacity = 1;
+                    
+                    // Show zoom tip only on first opening
+                    if (!zoomTipShown) {
+                        zoomTipShown = true;
+                        const zoomIndicator = document.getElementById('zoom-indicator');
+                        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+                        zoomIndicator.innerHTML = isTouchDevice 
+                            ? `<span>Pinch to zoom • Swipe to navigate</span>`
+                            : `<span>Click image to zoom or press 'Z'</span>`;
+                        zoomIndicator.classList.add('visible');
+                        setTimeout(() => {
+                            zoomIndicator.classList.remove('visible');
+                        }, 3000);
+                    }
+                }, 10);
             }
         });
 
