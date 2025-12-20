@@ -1273,6 +1273,34 @@ def track_visit():
         return jsonify({'status': 'updated', 'message': 'Visit count updated', 'visit_count': existing_visit['visit_count']})
     
     # New visitor - create new record
+    user_agent = request.headers.get('User-Agent', '')
+    
+    # Parse device type and OS from User-Agent
+    ua_lower = user_agent.lower()
+    
+    # Detect device type
+    if any(x in ua_lower for x in ['mobile', 'android', 'iphone', 'ipad', 'ipod', 'webos', 'blackberry', 'opera mini', 'opera mobi']):
+        if 'ipad' in ua_lower or 'tablet' in ua_lower:
+            device_type = 'Tablet'
+        else:
+            device_type = 'Phone'
+    else:
+        device_type = 'PC'
+    
+    # Detect OS
+    if 'windows' in ua_lower:
+        os_type = 'Windows'
+    elif 'mac os' in ua_lower or 'macintosh' in ua_lower:
+        os_type = 'Mac'
+    elif 'iphone' in ua_lower or 'ipad' in ua_lower:
+        os_type = 'iOS'
+    elif 'android' in ua_lower:
+        os_type = 'Android'
+    elif 'linux' in ua_lower:
+        os_type = 'Linux'
+    else:
+        os_type = 'Unknown'
+    
     visitor_data = {
         'ip': ip,
         'visit_id': visit_id,
@@ -1280,12 +1308,14 @@ def track_visit():
         'last_visit': datetime.now().isoformat(),
         'path': page,
         'method': request.method,
-        'user_agent': request.headers.get('User-Agent', ''),
+        'user_agent': user_agent,
         'referrer': request.referrer or '',
         'country': None,
         'city': None,
         'duration': 0,
-        'visit_count': 1
+        'visit_count': 1,
+        'device_type': device_type,
+        'os_type': os_type
     }
     visitors.append(visitor_data)
     

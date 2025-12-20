@@ -238,9 +238,22 @@
         
         .visitor-info {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr 80px 80px 100px;
+            grid-template-columns: 1fr 1fr 1fr 100px 80px 80px 100px;
             gap: 1rem;
             align-items: center;
+        }
+        
+        .visitor-device {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.25rem 0.5rem;
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #c4b5fd;
         }
         
         .visitor-ip {
@@ -409,6 +422,10 @@
                         <div class="visitor-ip">{{ visitor.ip }}</div>
                         <div class="visitor-time">{{ visitor.timestamp[:19] }}</div>
                         <div class="visitor-path">{{ visitor.path }}</div>
+                        <div class="visitor-device" title="{{ visitor.get('os_type', 'Unknown') }}">
+                            {% if visitor.get('device_type') == 'Phone' %}📱{% elif visitor.get('device_type') == 'Tablet' %}📲{% else %}💻{% endif %}
+                            {{ visitor.get('device_type', 'PC') }} / {{ visitor.get('os_type', '?') }}
+                        </div>
                         <div class="visitor-method" style="text-align:center;">{{ visitor.get('visit_count', 1) }}x</div>
                         <div class="visitor-method">{{ visitor.method }}</div>
                         <div class="visitor-duration">{{ visitor.get('duration', 0)|format_duration }}</div>
