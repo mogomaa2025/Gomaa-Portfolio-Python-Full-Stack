@@ -1106,11 +1106,40 @@ class PortfolioApp {
                         }
                     }
 
+                    // Format description: convert lines starting with - to list items, preserve newlines
+                    let formattedDesc = project.description || '';
+                    if (formattedDesc.includes('\n') || formattedDesc.includes('-')) {
+                        const lines = formattedDesc.split('\n');
+                        const listItems = [];
+                        const introLines = [];
+                        let inList = false;
+                        
+                        lines.forEach(line => {
+                            const trimmed = line.trim();
+                            if (trimmed.startsWith('-')) {
+                                inList = true;
+                                listItems.push(`<li>${trimmed.substring(1).trim()}</li>`);
+                            } else if (trimmed) {
+                                if (inList) {
+                                    listItems.push(`<li>${trimmed}</li>`);
+                                } else {
+                                    introLines.push(trimmed);
+                                }
+                            }
+                        });
+                        
+                        if (listItems.length > 0) {
+                            formattedDesc = introLines.join('<br>') + (introLines.length ? '<ul style="margin:0.5em 0 0 1em;padding:0;list-style:disc;">' : '<ul style="margin:0;padding:0 0 0 1em;list-style:disc;">') + listItems.join('') + '</ul>';
+                        } else {
+                            formattedDesc = formattedDesc.replace(/\n/g, '<br>');
+                        }
+                    }
+
                     projectCard.innerHTML = `
                         <div class="project-preview">
                             <div class="project-info">
                                 <h3 class="project-title">${project.title}</h3>
-                                <p class="project-description">${project.description}</p>
+                                <div class="project-description">${formattedDesc}</div>
                             </div>
                             ${projectPreviewHTML}
                             <div class="project-tags">
