@@ -28,6 +28,7 @@ ABOUT_FILE = os.path.join(DATA_DIR, 'about.json')
 CONTACT_FILE = os.path.join(DATA_DIR, 'contact.json')
 CERTIFICATIONS_FILE = os.path.join(DATA_DIR, 'certifications.json')
 CERTIFICATION_CATEGORIES_FILE = os.path.join(DATA_DIR, 'certification_categories.json')
+EASTER_EGG_FILE = os.path.join(DATA_DIR, 'easter_egg_clicks.json')
 
 # Create data directory if it doesn't exist
 os.makedirs(DATA_DIR, exist_ok=True)
@@ -341,6 +342,32 @@ def admin_visitors():
     # Get recent visitors (last 50)
     recent_visitors = visitors[-50:] if len(visitors) > 50 else visitors
     
+    # Parse device/OS for visitors missing this data
+    for visitor in recent_visitors:
+        if not visitor.get('device_type') or not visitor.get('os_type'):
+            ua = visitor.get('user_agent', '').lower()
+            # Detect device type
+            if any(x in ua for x in ['mobile', 'android', 'iphone', 'ipad', 'ipod', 'webos', 'blackberry', 'opera mini', 'opera mobi']):
+                if 'ipad' in ua or 'tablet' in ua:
+                    visitor['device_type'] = 'Tablet'
+                else:
+                    visitor['device_type'] = 'Phone'
+            else:
+                visitor['device_type'] = 'PC'
+            # Detect OS
+            if 'windows' in ua:
+                visitor['os_type'] = 'Windows'
+            elif 'mac os' in ua or 'macintosh' in ua:
+                visitor['os_type'] = 'Mac'
+            elif 'iphone' in ua or 'ipad' in ua:
+                visitor['os_type'] = 'iOS'
+            elif 'android' in ua:
+                visitor['os_type'] = 'Android'
+            elif 'linux' in ua:
+                visitor['os_type'] = 'Linux'
+            else:
+                visitor['os_type'] = 'Unknown'
+    
     # Calculate top pages
     page_counts = {}
     for visitor in visitors:
@@ -370,7 +397,23 @@ def admin_visitors():
         'hourly_visits': hourly_visits
     }
     
-    return render_template('visitor_analytics.html', visitors=recent_visitors, analytics=analytics)
+    # Load Easter egg clicks stats
+    try:
+        with open(EASTER_EGG_FILE, 'r') as f:
+            easter_clicks = json.load(f)
+    except:
+        easter_clicks = []
+    
+    easter_stats = {
+        'total': len(easter_clicks),
+        'today': len([c for c in easter_clicks if c.get('timestamp', '')[:10] == datetime.now().strftime('%Y-%m-%d')]),
+        'by_trigger': {}
+    }
+    for click in easter_clicks:
+        trigger = click.get('trigger_source', 'unknown')
+        easter_stats['by_trigger'][trigger] = easter_stats['by_trigger'].get(trigger, 0) + 1
+    
+    return render_template('visitor_analytics.html', visitors=recent_visitors, analytics=analytics, easter_stats=easter_stats)
 
 @app.route('/admin/visitors/clear', methods=['POST'])
 @admin_required
@@ -378,7 +421,10 @@ def clear_visitors():
     try:
         with open(VISITORS_FILE, 'w') as f:
             json.dump([], f)
-        return jsonify({"success": True, "message": "Visitor logs cleared successfully"})
+        # Also clear Easter egg clicks
+        with open(EASTER_EGG_FILE, 'w') as f:
+            json.dump([], f)
+        return jsonify({"success": True, "message": "Visitor logs and Easter egg clicks cleared successfully"})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
 
@@ -402,6 +448,45 @@ def export_visitors():
         )
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
+
+@app.route('/api/track_easter_egg', methods=['POST'])
+def track_easter_egg():
+    """Track when a visitor triggers the Easter egg animation."""
+    try:
+        data = request.get_json() if request.is_json else {}
+        trigger_source = data.get('trigger_source', 'unknown')
+        
+        # Get visitor IP
+        ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+        if ip:
+            ip = ip.split(',')[0].strip()
+        
+        click_data = {
+            'timestamp': datetime.now().isoformat(),
+            'ip': ip,
+            'trigger_source': trigger_source,
+            'user_agent': request.headers.get('User-Agent', '')
+        }
+        
+        # Load existing clicks
+        try:
+            with open(EASTER_EGG_FILE, 'r') as f:
+                clicks = json.load(f)
+        except:
+            clicks = []
+        
+        clicks.append(click_data)
+        
+        # Keep only last 1000 clicks
+        if len(clicks) > 1000:
+            clicks = clicks[-1000:]
+        
+        with open(EASTER_EGG_FILE, 'w') as f:
+            json.dump(clicks, f, indent=2)
+        
+        return jsonify({'status': 'ok', 'message': 'Easter egg click tracked'})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @app.route('/admin/projects')
 @admin_required

@@ -1524,7 +1524,7 @@ class BugSquashAnimation {
                 setTimeout(() => {
                     logoText.classList.remove('bug-shake-text');
                 }, 300);
-                this.startAnimation(profileImage);
+                this.startAnimation(profileImage, 'logo');
             }
         });
 
@@ -1537,7 +1537,7 @@ class BugSquashAnimation {
                 setTimeout(() => {
                     logoText.classList.remove('bug-shake-text');
                 }, 300);
-                this.startAnimation(profileImage);
+                this.startAnimation(profileImage, 'logo');
             }
         });
     }
@@ -1560,7 +1560,7 @@ class BugSquashAnimation {
                 setTimeout(() => {
                     targetElement.classList.remove('bug-shake-text');
                 }, 300);
-                this.startAnimation(profileImage);
+                this.startAnimation(profileImage, 'name');
             }
         });
 
@@ -1573,7 +1573,7 @@ class BugSquashAnimation {
                 setTimeout(() => {
                     targetElement.classList.remove('bug-shake-text');
                 }, 300);
-                this.startAnimation(profileImage);
+                this.startAnimation(profileImage, 'name');
             }
         });
     }
@@ -1589,7 +1589,7 @@ class BugSquashAnimation {
         profileImage.addEventListener('click', (e) => {
             e.preventDefault();
             if (!this.isAnimating) {
-                this.startAnimation(profileImage);
+                this.startAnimation(profileImage, 'image');
             }
         });
 
@@ -1597,7 +1597,7 @@ class BugSquashAnimation {
         profileImage.addEventListener('touchend', (e) => {
             e.preventDefault();
             if (!this.isAnimating) {
-                this.startAnimation(profileImage);
+                this.startAnimation(profileImage, 'image');
             }
         });
 
@@ -1605,8 +1605,15 @@ class BugSquashAnimation {
         profileImage.style.cursor = 'pointer';
     }
 
-    startAnimation(profileImage) {
+    startAnimation(profileImage, triggerSource = 'image') {
         this.isAnimating = true;
+        
+        // Track the Easter egg click
+        fetch('/api/track_easter_egg', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ trigger_source: triggerSource })
+        }).catch(() => {}); // Silently fail if tracking fails
         
         // Add shake effect to image
         profileImage.classList.add('bug-shake');
