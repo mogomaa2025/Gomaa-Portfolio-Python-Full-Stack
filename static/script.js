@@ -929,7 +929,7 @@ class PortfolioApp {
                             try {
                                 const u = new URL(url);
                                 if (u.hostname.includes('youtube.com')) return u.searchParams.get('v');
-                                if (u.hostname.includes('youtu.be')) return u.pathname.replace('/', '');
+                                if (u.hostname.includes('youtu.be')) return u.pathname.slice(1);
                                 return null;
                             } catch (e) {
                                 return null;
@@ -966,7 +966,7 @@ class PortfolioApp {
                                     const u = new URL(item.src);
                                     let videoId = null;
                                     if (u.hostname.includes('youtube.com')) videoId = u.searchParams.get('v');
-                                    else if (u.hostname.includes('youtu.be')) videoId = u.pathname.replace('/', '');
+                                    else if (u.hostname.includes('youtu.be')) videoId = u.pathname.slice(1);
                                     if (videoId) {
                                         const thumb = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
                                         return `
@@ -1174,7 +1174,7 @@ class PortfolioApp {
                                     const u = new URL(item.src);
                                     let videoId = null;
                                     if (u.hostname.includes('youtube.com')) videoId = u.searchParams.get('v');
-                                    else if (u.hostname.includes('youtu.be')) videoId = u.pathname.replace('/', '');
+                                    else if (u.hostname.includes('youtu.be')) videoId = u.pathname.slice(1);
                                     if (videoId) {
                                         const thumb = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
                                         return `
