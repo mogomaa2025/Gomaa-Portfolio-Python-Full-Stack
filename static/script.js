@@ -99,6 +99,11 @@ class PortfolioApp {
         // Remove overlay from DOM after animation completes
         setTimeout(() => {
             introOverlay.remove();
+            
+            // Show Click Here hints on profile image and logo after intro
+            if (window.bugSquashAnimation) {
+                window.bugSquashAnimation.showClickMeHints();
+            }
         }, 2500);
     }
     
@@ -675,6 +680,16 @@ class PortfolioApp {
             setTimeout(() => {
                 newSectionElement.classList.add('active');
                 this.animateSectionChange(section);
+                
+                // Show Click Here hints when navigating to home section
+                if (section === 'home' && window.bugSquashAnimation) {
+                    // Reset hints flag so they can show again
+                    window.bugSquashAnimation.hintsShown = false;
+                    // Show hints after a short delay for section to render
+                    setTimeout(() => {
+                        window.bugSquashAnimation.showClickMeHints();
+                    }, 500);
+                }
             }, 150);
         }
 
@@ -1708,88 +1723,62 @@ class BugSquashAnimation {
         if (this.hintsShown) return;
         this.hintsShown = true;
 
-        const heroTitle = document.getElementById('hero-title');
         const profileImage = document.getElementById('profile-image');
-        const logoText = document.getElementById('logo-text');
-        const nameHighlight = heroTitle ? heroTitle.querySelector('.name-highlight') : null;
+        const profileContainer = document.querySelector('.profile-image-container');
+        const bottomNav = document.querySelector('.bottom-nav');
         
-        // Create arrow for logo text in top left (below it, pointing up)
-        if (logoText) {
-            const rect = logoText.getBoundingClientRect();
+        // Add glow animation to profile image and show "Click Here!" hint
+        if (profileImage && profileContainer) {
+            // Add glow effect to profile image
+            profileImage.classList.add('logo-highlighted');
             
-            const logoArrow = document.createElement('div');
-            logoArrow.className = 'click-me-hint';
-            logoArrow.innerHTML = `<div class="hint-arrow">⬆</div>`;
-            logoArrow.style.cssText = `
-                position: fixed;
-                top: ${rect.bottom + 5}px;
-                left: ${rect.left + rect.width / 2}px;
-                transform: translateX(-50%);
-                z-index: 9999;
-            `;
-            document.body.appendChild(logoArrow);
-            
-            // Animate in
-            setTimeout(() => logoArrow.classList.add('visible'), 100);
-            
-            // Remove after 4 seconds
-            setTimeout(() => {
-                logoArrow.classList.remove('visible');
-                setTimeout(() => logoArrow.remove(), 500);
-            }, 4000);
-        }
-        
-        // Create arrow hint for Mohamed Gomaa name (above it)
-        if (nameHighlight || heroTitle) {
-            const targetEl = nameHighlight || heroTitle;
-            const rect = targetEl.getBoundingClientRect();
-            
-            const nameHint = document.createElement('div');
-            nameHint.className = 'click-me-hint';
-            nameHint.innerHTML = `<div class="hint-arrow">⬇</div>`;
-            nameHint.style.cssText = `
-                position: fixed;
-                top: ${rect.top - 50}px;
-                left: ${rect.left + rect.width / 2}px;
-                transform: translateX(-50%);
-                z-index: 9999;
-            `;
-            document.body.appendChild(nameHint);
-
-            // Animate in
-            setTimeout(() => nameHint.classList.add('visible'), 100);
-
-            // Remove after 6 seconds
-            setTimeout(() => {
-                nameHint.classList.remove('visible');
-                setTimeout(() => nameHint.remove(), 500);
-            }, 2000);
-        }
-
-        // Create arrow hint for profile image (above it)
-        if (profileImage) {
-            const rect = profileImage.getBoundingClientRect();
-            
+            // Create hint below the profile image
             const imageHint = document.createElement('div');
-            imageHint.className = 'click-me-hint';
-            imageHint.innerHTML = `<div class="hint-arrow">⬇</div>`;
+            imageHint.className = 'logo-click-hint profile-hint';
+            imageHint.innerHTML = 'Click Here!';
             imageHint.style.cssText = `
-                position: fixed;
-                top: ${rect.top - 50}px;
-                left: ${rect.left + rect.width / 2}px;
+                position: absolute;
+                top: calc(100% + 10px);
+                left: 50%;
                 transform: translateX(-50%);
                 z-index: 9999;
             `;
-            document.body.appendChild(imageHint);
+            profileContainer.style.position = 'relative';
+            profileContainer.appendChild(imageHint);
+
+            // Animate in
+            setTimeout(() => imageHint.classList.add('visible'), 150);
+
+            // Remove only when user clicks on the image
+            profileImage.addEventListener('click', () => {
+                imageHint.classList.remove('visible');
+                profileImage.classList.remove('logo-highlighted');
+                setTimeout(() => imageHint.remove(), 500);
+            }, { once: true });
+        }
+        
+        // Add hint for bottom navigation
+        if (bottomNav) {
+            const navHint = document.createElement('div');
+            navHint.className = 'logo-click-hint nav-hint';
+            navHint.innerHTML = 'Navigate';
+            navHint.style.cssText = `
+                position: fixed;
+                bottom: 80px;
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 9999;
+            `;
+            document.body.appendChild(navHint);
 
             // Animate in with slight delay
-            setTimeout(() => imageHint.classList.add('visible'), 200);
+            setTimeout(() => navHint.classList.add('visible'), 200);
 
-            // Remove after 4 seconds
+            // Remove after 3 seconds
             setTimeout(() => {
-                imageHint.classList.remove('visible');
-                setTimeout(() => imageHint.remove(), 500);
-            }, 2000);
+                navHint.classList.remove('visible');
+                setTimeout(() => navHint.remove(), 500);
+            }, 3000);
         }
     }
 
@@ -1803,14 +1792,10 @@ class BugSquashAnimation {
             
             if (profileImage && imageContainer) {
                 clearInterval(checkImage);
+                // Profile image triggers Easter egg animation
                 this.setupClickHandler(profileImage, imageContainer);
                 
-                // Also setup handler for hero title (name)
-                if (heroTitle) {
-                    this.setupHeroTitleHandler(heroTitle, profileImage, imageContainer);
-                }
-                
-                // Also setup handler for logo text in header (top left)
+                // Logo text in header also triggers Easter egg
                 if (logoText) {
                     this.setupLogoHandler(logoText, profileImage, imageContainer);
                 }
@@ -2308,12 +2293,12 @@ class BugSquashAnimation {
 }
 
 // Initialize bug squash animation
-let bugSquashAnimation = null;
+window.bugSquashAnimation = null;
 
 // Initialize the Portfolio App
 document.addEventListener('DOMContentLoaded', () => {
     const app = new PortfolioApp();
     
     // Initialize bug squash Easter egg
-    bugSquashAnimation = new BugSquashAnimation();
+    window.bugSquashAnimation = new BugSquashAnimation();
 });
