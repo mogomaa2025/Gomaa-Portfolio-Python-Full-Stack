@@ -132,7 +132,20 @@ class PortfolioApp {
     // Note: Video fullscreen in portrait mode is handled via modal in index.html
 
     // Global event delegation for YouTube placeholders - works for any dynamically created placeholders
+    // Uses YouTube IFrame API to properly enforce start/end times
     setupGlobalYouTubeHandler() {
+        // Load YouTube IFrame API if not already loaded
+        if (!window.YT) {
+            const tag = document.createElement('script');
+            tag.src = 'https://www.youtube.com/iframe_api';
+            const firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        }
+        
+        // Store active YouTube players for cleanup
+        this._ytPlayers = this._ytPlayers || {};
+        this._ytPlayerIdCounter = this._ytPlayerIdCounter || 0;
+        
         document.addEventListener('click', (e) => {
             // Find if click was on or inside a YouTube placeholder
             const placeholder = e.target.closest('.yt-placeholder');
@@ -147,46 +160,245 @@ class PortfolioApp {
             // Get optional params (start, end times)
             const ytParams = placeholder.dataset.youtubeParams || '';
             
+            // Parse start and end from params
+            let startTime = 0;
+            let endTime = null;
+            if (ytParams) {
+                const startMatch = ytParams.match(/start=(\d+)/);
+                const endMatch = ytParams.match(/end=(\d+)/);
+                if (startMatch) startTime = parseInt(startMatch[1], 10);
+                if (endMatch) endTime = parseInt(endMatch[1], 10);
+            }
+            
+            // Debug logging
+            console.log('[YouTube Debug] Video ID:', videoId);
+            console.log('[YouTube Debug] Params from data attribute:', ytParams);
+            console.log('[YouTube Debug] Parsed start time:', startTime);
+            console.log('[YouTube Debug] Parsed end time:', endTime);
+            
             e.preventDefault();
             e.stopPropagation();
             
             // Stop all other media first
-            // Pause all videos
+            this.stopAllYouTubePlayers();
+            
+            // Pause all HTML5 videos
             document.querySelectorAll('.project-card video').forEach(v => {
                 try { v.pause(); } catch (err) {}
                 try { v.currentTime = 0; } catch (err) {}
             });
             
-            // Stop other YouTube iframes (convert back to placeholders)
-            document.querySelectorAll('.project-card iframe.yt-iframe, .project-card iframe[src*="youtube.com/embed/"]').forEach(fr => {
+            // Create a unique container for the player
+            const playerId = `yt-player-${++this._ytPlayerIdCounter}`;
+            const container = document.createElement('div');
+            container.id = playerId;
+            container.className = 'yt-player-container';
+            container.dataset.endTime = endTime || '';
+            container.dataset.youtubeParams = ytParams;
+            
+            // Replace placeholder with container
+            placeholder.replaceWith(container);
+            
+            // Wait for YouTube API to be ready, then create player
+            const createPlayer = () => {
+                if (window.YT && window.YT.Player) {
+                    const player = new YT.Player(playerId, {
+                        videoId: videoId,
+                        playerVars: {
+                            autoplay: 1,
+                            start: startTime,
+                            enablejsapi: 1,
+                            rel: 0,
+                            modestbranding: 1
+                        },
+                        events: {
+                            onReady: (event) => {
+                                console.log('[YouTube Debug] Player ready, storing reference');
+                                // Store player reference
+                                this._ytPlayers[playerId] = {
+                                    player: event.target,
+                                    endTime: endTime,
+                                    endTimeout: null
+                                };
+                                
+                                // If we have an end time, use timeout-based approach
+                                // This is more reliable than API-based time tracking due to cross-origin restrictions
+                                if (endTime !== null) {
+                                    const duration = (endTime - startTime) * 1000; // Convert to milliseconds
+                                    console.log(`[YouTube Debug] Setting timeout to pause after ${duration/1000} seconds`);
+                                    
+                                    this._ytPlayers[playerId].endTimeout = setTimeout(() => {
+                                        console.log('[YouTube Debug] End time reached via timeout, pausing...');
+                                        try {
+                                            event.target.pauseVideo();
+                                        } catch (e) {
+                                            console.log('[YouTube Debug] pauseVideo failed, trying alternative');
+                                        }
+                                        
+                                        // Show end overlay
+                                        const iframe = event.target.getIframe();
+                                        if (iframe) {
+                                            const wrapper = iframe.parentElement;
+                                            if (wrapper && !wrapper.querySelector('.yt-end-overlay')) {
+                                                const overlay = document.createElement('div');
+                                                overlay.className = 'yt-end-overlay';
+                                                overlay.innerHTML = `
+                                                    <div class="yt-end-message">
+                                                        <span>▶</span> Video clip ended (${Math.floor(endTime/60)}:${(endTime%60).toString().padStart(2,'0')})
+                                                    </div>
+                                                `;
+                                                overlay.addEventListener('click', () => {
+                                                    // Restart from beginning on click
+                                                    try {
+                                                        event.target.seekTo(startTime);
+                                                        event.target.playVideo();
+                                                    } catch (e) {}
+                                                    overlay.remove();
+                                                    // Set new timeout
+                                                    this._ytPlayers[playerId].endTimeout = setTimeout(() => {
+                                                        try { event.target.pauseVideo(); } catch(e) {}
+                                                    }, duration);
+                                                });
+                                                wrapper.style.position = 'relative';
+                                                wrapper.appendChild(overlay);
+                                            }
+                                        }
+                                    }, duration);
+                                }
+                            },
+                            onStateChange: (event) => {
+                                // If video ends naturally or is paused by user, clean up timeout
+                                if (event.data === YT.PlayerState.ENDED || event.data === YT.PlayerState.PAUSED) {
+                                    if (this._ytPlayers[playerId] && this._ytPlayers[playerId].endTimeout) {
+                                        clearTimeout(this._ytPlayers[playerId].endTimeout);
+                                    }
+                                }
+                                // If video starts playing again, restart the timeout
+                                if (event.data === YT.PlayerState.PLAYING && endTime !== null) {
+                                    // Clear existing timeout first
+                                    if (this._ytPlayers[playerId] && this._ytPlayers[playerId].endTimeout) {
+                                        clearTimeout(this._ytPlayers[playerId].endTimeout);
+                                    }
+                                    // Calculate remaining time based on current position
+                                    try {
+                                        const currentTime = event.target.getCurrentTime() || startTime;
+                                        const remaining = Math.max(0, (endTime - currentTime) * 1000);
+                                        console.log(`[YouTube Debug] Playing from ${currentTime}s, timeout in ${remaining/1000}s`);
+                                        this._ytPlayers[playerId].endTimeout = setTimeout(() => {
+                                            console.log('[YouTube Debug] Timeout reached, pausing...');
+                                            try { event.target.pauseVideo(); } catch(e) {}
+                                        }, remaining);
+                                    } catch(e) {
+                                        console.log('[YouTube Debug] getCurrentTime failed, using fixed timeout');
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    // API not ready yet, wait and retry
+                    setTimeout(createPlayer, 100);
+                }
+            };
+            
+            createPlayer();
+        });
+    }
+    
+    // Monitor video playback and pause at end time
+    startEndTimeMonitor(playerId, endTime) {
+        console.log('[YouTube Debug] Starting end time monitor for player:', playerId, 'End time:', endTime);
+        const playerData = this._ytPlayers[playerId];
+        if (!playerData || !playerData.player) return;
+        
+        // Clear any existing interval
+        if (playerData.checkInterval) {
+            clearInterval(playerData.checkInterval);
+        }
+        
+        // Check every 500ms
+        let lastLogTime = 0;
+        playerData.checkInterval = setInterval(() => {
+            try {
+                const currentTime = playerData.player.getCurrentTime();
+                
+                // Log every 5 seconds to avoid spam
+                if (Math.floor(currentTime) % 5 === 0 && Math.floor(currentTime) !== lastLogTime) {
+                    lastLogTime = Math.floor(currentTime);
+                    console.log(`[YouTube Debug] Current time: ${currentTime.toFixed(1)}s, End time: ${endTime}s`);
+                }
+                
+                if (currentTime >= endTime) {
+                    console.log('[YouTube Debug] Reached end time! Pausing video...');
+                    playerData.player.pauseVideo();
+                    clearInterval(playerData.checkInterval);
+                    
+                    // Show end overlay
+                    const iframe = playerData.player.getIframe();
+                    if (iframe) {
+                        const wrapper = iframe.parentElement;
+                        if (wrapper && !wrapper.querySelector('.yt-end-overlay')) {
+                            const overlay = document.createElement('div');
+                            overlay.className = 'yt-end-overlay';
+                            overlay.innerHTML = `
+                                <div class="yt-end-message">
+                                    <span>▶</span> Video clip ended
+                                </div>
+                            `;
+                            overlay.addEventListener('click', () => {
+                                // Restart from beginning on click
+                                playerData.player.seekTo(0);
+                                playerData.player.playVideo();
+                                overlay.remove();
+                                this.startEndTimeMonitor(playerId, endTime);
+                            });
+                            wrapper.style.position = 'relative';
+                            wrapper.appendChild(overlay);
+                        }
+                    }
+                }
+            } catch (err) {
+                // Player might be destroyed, clean up
+                clearInterval(playerData.checkInterval);
+            }
+        }, 500);
+    }
+    
+    // Stop all YouTube players and clean up
+    stopAllYouTubePlayers() {
+        for (const playerId in this._ytPlayers) {
+            const playerData = this._ytPlayers[playerId];
+            if (playerData) {
+                if (playerData.checkInterval) {
+                    clearInterval(playerData.checkInterval);
+                }
                 try {
-                    const src = fr.getAttribute('src') || '';
-                    const m = src.match(/embed\/([^?&/]+)/);
-                    const otherId = m ? m[1] : null;
-                    // Try to preserve params from the iframe src
-                    const paramsMatch = src.match(/[?&](start=\d+|end=\d+)/g);
-                    const preservedParams = paramsMatch ? paramsMatch.map(p => p.replace(/^[?&]/, '')).join('&') : '';
-                    if (otherId) {
-                        const thumb = `https://img.youtube.com/vi/${otherId}/hqdefault.jpg`;
-                        const paramsAttr = preservedParams ? ` data-youtube-params="${preservedParams}"` : '';
-                        fr.outerHTML = `
-                          <div class="yt-placeholder" data-youtube-id="${otherId}"${paramsAttr} role="button" aria-label="Play YouTube video">
-                            <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb">
-                            <div class="yt-play-btn">▶</div>
-                          </div>
-                        `;
+                    if (playerData.player && playerData.player.stopVideo) {
+                        playerData.player.stopVideo();
                     }
                 } catch (err) {}
-            });
-            
-            // Build embed URL with params
-            let embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-            if (ytParams) {
-                embedUrl += `&${ytParams}`;
             }
-            
-            // Replace clicked placeholder with iframe
-            placeholder.outerHTML = `<iframe src="${embedUrl}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen class="mockup-media yt-iframe"></iframe>`;
+        }
+        
+        // Also handle any iframes that might have been created outside this system
+        document.querySelectorAll('.project-card iframe.yt-iframe, .project-card iframe[src*="youtube.com/embed/"]').forEach(fr => {
+            try {
+                const src = fr.getAttribute('src') || '';
+                const m = src.match(/embed\/([^?&/]+)/);
+                const otherId = m ? m[1] : null;
+                const paramsMatch = src.match(/[?&](start=\d+|end=\d+)/g);
+                const preservedParams = paramsMatch ? paramsMatch.map(p => p.replace(/^[?&]/, '')).join('&') : '';
+                if (otherId) {
+                    const thumb = `https://img.youtube.com/vi/${otherId}/hqdefault.jpg`;
+                    const paramsAttr = preservedParams ? ` data-youtube-params="${preservedParams}"` : '';
+                    fr.outerHTML = `
+                      <div class="yt-placeholder" data-youtube-id="${otherId}"${paramsAttr} role="button" aria-label="Play YouTube video">
+                        <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb">
+                        <div class="yt-play-btn">▶</div>
+                      </div>
+                    `;
+                }
+            } catch (err) {}
         });
     }
 
@@ -940,6 +1152,7 @@ class PortfolioApp {
 
                         // Parse YouTube URL/iframe and extract video ID + params (start, end, etc.)
                         const parseYouTubeUrl = (input) => {
+                            console.log('[YouTube Debug] parseYouTubeUrl called with:', input);
                             const result = { videoId: null, start: null, end: null, params: '' };
                             if (!input) return result;
                             
@@ -982,8 +1195,10 @@ class PortfolioApp {
                                 result.params = embedParams.join('&');
                                 
                             } catch (e) {
+                                console.log('[YouTube Debug] parseYouTubeUrl error:', e);
                                 return result;
                             }
+                            console.log('[YouTube Debug] parseYouTubeUrl result:', result);
                             return result;
                         };
                         
