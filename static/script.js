@@ -83,13 +83,7 @@ class PortfolioApp {
             }
             
             // Add highlight glow to bottom nav
-            const bottomNav = document.querySelector('.bottom-nav');
-            if (bottomNav) {
-                bottomNav.classList.add('intro-highlight');
-                setTimeout(() => {
-                    bottomNav.classList.remove('intro-highlight');
-                }, PortfolioConfig.INTRO.NAV_HIGHLIGHT_DURATION);
-            }
+            this.triggerNavHighlight();
         }, PortfolioConfig.INTRO.COMPLETE_DELAY);
         
         // Remove overlay from DOM after animation completes
@@ -708,14 +702,10 @@ class PortfolioApp {
         const logoText = document.getElementById('logo-text');
         if (!logoText) return;
         
-        // Get or create the hint element
         let logoHint = document.getElementById('logo-click-hint');
         
         if (section === 'home') {
-            // Hide hint on home page
-            if (logoHint) {
-                logoHint.classList.remove('visible');
-            }
+            if (logoHint) logoHint.classList.remove('visible');
             logoText.classList.remove('logo-highlighted');
         } else {
             // Show hint on other sections (if not already clicked)
@@ -739,6 +729,18 @@ class PortfolioApp {
                 logoText.classList.add('logo-highlighted');
                 setTimeout(() => logoHint.classList.add('visible'), 100);
             }
+        }
+    }
+
+
+
+    triggerNavHighlight() {
+        const bottomNav = document.querySelector('.bottom-nav');
+        if (bottomNav) {
+            bottomNav.classList.add('intro-highlight');
+            setTimeout(() => {
+                bottomNav.classList.remove('intro-highlight');
+            }, (PortfolioConfig.INTRO?.NAV_HIGHLIGHT_DURATION || 1500));
         }
     }
 
@@ -1725,6 +1727,8 @@ class BugSquashAnimation {
     showClickMeHints() {
         // Don't show hints if already shown or if Easter egg was triggered
         if (this.hintsShown || this.easterEggTriggered) return;
+        // Check if hints were already shown/dismissed in this session
+        if (this.hintsShown || this.easterEggTriggered || sessionStorage.getItem('profileHintDismissed')) return;
         this.hintsShown = true;
 
         const profileImage = document.getElementById('profile-image');
@@ -1759,11 +1763,16 @@ class BugSquashAnimation {
             setTimeout(() => imageHint.classList.add('visible'), 150);
 
             // Remove only when user clicks on the image
-            profileImage.addEventListener('click', () => {
+            const dismissHandler = () => {
                 imageHint.classList.remove('visible');
                 profileImage.classList.remove('logo-highlighted');
                 setTimeout(() => imageHint.remove(), 500);
-            }, { once: true });
+                // Mark as dismissed in session storage
+                sessionStorage.setItem('profileHintDismissed', 'true');
+            };
+            
+            profileImage.addEventListener('click', dismissHandler, { once: true });
+            profileImage.addEventListener('touchend', dismissHandler, { once: true });
         }
         
         // Add hint for bottom navigation
@@ -2178,6 +2187,10 @@ class BugSquashAnimation {
                 this.cleanupFullPage();
                 // Deactivate terminal mode after animation
                 document.body.classList.remove('terminal-mode');
+                // Trigger nav highlight after Easter egg
+                if (window.portfolioApp) {
+                    window.portfolioApp.triggerNavHighlight();
+                }
             }, 1200);
         } else {
             this.cleanupFullPage();

@@ -1,10 +1,10 @@
 const PortfolioConfig = {
     // Intro Animation Timings (in ms)
     INTRO: {
-        REVEAL_DELAY: 600,
-        COMPLETE_DELAY: 1000,
-        REMOVE_DELAY: 1300,
-        NAV_HIGHLIGHT_DURATION: 1500
+        REVEAL_DELAY: 300,
+        COMPLETE_DELAY: 600,
+        REMOVE_DELAY: 800,
+        NAV_HIGHLIGHT_DURATION: 3000
     },
 
     // Easter Egg Configuration
