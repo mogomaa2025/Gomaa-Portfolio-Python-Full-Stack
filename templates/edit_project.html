@@ -282,14 +282,18 @@
                         Mockup Content
                         <span class="help-tip" title="Formats (space/newline separated, mixing allowed):
 img1:IMAGE_URL img2:IMAGE_URL img3:IMAGE_URL
-yt1:YOUTUBE_URL (https://youtu.be/VIDEOID or https://www.youtube.com/watch?v=VIDEOID)
+yt1:YOUTUBE_URL (supports start/end times)
+  - https://youtu.be/VIDEOID?start=30&end=120
+  - https://www.youtube.com/embed/VIDEOID?start=0&end=480
+  - Full iframe HTML is also supported
 vd1:VIDEO_URL (direct mp4/webm link)
+em1:EMBED_URL (for Jumpshare, Loom, etc)
 Order is by the number (1,2,3...). You can mix types: img1:... yt2:... vd3:...">
                             (?)
                         </span>
                     </label>
                     <textarea id="mockup_content" name="mockup_content" class="form-textarea" style="min-height:120px;">{{ project.mockup_content if project.mockup_content is string else project.mockup_content | tojson(indent=2) }}</textarea>
-                    <div class="tag-help">For images, use format: img1:URL img2:URL img3:URL (one per line). For other content, use JSON format.</div>
+                    <div class="tag-help">For YouTube videos with custom start/end times, add ?start=SECONDS&end=SECONDS to the URL. You can also paste a full iframe HTML.</div>
                 </div>
                 
                 <div class="form-group">

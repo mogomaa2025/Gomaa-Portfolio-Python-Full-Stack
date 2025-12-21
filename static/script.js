@@ -144,6 +144,9 @@ class PortfolioApp {
             const videoId = placeholder.dataset.youtubeId;
             if (!videoId) return;
             
+            // Get optional params (start, end times)
+            const ytParams = placeholder.dataset.youtubeParams || '';
+            
             e.preventDefault();
             e.stopPropagation();
             
@@ -160,10 +163,14 @@ class PortfolioApp {
                     const src = fr.getAttribute('src') || '';
                     const m = src.match(/embed\/([^?&/]+)/);
                     const otherId = m ? m[1] : null;
+                    // Try to preserve params from the iframe src
+                    const paramsMatch = src.match(/[?&](start=\d+|end=\d+)/g);
+                    const preservedParams = paramsMatch ? paramsMatch.map(p => p.replace(/^[?&]/, '')).join('&') : '';
                     if (otherId) {
                         const thumb = `https://img.youtube.com/vi/${otherId}/hqdefault.jpg`;
+                        const paramsAttr = preservedParams ? ` data-youtube-params="${preservedParams}"` : '';
                         fr.outerHTML = `
-                          <div class="yt-placeholder" data-youtube-id="${otherId}" role="button" aria-label="Play YouTube video">
+                          <div class="yt-placeholder" data-youtube-id="${otherId}"${paramsAttr} role="button" aria-label="Play YouTube video">
                             <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb">
                             <div class="yt-play-btn">▶</div>
                           </div>
@@ -172,8 +179,14 @@ class PortfolioApp {
                 } catch (err) {}
             });
             
+            // Build embed URL with params
+            let embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+            if (ytParams) {
+                embedUrl += `&${ytParams}`;
+            }
+            
             // Replace clicked placeholder with iframe
-            placeholder.outerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen class="mockup-media yt-iframe"></iframe>`;
+            placeholder.outerHTML = `<iframe src="${embedUrl}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen class="mockup-media yt-iframe"></iframe>`;
         });
     }
 
@@ -925,26 +938,68 @@ class PortfolioApp {
                             return items;
                         };
 
-                        const getYouTubeId = (url) => {
+                        // Parse YouTube URL/iframe and extract video ID + params (start, end, etc.)
+                        const parseYouTubeUrl = (input) => {
+                            const result = { videoId: null, start: null, end: null, params: '' };
+                            if (!input) return result;
+                            
+                            let url = input.trim();
+                            
+                            // Check if input is an iframe HTML - extract src
+                            if (url.startsWith('<iframe')) {
+                                const srcMatch = url.match(/src=["']([^"']+)["']/i);
+                                if (srcMatch) url = srcMatch[1];
+                            }
+                            
                             try {
                                 const u = new URL(url);
-                                if (u.hostname.includes('youtube.com')) return u.searchParams.get('v');
-                                if (u.hostname.includes('youtu.be')) return u.pathname.slice(1);
-                                return null;
+                                
+                                // Extract video ID based on URL type
+                                if (u.hostname.includes('youtube.com')) {
+                                    if (u.pathname.includes('/embed/')) {
+                                        // Embed URL: youtube.com/embed/VIDEO_ID
+                                        result.videoId = u.pathname.split('/embed/')[1]?.split(/[?&/]/)[0];
+                                    } else {
+                                        // Regular URL: youtube.com/watch?v=VIDEO_ID
+                                        result.videoId = u.searchParams.get('v');
+                                    }
+                                } else if (u.hostname.includes('youtu.be')) {
+                                    // Short URL: youtu.be/VIDEO_ID
+                                    result.videoId = u.pathname.slice(1);
+                                }
+                                
+                                // Extract start and end params (support both 'start' and 't' for start time)
+                                const startParam = u.searchParams.get('start') || u.searchParams.get('t');
+                                const endParam = u.searchParams.get('end');
+                                
+                                if (startParam) result.start = startParam.replace(/s$/i, ''); // Remove 's' suffix if present
+                                if (endParam) result.end = endParam.replace(/s$/i, '');
+                                
+                                // Build params string for embed URL
+                                const embedParams = [];
+                                if (result.start) embedParams.push(`start=${result.start}`);
+                                if (result.end) embedParams.push(`end=${result.end}`);
+                                result.params = embedParams.join('&');
+                                
                             } catch (e) {
-                                return null;
+                                return result;
                             }
+                            return result;
                         };
+                        
+                        // Legacy helper for backward compatibility
+                        const getYouTubeId = (url) => parseYouTubeUrl(url).videoId;
 
                         const renderYouTube = (url) => {
-                            const videoId = getYouTubeId(url);
-                            if (!videoId) return null;
+                            const parsed = parseYouTubeUrl(url);
+                            if (!parsed.videoId) return null;
 
                             // Lazy placeholder (saves space and avoids loading iframe until user clicks play)
-                            const thumb = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                            const thumb = `https://img.youtube.com/vi/${parsed.videoId}/hqdefault.jpg`;
+                            const paramsAttr = parsed.params ? ` data-youtube-params="${parsed.params}"` : '';
                             return `
-                              <div class="video-wrapper" data-youtube-id="${videoId}">
-                                <div class="yt-placeholder" data-youtube-id="${videoId}" role="button" aria-label="Play YouTube video">
+                              <div class="video-wrapper" data-youtube-id="${parsed.videoId}"${paramsAttr}>
+                                <div class="yt-placeholder" data-youtube-id="${parsed.videoId}"${paramsAttr} role="button" aria-label="Play YouTube video">
                                   <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb">
                                   <div class="yt-play-btn">▶</div>
                                 </div>
@@ -961,25 +1016,21 @@ class PortfolioApp {
                                 return `<img src="${item.src}" alt="${project.title} media" class="mockup-media">`;
                             }
                             if (item.type === 'yt') {
-                                // Lazy YouTube placeholder (self-contained)
-                                try {
-                                    const u = new URL(item.src);
-                                    let videoId = null;
-                                    if (u.hostname.includes('youtube.com')) videoId = u.searchParams.get('v');
-                                    else if (u.hostname.includes('youtu.be')) videoId = u.pathname.slice(1);
-                                    if (videoId) {
-                                        const thumb = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-                                        return `
-                                          <div class="video-wrapper" data-youtube-id="${videoId}">
-                                            <div class="yt-placeholder" data-youtube-id="${videoId}" role="button" aria-label="Play YouTube video">
-                                              <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb">
-                                              <div class="yt-play-btn">▶</div>
-                                            </div>
-                                            <button type="button" class="video-fullscreen-btn" aria-label="Fullscreen">⛶</button>
-                                          </div>
-                                        `;
-                                    }
-                                } catch (e) {}
+                                // Lazy YouTube placeholder (self-contained) with start/end support
+                                const parsed = parseYouTubeUrl(item.src);
+                                if (parsed.videoId) {
+                                    const thumb = `https://img.youtube.com/vi/${parsed.videoId}/hqdefault.jpg`;
+                                    const paramsAttr = parsed.params ? ` data-youtube-params="${parsed.params}"` : '';
+                                    return `
+                                      <div class="video-wrapper" data-youtube-id="${parsed.videoId}"${paramsAttr}>
+                                        <div class="yt-placeholder" data-youtube-id="${parsed.videoId}"${paramsAttr} role="button" aria-label="Play YouTube video">
+                                          <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb">
+                                          <div class="yt-play-btn">▶</div>
+                                        </div>
+                                        <button type="button" class="video-fullscreen-btn" aria-label="Fullscreen">⛶</button>
+                                      </div>
+                                    `;
+                                }
                                 return `<p>${item.src}</p>`;
                             }
                             if (item.type === 'vd') {
@@ -1169,22 +1220,47 @@ class PortfolioApp {
                                 return `<img src="${item.src}" alt="${project.title} media" class="mockup-media">`;
                             }
                             if (item.type === 'yt') {
-                                // Lazy YouTube placeholder (self-contained)
-                                try {
-                                    const u = new URL(item.src);
-                                    let videoId = null;
-                                    if (u.hostname.includes('youtube.com')) videoId = u.searchParams.get('v');
-                                    else if (u.hostname.includes('youtu.be')) videoId = u.pathname.slice(1);
-                                    if (videoId) {
-                                        const thumb = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-                                        return `
-                                          <div class="yt-placeholder" data-youtube-id="${videoId}" role="button" aria-label="Play YouTube video">
-                                            <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb">
-                                            <div class="yt-play-btn">▶</div>
-                                          </div>
-                                        `;
+                                // Lazy YouTube placeholder with start/end support
+                                // Note: parseYouTubeUrl helper defined in the parent scope
+                                const parseYT = (input) => {
+                                    const result = { videoId: null, params: '' };
+                                    if (!input) return result;
+                                    let url = input.trim();
+                                    if (url.startsWith('<iframe')) {
+                                        const srcMatch = url.match(/src=["']([^"']+)["']/i);
+                                        if (srcMatch) url = srcMatch[1];
                                     }
-                                } catch (e) {}
+                                    try {
+                                        const u = new URL(url);
+                                        if (u.hostname.includes('youtube.com')) {
+                                            if (u.pathname.includes('/embed/')) {
+                                                result.videoId = u.pathname.split('/embed/')[1]?.split(/[?&/]/)[0];
+                                            } else {
+                                                result.videoId = u.searchParams.get('v');
+                                            }
+                                        } else if (u.hostname.includes('youtu.be')) {
+                                            result.videoId = u.pathname.slice(1);
+                                        }
+                                        const startParam = u.searchParams.get('start') || u.searchParams.get('t');
+                                        const endParam = u.searchParams.get('end');
+                                        const embedParams = [];
+                                        if (startParam) embedParams.push(`start=${startParam.replace(/s$/i, '')}`);
+                                        if (endParam) embedParams.push(`end=${endParam.replace(/s$/i, '')}`);
+                                        result.params = embedParams.join('&');
+                                    } catch (e) {}
+                                    return result;
+                                };
+                                const parsed = parseYT(item.src);
+                                if (parsed.videoId) {
+                                    const thumb = `https://img.youtube.com/vi/${parsed.videoId}/hqdefault.jpg`;
+                                    const paramsAttr = parsed.params ? ` data-youtube-params="${parsed.params}"` : '';
+                                    return `
+                                      <div class="yt-placeholder" data-youtube-id="${parsed.videoId}"${paramsAttr} role="button" aria-label="Play YouTube video">
+                                        <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb">
+                                        <div class="yt-play-btn">▶</div>
+                                      </div>
+                                    `;
+                                }
                                 return `<p>${item.src}</p>`;
                             }
                             if (item.type === 'vd') {
