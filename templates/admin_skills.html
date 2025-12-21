@@ -353,21 +353,36 @@
         function moveSkill(btn, direction) {
             const card = btn.closest('.skill-card');
             const grid = card.parentNode;
+            let moved = false;
             
             if (direction === 'left') {
-                const prev = card.previousElementSibling;
+                let prev = card.previousElementSibling;
+                while (prev && (prev.style.display === 'none' || !prev.classList.contains('skill-card'))) {
+                    prev = prev.previousElementSibling;
+                }
+                
                 if (prev) {
                     grid.insertBefore(card, prev);
+                    moved = true;
                 }
             } else {
-                const next = card.nextElementSibling;
+                let next = card.nextElementSibling;
+                while (next && (next.style.display === 'none' || !next.classList.contains('skill-card'))) {
+                    next = next.nextElementSibling;
+                }
+                
                 if (next) {
-                    grid.insertBefore(next, card);
+                    // Moving right: insert current (card) AFTER target (next)
+                    // equivalent to inserting before next's next sibling
+                    grid.insertBefore(card, next.nextElementSibling);
+                    moved = true;
                 }
             }
             
-            // Show save order button
-            document.getElementById('save-order-btn').style.display = 'inline-block';
+            // Show save order button only if moved
+            if (moved) {
+                document.getElementById('save-order-btn').style.display = 'inline-block';
+            }
         }
 
         function saveOrder() {
