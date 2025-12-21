@@ -62,18 +62,12 @@ class PortfolioApp {
         // Create floating particles
         this.createParticles(particlesContainer, 30);
         
-        // Timeline sequence - FASTER VERSION
-        // 0.0s - Intro appears with logo animation
-        // 0.4s - Loader finishes
-        // 0.6s - Start reveal sequence
-        // 1.0s - Curtains fully open, show app
-        // 1.3s - Remove overlay completely
-        
+        // Timeline sequence from config
         setTimeout(() => {
             // Start curtain reveal
             introOverlay.classList.add('reveal');
             app.classList.add('visible');
-        }, 600);
+        }, PortfolioConfig.INTRO.REVEAL_DELAY);
         
         setTimeout(() => {
             // Mark as complete (will fade out)
@@ -92,9 +86,9 @@ class PortfolioApp {
                 bottomNav.classList.add('intro-highlight');
                 setTimeout(() => {
                     bottomNav.classList.remove('intro-highlight');
-                }, 1500);
+                }, PortfolioConfig.INTRO.NAV_HIGHLIGHT_DURATION);
             }
-        }, 1000);
+        }, PortfolioConfig.INTRO.COMPLETE_DELAY);
         
         // Remove overlay from DOM after animation completes
         setTimeout(() => {
@@ -104,7 +98,7 @@ class PortfolioApp {
             if (window.bugSquashAnimation) {
                 window.bugSquashAnimation.showClickMeHints();
             }
-        }, 1300);
+        }, PortfolioConfig.INTRO.REMOVE_DELAY);
     }
     
     createParticles(container, count) {
@@ -1920,20 +1914,22 @@ class BugSquashAnimation {
         document.documentElement.setAttribute('data-theme', 'dark');
         
         // Start portfolio tour during animation (no scrolling)
-        const sections = ['about', 'projects', 'skills', 'certifications', 'contact', 'home'];
-        const tourDelay = 1000; // ms per section
-        
-        sections.forEach((section, index) => {
-            setTimeout(() => {
-                if (window.portfolioApp) {
-                    window.portfolioApp.showSection(section);
-                    window.portfolioApp.updateActiveNavItem(section);
-                    if (section === 'home') {
-                        window.portfolioApp.currentSection = 'home';
+        if (PortfolioConfig.EASTER_EGG.TOUR.ENABLED) {
+            const sections = PortfolioConfig.EASTER_EGG.TOUR.SECTIONS;
+            const tourDelay = PortfolioConfig.EASTER_EGG.TOUR.SECTION_DELAY;
+            
+            sections.forEach((section, index) => {
+                setTimeout(() => {
+                    if (window.portfolioApp) {
+                        window.portfolioApp.showSection(section);
+                        window.portfolioApp.updateActiveNavItem(section);
+                        if (section === 'home') {
+                            window.portfolioApp.currentSection = 'home';
+                        }
                     }
-                }
-            }, index * tourDelay);
-        });
+                }, index * tourDelay);
+            });
+        }
         
         // Track the Easter egg click
         fetch('/api/track_easter_egg', {
@@ -1946,16 +1942,19 @@ class BugSquashAnimation {
         profileImage.classList.add('bug-shake');
         setTimeout(() => {
             profileImage.classList.remove('bug-shake');
-        }, 300);
+        }, PortfolioConfig.EASTER_EGG.SHAKE_DURATION);
         
         // Spawn bugs after shake effect
         setTimeout(() => {
             this.spawnBugs(profileImage);
-        }, 300);
+        }, PortfolioConfig.EASTER_EGG.BUG_SPAWN_DELAY);
     }
 
     spawnBugs(profileImage) {
-        const bugCount = 12 + Math.floor(Math.random() * 7); // 12-18 bugs
+        // Use config for bug counts
+        const baseCount = PortfolioConfig.EASTER_EGG.BUG_MIN_COUNT;
+        const randomAdd = PortfolioConfig.EASTER_EGG.BUG_MAX_ADDITIONAL;
+        const bugCount = baseCount + Math.floor(Math.random() * randomAdd);
         const rect = profileImage.getBoundingClientRect();
         
         // Get viewport dimensions for spreading bugs across page
