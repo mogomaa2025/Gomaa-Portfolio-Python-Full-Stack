@@ -26,7 +26,7 @@ const PortfolioConfig = {
 
     // Typing Animation
     TYPING: {
-        TEXTS: ['QA Automation Engineer', 'SDET', 'Python Developer', 'Test Architect'],
+        TEXTS: ['Manual Tester', 'Api Tester', 'Automation Tester'],
         TYPE_SPEED: 100,
         BACK_SPEED: 50,
         BACK_DELAY: 2000
