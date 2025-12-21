@@ -1716,11 +1716,13 @@ class BugSquashAnimation {
         this.isAnimating = false;
         this.container = null;
         this.hintsShown = false;
+        this.easterEggTriggered = false; // Only allow Easter egg once per session
         this.init();
     }
 
     showClickMeHints() {
-        if (this.hintsShown) return;
+        // Don't show hints if already shown or if Easter egg was triggered
+        if (this.hintsShown || this.easterEggTriggered) return;
         this.hintsShown = true;
 
         const profileImage = document.getElementById('profile-image');
@@ -1880,7 +1882,12 @@ class BugSquashAnimation {
         // Add click/tap handler
         profileImage.addEventListener('click', (e) => {
             e.preventDefault();
-            if (!this.isAnimating) {
+            // Always shake on click
+            profileImage.classList.add('bug-shake');
+            setTimeout(() => profileImage.classList.remove('bug-shake'), 300);
+            
+            // Only run full animation once per session
+            if (!this.isAnimating && !this.easterEggTriggered) {
                 this.startAnimation(profileImage, 'image');
             }
         });
@@ -1888,7 +1895,12 @@ class BugSquashAnimation {
         // Add touch handler for mobile
         profileImage.addEventListener('touchend', (e) => {
             e.preventDefault();
-            if (!this.isAnimating) {
+            // Always shake on touch
+            profileImage.classList.add('bug-shake');
+            setTimeout(() => profileImage.classList.remove('bug-shake'), 300);
+            
+            // Only run full animation once per session
+            if (!this.isAnimating && !this.easterEggTriggered) {
                 this.startAnimation(profileImage, 'image');
             }
         });
@@ -1898,15 +1910,18 @@ class BugSquashAnimation {
     }
 
     startAnimation(profileImage, triggerSource = 'image') {
+        // Only allow Easter egg once per session
+        if (this.easterEggTriggered) return;
+        this.easterEggTriggered = true;
         this.isAnimating = true;
         
         // Activate terminal mode theme during animation
         document.body.classList.add('terminal-mode');
         document.documentElement.setAttribute('data-theme', 'dark');
         
-        // Start portfolio tour during animation
+        // Start portfolio tour during animation (no scrolling)
         const sections = ['about', 'projects', 'skills', 'certifications', 'contact', 'home'];
-        const tourDelay = 800; // ms between each section
+        const tourDelay = 1000; // ms per section
         
         sections.forEach((section, index) => {
             setTimeout(() => {
@@ -1927,12 +1942,14 @@ class BugSquashAnimation {
             body: JSON.stringify({ trigger_source: triggerSource })
         }).catch(() => {}); // Silently fail if tracking fails
         
-        // Add shake effect to image
+        // Add shake/vibrate effect to image (like Mohamed Gomaa logo)
         profileImage.classList.add('bug-shake');
-        
-        // Spawn bugs after a brief delay
         setTimeout(() => {
             profileImage.classList.remove('bug-shake');
+        }, 300);
+        
+        // Spawn bugs after shake effect
+        setTimeout(() => {
             this.spawnBugs(profileImage);
         }, 300);
     }
