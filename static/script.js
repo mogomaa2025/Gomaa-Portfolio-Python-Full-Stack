@@ -62,18 +62,18 @@ class PortfolioApp {
         // Create floating particles
         this.createParticles(particlesContainer, 30);
         
-        // Timeline sequence - FAST VERSION
+        // Timeline sequence - FASTER VERSION
         // 0.0s - Intro appears with logo animation
-        // 0.8s - Loader finishes
-        // 1.2s - Start reveal sequence
-        // 1.8s - Curtains fully open, show app
-        // 2.2s - Remove overlay completely
+        // 0.4s - Loader finishes
+        // 0.6s - Start reveal sequence
+        // 1.0s - Curtains fully open, show app
+        // 1.3s - Remove overlay completely
         
         setTimeout(() => {
             // Start curtain reveal
             introOverlay.classList.add('reveal');
             app.classList.add('visible');
-        }, 1200);
+        }, 600);
         
         setTimeout(() => {
             // Mark as complete (will fade out)
@@ -94,7 +94,7 @@ class PortfolioApp {
                     bottomNav.classList.remove('intro-highlight');
                 }, 1500);
             }
-        }, 1800);
+        }, 1000);
         
         // Remove overlay from DOM after animation completes
         setTimeout(() => {
@@ -104,7 +104,7 @@ class PortfolioApp {
             if (window.bugSquashAnimation) {
                 window.bugSquashAnimation.showClickMeHints();
             }
-        }, 2500);
+        }, 1300);
     }
     
     createParticles(container, count) {
