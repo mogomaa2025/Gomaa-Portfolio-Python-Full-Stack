@@ -1900,6 +1900,10 @@ class BugSquashAnimation {
     startAnimation(profileImage, triggerSource = 'image') {
         this.isAnimating = true;
         
+        // Activate terminal mode theme during animation
+        document.body.classList.add('terminal-mode');
+        document.documentElement.setAttribute('data-theme', 'dark');
+        
         // Track the Easter egg click
         fetch('/api/track_easter_egg', {
             method: 'POST',
@@ -2122,6 +2126,8 @@ class BugSquashAnimation {
             setTimeout(() => {
                 this.tester.remove();
                 successMsg.remove();
+                // Deactivate terminal mode after success message
+                document.body.classList.remove('terminal-mode');
                 this.cleanupFullPage();
             }, 1200);
         } else {
@@ -2276,6 +2282,8 @@ class BugSquashAnimation {
             setTimeout(() => {
                 this.tester.remove();
                 successMsg.remove();
+                // Deactivate terminal mode after success message
+                document.body.classList.remove('terminal-mode');
                 this.cleanup();
             }, 1500);
         } else {
@@ -2289,6 +2297,9 @@ class BugSquashAnimation {
         this.isAnimating = false;
         // Clean any remaining elements
         this.container.innerHTML = '';
+        
+        // Deactivate terminal mode theme after animation
+        document.body.classList.remove('terminal-mode');
     }
 }
 
