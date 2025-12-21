@@ -89,6 +89,56 @@
         .edit-link { background: rgba(59, 130, 246, 0.2); color: #93c5fd; }
         .delete-btn { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: none; cursor: pointer; }
         .move-btn { background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; }
+
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+                padding: 1rem;
+            }
+
+            .admin-nav {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .page-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+                text-align: center;
+                margin-bottom: 2rem;
+            }
+            
+            .page-header > div:last-child {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .page-header .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .admin-container {
+                padding: 1rem;
+            }
+
+            .cert-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .cert-actions {
+                justify-content: center;
+                /* Optional: Stack actions if many */
+                flex-wrap: wrap; 
+            }
+            
+            .move-btn, .action-link {
+                padding: 0.6rem 0.8rem; /* Larger touch targets */
+            }
+        }
     </style>
 </head>
 <body>

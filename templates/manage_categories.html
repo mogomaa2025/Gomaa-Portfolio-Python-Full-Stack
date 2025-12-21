@@ -19,6 +19,49 @@
         .delete-btn { background: #ef4444; color: #fff; }
         .move-btn { background: #181a20; color: #fff; border: 1px solid #444; padding: 0.35rem 0.6rem; }
         .move-btn[disabled] { opacity: 0.35; cursor: not-allowed; }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+                margin: 1rem;
+            }
+            
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+            
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            
+            tr {
+                margin-bottom: 1rem;
+                border: 1px solid #333;
+                border-radius: 8px;
+                background: rgba(255, 255, 255, 0.05);
+            }
+            
+            td {
+                border: none;
+                position: relative;
+                padding: 1rem;
+            }
+            
+            form {
+                flex-direction: column;
+            }
+            
+            input, button {
+                width: 100%;
+            }
+            
+            .actions {
+                justify-content: space-between;
+                margin-top: 0.5rem;
+            }
+        }
     </style>
 </head>
 <body>
