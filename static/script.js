@@ -1904,6 +1904,22 @@ class BugSquashAnimation {
         document.body.classList.add('terminal-mode');
         document.documentElement.setAttribute('data-theme', 'dark');
         
+        // Start portfolio tour during animation
+        const sections = ['about', 'projects', 'skills', 'certifications', 'contact', 'home'];
+        const tourDelay = 800; // ms between each section
+        
+        sections.forEach((section, index) => {
+            setTimeout(() => {
+                if (window.portfolioApp) {
+                    window.portfolioApp.showSection(section);
+                    window.portfolioApp.updateActiveNavItem(section);
+                    if (section === 'home') {
+                        window.portfolioApp.currentSection = 'home';
+                    }
+                }
+            }, index * tourDelay);
+        });
+        
         // Track the Easter egg click
         fetch('/api/track_easter_egg', {
             method: 'POST',
@@ -2126,9 +2142,9 @@ class BugSquashAnimation {
             setTimeout(() => {
                 this.tester.remove();
                 successMsg.remove();
-                // Deactivate terminal mode after success message
-                document.body.classList.remove('terminal-mode');
                 this.cleanupFullPage();
+                // Deactivate terminal mode after animation
+                document.body.classList.remove('terminal-mode');
             }, 1200);
         } else {
             this.cleanupFullPage();
@@ -2282,9 +2298,9 @@ class BugSquashAnimation {
             setTimeout(() => {
                 this.tester.remove();
                 successMsg.remove();
-                // Deactivate terminal mode after success message
-                document.body.classList.remove('terminal-mode');
                 this.cleanup();
+                // Deactivate terminal mode after animation
+                document.body.classList.remove('terminal-mode');
             }, 1500);
         } else {
             this.cleanup();
