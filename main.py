@@ -1044,9 +1044,27 @@ def manage_categories():
         elif action == 'edit':
             cat_id = int(request.form.get('id'))
             new_name = request.form.get('name', '').strip()
+            old_name = None
             for c in categories:
                 if c['id'] == cat_id:
+                    old_name = c['name']
                     c['name'] = new_name
+                    break
+            # Update all projects that use the old category name
+            if old_name and new_name and old_name != new_name:
+                try:
+                    with open(PROJECTS_FILE, 'r') as f:
+                        projects = json.load(f)
+                    updated = False
+                    for p in projects:
+                        if p.get('category') == old_name:
+                            p['category'] = new_name
+                            updated = True
+                    if updated:
+                        with open(PROJECTS_FILE, 'w') as f:
+                            json.dump(projects, f, indent=2)
+                except Exception:
+                    pass  # If projects file doesn't exist, just skip
         elif action == 'delete':
             cat_id = int(request.form.get('id'))
             categories = [c for c in categories if c['id'] != cat_id]
