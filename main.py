@@ -881,13 +881,13 @@ def get_project_categories():
 @admin_required
 def admin_skills():
     try:
-        with open(SKILLS_FILE, 'r') as f:
+        with open(SKILLS_FILE, 'r', encoding='utf-8-sig') as f:
             skills = json.load(f)
     except:
         skills = []
     
     try:
-        with open(SKILL_CATEGORIES_FILE, 'r') as f:
+        with open(SKILL_CATEGORIES_FILE, 'r', encoding='utf-8-sig') as f:
             skill_categories = json.load(f)
     except:
         skill_categories = []
@@ -898,7 +898,7 @@ def admin_skills():
 @admin_required
 def add_skill():
     try:
-        with open(SKILL_CATEGORIES_FILE, 'r') as f:
+        with open(SKILL_CATEGORIES_FILE, 'r', encoding='utf-8-sig') as f:
             skill_categories = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         skill_categories = []
@@ -909,7 +909,7 @@ def add_skill():
 @admin_required
 def edit_skill(skill_id):
     try:
-        with open(SKILLS_FILE, 'r') as f:
+        with open(SKILLS_FILE, 'r', encoding='utf-8-sig') as f:
             skills = json.load(f)
         
         skill = next((s for s in skills if s.get('id') == skill_id), None)
@@ -917,7 +917,7 @@ def edit_skill(skill_id):
             return "Skill not found", 404
             
         try:
-            with open(SKILL_CATEGORIES_FILE, 'r') as f:
+            with open(SKILL_CATEGORIES_FILE, 'r', encoding='utf-8-sig') as f:
                 skill_categories = json.load(f)
         except (FileNotFoundError, json.JSONDecodeError):
             skill_categories = []
@@ -930,7 +930,7 @@ def edit_skill(skill_id):
 @admin_required
 def create_skill():
     try:
-        with open(SKILLS_FILE, 'r') as f:
+        with open(SKILLS_FILE, 'r', encoding='utf-8-sig') as f:
             skills = json.load(f)
     except:
         skills = []
@@ -944,7 +944,7 @@ def create_skill():
     
     skills.append(new_skill)
     
-    with open(SKILLS_FILE, 'w') as f:
+    with open(SKILLS_FILE, 'w', encoding='utf-8') as f:
         json.dump(skills, f, indent=2)
     
     return redirect('/admin/skills')
@@ -953,7 +953,7 @@ def create_skill():
 @admin_required
 def update_skill(skill_id):
     try:
-        with open(SKILLS_FILE, 'r') as f:
+        with open(SKILLS_FILE, 'r', encoding='utf-8-sig') as f:
             skills = json.load(f)
     except:
         skills = []
@@ -968,7 +968,7 @@ def update_skill(skill_id):
             }
             break
     
-    with open(SKILLS_FILE, 'w') as f:
+    with open(SKILLS_FILE, 'w', encoding='utf-8') as f:
         json.dump(skills, f, indent=2)
     
     return redirect('/admin/skills')
@@ -977,14 +977,14 @@ def update_skill(skill_id):
 @admin_required
 def delete_skill(skill_id):
     try:
-        with open(SKILLS_FILE, 'r') as f:
+        with open(SKILLS_FILE, 'r', encoding='utf-8-sig') as f:
             skills = json.load(f)
     except:
         skills = []
     
     skills = [s for s in skills if s.get('id') != skill_id]
     
-    with open(SKILLS_FILE, 'w') as f:
+    with open(SKILLS_FILE, 'w', encoding='utf-8') as f:
         json.dump(skills, f, indent=2)
     
     return jsonify({"success": True, "message": "Skill deleted successfully"})
