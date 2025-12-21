@@ -23,9 +23,11 @@ class PortfolioApp {
         this.currentVisitId = null;
         this.currentVisitStartTime = null;
         this.visitUpdateInterval = null;
-        this.typingSpeed = 100;
-        this.deletingSpeed = 50;
-        this.pauseTime = 2000;
+        this.typingTimeout = null;
+        this.config = window.PortfolioConfig || {};
+        this.typingSpeed = this.config.TYPING?.TYPE_SPEED || 100;
+        this.deletingSpeed = this.config.TYPING?.BACK_SPEED || 50;
+        this.pauseTime = this.config.TYPING?.BACK_DELAY || 2000;
         
         this.init();
     }
@@ -593,6 +595,12 @@ class PortfolioApp {
         const typingElement = document.getElementById('typing-text');
         if (!typingElement) return;
 
+        // Clear any existing timeout to prevent race conditions
+        if (this.typingTimeout) {
+            clearTimeout(this.typingTimeout);
+            this.typingTimeout = null;
+        }
+
         const typeText = () => {
             const currentText = this.typingTexts[this.currentTextIndex];
             
@@ -603,9 +611,9 @@ class PortfolioApp {
                 if (this.currentCharIndex === 0) {
                     this.isDeleting = false;
                     this.currentTextIndex = (this.currentTextIndex + 1) % this.typingTexts.length;
-                    setTimeout(typeText, this.typingSpeed);
+                    this.typingTimeout = setTimeout(typeText, this.typingSpeed);
                 } else {
-                    setTimeout(typeText, this.deletingSpeed);
+                    this.typingTimeout = setTimeout(typeText, this.deletingSpeed);
                 }
             } else {
                 typingElement.textContent = currentText.substring(0, this.currentCharIndex + 1);
@@ -613,9 +621,9 @@ class PortfolioApp {
                 
                 if (this.currentCharIndex === currentText.length) {
                     this.isDeleting = true;
-                    setTimeout(typeText, this.pauseTime);
+                    this.typingTimeout = setTimeout(typeText, this.pauseTime);
                 } else {
-                    setTimeout(typeText, this.typingSpeed);
+                    this.typingTimeout = setTimeout(typeText, this.typingSpeed);
                 }
             }
         };
@@ -1023,7 +1031,7 @@ class PortfolioApp {
                     }
 
                     card.innerHTML = `
-                        ${imageUrl ? `<div class="cert-image-container"><img src="${imageUrl}" alt="${cert.name}" class="cert-image" onclick="window.portfolioApp.openImageModal('${imageUrl}', '${cert.name}')"></div>` : ''}
+                        ${imageUrl ? `<div class="cert-image-container"><img src="${imageUrl}" alt="${cert.name}" class="cert-image" loading="lazy" onclick="window.portfolioApp.openImageModal('${imageUrl}', '${cert.name}')"></div>` : ''}
                         <div class="cert-content">
                             <div class="cert-issuer">${cert.issuer}</div>
                             <h3 class="cert-name">${cert.name}</h3>
@@ -1224,7 +1232,7 @@ class PortfolioApp {
                             return `
                               <div class="video-wrapper" data-youtube-id="${parsed.videoId}"${paramsAttr}>
                                 <div class="yt-placeholder" data-youtube-id="${parsed.videoId}"${paramsAttr} role="button" aria-label="Play YouTube video">
-                                  <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb">
+                                  <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb" loading="lazy">
                                   <div class="yt-play-btn">▶</div>
                                 </div>
                                 <button type="button" class="video-fullscreen-btn" aria-label="Fullscreen">⛶</button>
@@ -1237,7 +1245,7 @@ class PortfolioApp {
                         const renderCarouselItem = (item) => {
                             if (!item) return '';
                             if (item.type === 'img') {
-                                return `<img src="${item.src}" alt="${project.title} media" class="mockup-media">`;
+                                return `<img src="${item.src}" alt="${project.title} media" class="mockup-media" loading="lazy">`;
                             }
                             if (item.type === 'yt') {
                                 // Lazy YouTube placeholder (self-contained) with start/end support
@@ -1248,7 +1256,7 @@ class PortfolioApp {
                                     return `
                                       <div class="video-wrapper" data-youtube-id="${parsed.videoId}"${paramsAttr}>
                                         <div class="yt-placeholder" data-youtube-id="${parsed.videoId}"${paramsAttr} role="button" aria-label="Play YouTube video">
-                                          <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb">
+                                          <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb" loading="lazy">
                                           <div class="yt-play-btn">▶</div>
                                         </div>
                                         <button type="button" class="video-fullscreen-btn" aria-label="Fullscreen">⛶</button>
@@ -1728,13 +1736,18 @@ class BugSquashAnimation {
             // Add glow effect to profile image
             profileImage.classList.add('logo-highlighted');
             
-            // Create hint below the profile image
+            // Remove existing hint if any
+            const existingHint = profileContainer.querySelector('.logo-click-hint.profile-hint');
+            if (existingHint) existingHint.remove();
+            
+            // Create hint ABOVE the profile image
             const imageHint = document.createElement('div');
-            imageHint.className = 'logo-click-hint profile-hint';
+            imageHint.className = 'logo-click-hint profile-hint top-positioned';
             imageHint.innerHTML = 'Click Here!';
             imageHint.style.cssText = `
                 position: absolute;
-                top: calc(100% + 10px);
+                bottom: calc(100% + 15px);
+                top: auto;
                 left: 50%;
                 transform: translateX(-50%);
                 z-index: 9999;
@@ -1755,6 +1768,10 @@ class BugSquashAnimation {
         
         // Add hint for bottom navigation
         if (bottomNav) {
+            // Remove existing hint if any
+            const existingNavHint = document.querySelector('.logo-click-hint.nav-hint');
+            if (existingNavHint) existingNavHint.remove();
+
             const navHint = document.createElement('div');
             navHint.className = 'logo-click-hint nav-hint';
             navHint.innerHTML = 'Navigate';
@@ -2136,7 +2153,7 @@ class BugSquashAnimation {
             // Show success message in center of screen
             const successMsg = document.createElement('div');
             successMsg.className = 'bug-success-message';
-            successMsg.innerHTML = '✅ All Bugs Fixed!';
+            successMsg.innerHTML = '✅ All Bugs Fixed By Eng. Gomaa!';
             successMsg.style.position = 'fixed';
             successMsg.style.left = '50%';
             successMsg.style.top = '50%';

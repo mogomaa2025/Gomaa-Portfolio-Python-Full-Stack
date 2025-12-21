@@ -58,6 +58,7 @@ body {
     justify-content: center;
     background: linear-gradient(135deg, #0a0118 0%, #1a0b2e 30%, #16213e 70%, #0f3460 100%);
     overflow: hidden;
+    will-change: opacity, transform;
 }
 
 .intro-overlay.hidden {
@@ -80,6 +81,7 @@ body {
     border-radius: 50%;
     animation: particle-float 4s ease-in-out infinite;
     box-shadow: 0 0 10px rgba(59, 130, 246, 0.5), 0 0 20px rgba(74, 222, 128, 0.3);
+    will-change: transform, opacity;
 }
 
 @keyframes particle-float {
@@ -2609,6 +2611,13 @@ button.category-tab-btn.active {
     border-left: 6px solid transparent;
     border-right: 6px solid transparent;
     border-bottom: 6px solid #10b981;
+}
+
+.logo-click-hint.top-positioned::before {
+    top: auto;
+    bottom: -6px;
+    border-bottom: none;
+    border-top: 6px solid #10b981;
 }
 
 .logo-click-hint.visible {
