@@ -1161,7 +1161,7 @@ class PortfolioApp {
                                 const val = t.slice(idx + 1).trim();
                                 if (!val) continue;
 
-                                const m = key.match(/^(img|yt|vd|em)(\d+)$/);
+                                const m = key.match(/^(img|yt|vd|em|gd|gdv)(\d+)$/);
                                 if (!m) continue;
                                 items.push({ type: m[1], order: parseInt(m[2], 10), src: val });
                             }
@@ -1279,6 +1279,21 @@ class PortfolioApp {
                                     <iframe src="${item.src}" class="mockup-media embed-iframe" frameborder="0" allowfullscreen webkitallowfullscreen mozallowfullscreen allow="autoplay; fullscreen"></iframe>
                                     <button type="button" class="embed-fullscreen-btn" aria-label="Fullscreen">⛶</button>
                                     <div class="embed-zoom-hint">Tap fullscreen for better viewing</div>
+                                </div>`;
+                            }
+                            if (item.type === 'gd') {
+                                // Google Drive video embed
+                                return `<div class="embed-wrapper">
+                                    <iframe src="https://drive.google.com/file/d/${item.src}/preview" class="mockup-media embed-iframe" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                                    <button type="button" class="embed-fullscreen-btn" aria-label="Fullscreen">⛶</button>
+                                    <div class="embed-zoom-hint">Tap fullscreen for better viewing</div>
+                                </div>`;
+                            }
+                            if (item.type === 'gdv') {
+                                // Google Drive Direct Video (Native Player)
+                                return `<div class="video-wrapper" data-video-src="https://drive.google.com/uc?export=download&id=${item.src}">
+                                    <video src="https://drive.google.com/uc?export=download&id=${item.src}" class="mockup-media" controls playsinline></video>
+                                    <button type="button" class="video-fullscreen-btn" aria-label="Fullscreen">⛶</button>
                                 </div>`;
                             }
                             return '';
@@ -1499,6 +1514,18 @@ class PortfolioApp {
                             }
                             if (item.type === 'vd') {
                                 return `<video src="${item.src}" class="mockup-media" controls playsinline></video>`;
+                            }
+                            if (item.type === 'gd') {
+                                // Google Drive video embed
+                                return `<div class="embed-wrapper">
+                                    <iframe src="https://drive.google.com/file/d/${item.src}/preview" class="mockup-media embed-iframe" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                                    <button type="button" class="embed-fullscreen-btn" aria-label="Fullscreen">⛶</button>
+                                    <div class="embed-zoom-hint">Tap fullscreen for better viewing</div>
+                                </div>`;
+                            }
+                            if (item.type === 'gdv') {
+                                // Google Drive Direct Video (Native Player)
+                                return `<video src="https://drive.google.com/uc?export=download&id=${item.src}" class="mockup-media" controls playsinline></video>`;
                             }
                             return '';
                         };
