@@ -1015,9 +1015,21 @@
                             const imgItems = items.filter(item => item.type === 'img');
                             if (imgItems.length > 1) {
                                 currentSlides = imgItems.map(item => item.src);
-                                // Find current image index
+                                // Find current image index with improved URL matching
                                 const clickedSrc = e.target.src;
-                                currentSlideIndex = currentSlides.findIndex(src => clickedSrc.includes(src) || src.includes(clickedSrc.split('/').pop())) || 0;
+                                // Extract filename from clicked src for more reliable matching
+                                const clickedFilename = clickedSrc.split('/').pop().split('?')[0];
+                                let foundIndex = currentSlides.findIndex(src => {
+                                    // Try exact match first
+                                    if (clickedSrc === src || src === clickedSrc) return true;
+                                    // Try checking if one URL contains the other
+                                    if (clickedSrc.includes(src) || src.includes(clickedSrc)) return true;
+                                    // Try matching by filename
+                                    const srcFilename = src.split('/').pop().split('?')[0];
+                                    return srcFilename === clickedFilename;
+                                });
+                                // Properly handle -1 (not found) vs 0 (first item)
+                                currentSlideIndex = foundIndex !== -1 ? foundIndex : 0;
                                 showSlide(currentSlideIndex);
                             } else {
                                 currentSlides = [e.target.src];
@@ -1027,6 +1039,7 @@
                             currentSlides = [e.target.src];
                             showSlide(0);
                         }
+
                     } else {
                         // Truly single image
                         currentSlides = [e.target.src];

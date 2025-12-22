@@ -12,7 +12,7 @@
     ],
     "github_url": "https://github.com/mogomaa2025/DEPI_GRADUTION_PROJECT/tree/main/Manual%20Project%20Link",
     "link_button_text": "Github",
-    "mockup_content": "em1:https://jumpshare.com/embed/nrnRYqvYAtxymr0qqWtc",
+    "mockup_content": "em1:https://jumpshare.com/embed/0GWS4j3xjYpIN4calVxY\r\nimg2:https://camo.githubusercontent.com/43ff2e73472b7d22f798e6772d02685fa5260e839c33caff86421d691eb86f15/68747470733a2f2f692e6962622e636f2f674d6247467246632f323032352d30342d31342d3233313232382e706e67\r\nimg3:https://i.ibb.co/twd1BQs6/image.png\r\nimg4:https//i.ibb.co/Kxg9MTGJ/image.png\r\nimg5:https://i.ibb.co/kVTyHq3Z/image.png\r\nimg6:https://i.ibb.co/23kQnQgR/image.png\r\nimg7:https://i.ibb.co/gLVYYqXt/image.png",
     "date": "2025-04-16",
     "demo_url": "",
     "demo_button_text": "Demo",
@@ -73,6 +73,22 @@
     "date": "2025-12-03",
     "demo_url": "https://www.postman.com/galactic-station-85267/depi/collection/nmgi80w/simple-books-api-depi-final?action=share&creator=43348422",
     "demo_button_text": "Demo",
+    "confidential": false
+  },
+  {
+    "id": 5,
+    "title": "mdnfdmsm",
+    "description": "nmsdnfsmm",
+    "category": "Manual Testing",
+    "tags": [
+      "mnn"
+    ],
+    "github_url": "https://github.com/mogomaa2025/DEPI_GRADUTION_PROJECT/tree/main/Automation-Demoblaze-V2",
+    "link_button_text": "Github",
+    "mockup_content": "em1:https://jumpshare.com/embed/SqFB1kMPyzz5Ynun9pUI\r\nem2:https://jumpshare.com/embed/SY2vTvgmUL0LxD5UI2vl\r\nimg3:https://i.ibb.co/ZRZ8p52p/image.png\r\nimg4:https://i.ibb.co/FLkCxgvH/image.png\r\nimg5:https://i.ibb.co/YF9yJBKk/image.png\r\nimg6:https://i.ibb.co/bRWLD49Z/image.png\r\nimg6:https://i.ibb.co/jvStGRFx/image.png",
+    "date": "2025-12-22",
+    "demo_url": "",
+    "demo_button_text": "",
     "confidential": false
   }
 ]

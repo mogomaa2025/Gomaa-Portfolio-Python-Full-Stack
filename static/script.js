@@ -1527,8 +1527,17 @@ class PortfolioApp {
                                 // Google Drive Direct Video (Native Player)
                                 return `<video src="https://drive.google.com/uc?export=download&id=${item.src}" class="mockup-media" controls playsinline></video>`;
                             }
+                            if (item.type === 'em') {
+                                // Embed iframe (Jumpshare, Loom, etc.) with fullscreen button
+                                return `<div class="embed-wrapper">
+                                    <iframe src="${item.src}" class="mockup-media embed-iframe" frameborder="0" allowfullscreen webkitallowfullscreen mozallowfullscreen allow="autoplay; fullscreen"></iframe>
+                                    <button type="button" class="embed-fullscreen-btn" aria-label="Fullscreen">⛶</button>
+                                    <div class="embed-zoom-hint">Tap fullscreen for better viewing</div>
+                                </div>`;
+                            }
                             return '';
                         };
+
 
                         const stopMediaInCard = (rootEl) => {
                             const root = rootEl || projectCard;
