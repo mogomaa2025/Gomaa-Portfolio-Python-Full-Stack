@@ -1782,4 +1782,4 @@ def validate_mockup_content(content):
         return content
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True) # Changed from 5000 to 5001

@@ -831,6 +831,9 @@ body::before {
     grid-template-columns: 1fr;
     gap: 2rem;
     margin-top: 2rem;
+    /* GPU acceleration for smooth scrolling */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
 }
 
 .project-card {
@@ -838,14 +841,25 @@ body::before {
     border-radius: 16px;
     overflow: hidden;
     border: 1px solid var(--card-border);
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    /* GPU acceleration to prevent white flicker during scroll */
+    will-change: transform;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
 }
 
 .project-card:hover {
     background: rgba(59, 130, 246, 0.1);
-    transform: translateY(-8px);
+    transform: translateY(-8px) translateZ(0);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* Hidden cards should not consume rendering resources */
+.project-card.hidden {
+    display: none;
+    content-visibility: hidden;
 }
 
 .project-preview {

@@ -1269,14 +1269,14 @@ class PortfolioApp {
                             }
                             if (item.type === 'vd') {
                                 return `<div class="video-wrapper" data-video-src="${item.src}">
-                                    <video src="${item.src}" class="mockup-media" controls playsinline></video>
+                                    <video src="${item.src}" class="mockup-media" controls playsinline preload="none"></video>
                                     <button type="button" class="video-fullscreen-btn" aria-label="Fullscreen">⛶</button>
                                 </div>`;
                             }
                             if (item.type === 'em') {
                                 // Embed iframe (Jumpshare, Loom, etc.) with fullscreen button
                                 return `<div class="embed-wrapper">
-                                    <iframe src="${item.src}" class="mockup-media embed-iframe" frameborder="0" allowfullscreen webkitallowfullscreen mozallowfullscreen allow="autoplay; fullscreen"></iframe>
+                                    <iframe src="${item.src}" class="mockup-media embed-iframe" frameborder="0" allowfullscreen webkitallowfullscreen mozallowfullscreen allow="autoplay; fullscreen" loading="lazy"></iframe>
                                     <button type="button" class="embed-fullscreen-btn" aria-label="Fullscreen">⛶</button>
                                     <div class="embed-zoom-hint">Tap fullscreen for better viewing</div>
                                 </div>`;
@@ -1284,7 +1284,7 @@ class PortfolioApp {
                             if (item.type === 'gd') {
                                 // Google Drive video embed
                                 return `<div class="embed-wrapper">
-                                    <iframe src="https://drive.google.com/file/d/${item.src}/preview" class="mockup-media embed-iframe" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                                    <iframe src="https://drive.google.com/file/d/${item.src}/preview" class="mockup-media embed-iframe" frameborder="0" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
                                     <button type="button" class="embed-fullscreen-btn" aria-label="Fullscreen">⛶</button>
                                     <div class="embed-zoom-hint">Tap fullscreen for better viewing</div>
                                 </div>`;
@@ -1292,7 +1292,7 @@ class PortfolioApp {
                             if (item.type === 'gdv') {
                                 // Google Drive Direct Video (Native Player)
                                 return `<div class="video-wrapper" data-video-src="https://drive.google.com/uc?export=download&id=${item.src}">
-                                    <video src="https://drive.google.com/uc?export=download&id=${item.src}" class="mockup-media" controls playsinline></video>
+                                    <video src="https://drive.google.com/uc?export=download&id=${item.src}" class="mockup-media" controls playsinline preload="none"></video>
                                     <button type="button" class="video-fullscreen-btn" aria-label="Fullscreen">⛶</button>
                                 </div>`;
                             }
@@ -1329,6 +1329,7 @@ class PortfolioApp {
                                     <img src="${slideUrls[0]}" 
                                          alt="${project.title} slides" 
                                          class="mockup-media" 
+                                         loading="lazy"
                                          data-external-slides="${slideUrls.join('|')}">
                                     <div class="slide-hint">Click to view slideshow (${slideUrls.length} images)</div>
                                 </div>`;
@@ -1337,7 +1338,7 @@ class PortfolioApp {
                         // Handle single external image (legacy)
                         else if (content.startsWith('img:')) {
                             const imgUrl = content.substring(4);
-                            mockupContentHTML = `<img src="${imgUrl}" alt="${project.title} mockup" class="mockup-media">`;
+                            mockupContentHTML = `<img src="${imgUrl}" alt="${project.title} mockup" class="mockup-media" loading="lazy">`;
                         }
                         // Handle slide images from local storage
                         else if (content.startsWith('slides/')) {
@@ -1346,6 +1347,7 @@ class PortfolioApp {
                                 <img src="/static/slides/${slidePath}/0.jpg" 
                                      alt="${project.title} slides" 
                                      class="mockup-media" 
+                                     loading="lazy"
                                      data-slides="${slidePath}">
                                 <div class="slide-hint">Click to view slideshow</div>
                             </div>`;
@@ -1353,13 +1355,13 @@ class PortfolioApp {
                         // Handle local images
                         else if (content.startsWith('image/')) {
                             const imagePath = content.replace(/^image\/image\//, 'image/');
-                            mockupContentHTML = `<img src="/static/${imagePath}" alt="${project.title} mockup" class="mockup-media">`;
+                            mockupContentHTML = `<img src="/static/${imagePath}" alt="${project.title} mockup" class="mockup-media" loading="lazy">`;
                         }
                         // Handle local videos
                         else if (content.startsWith('video/')) {
                             const videoPath = content.replace(/^video\/video\//, 'video/');
                             mockupContentHTML = `<div class="video-wrapper" data-video-src="/static/${videoPath}">
-                                <video src="/static/${videoPath}" class="mockup-media" controls playsinline></video>
+                                <video src="/static/${videoPath}" class="mockup-media" controls playsinline preload="none"></video>
                                 <button type="button" class="video-fullscreen-btn" aria-label="Fullscreen">⛶</button>
                             </div>`;
                         }
@@ -1505,7 +1507,7 @@ class PortfolioApp {
                                     const paramsAttr = parsed.params ? ` data-youtube-params="${parsed.params}"` : '';
                                     return `
                                       <div class="yt-placeholder" data-youtube-id="${parsed.videoId}"${paramsAttr} role="button" aria-label="Play YouTube video">
-                                        <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb">
+                                        <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb" loading="lazy">
                                         <div class="yt-play-btn">▶</div>
                                       </div>
                                     `;
@@ -1513,24 +1515,24 @@ class PortfolioApp {
                                 return `<p>${item.src}</p>`;
                             }
                             if (item.type === 'vd') {
-                                return `<video src="${item.src}" class="mockup-media" controls playsinline></video>`;
+                                return `<video src="${item.src}" class="mockup-media" controls playsinline preload="none"></video>`;
                             }
                             if (item.type === 'gd') {
                                 // Google Drive video embed
                                 return `<div class="embed-wrapper">
-                                    <iframe src="https://drive.google.com/file/d/${item.src}/preview" class="mockup-media embed-iframe" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                                    <iframe src="https://drive.google.com/file/d/${item.src}/preview" class="mockup-media embed-iframe" frameborder="0" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
                                     <button type="button" class="embed-fullscreen-btn" aria-label="Fullscreen">⛶</button>
                                     <div class="embed-zoom-hint">Tap fullscreen for better viewing</div>
                                 </div>`;
                             }
                             if (item.type === 'gdv') {
                                 // Google Drive Direct Video (Native Player)
-                                return `<video src="https://drive.google.com/uc?export=download&id=${item.src}" class="mockup-media" controls playsinline></video>`;
+                                return `<video src="https://drive.google.com/uc?export=download&id=${item.src}" class="mockup-media" controls playsinline preload="none"></video>`;
                             }
                             if (item.type === 'em') {
                                 // Embed iframe (Jumpshare, Loom, etc.) with fullscreen button
                                 return `<div class="embed-wrapper">
-                                    <iframe src="${item.src}" class="mockup-media embed-iframe" frameborder="0" allowfullscreen webkitallowfullscreen mozallowfullscreen allow="autoplay; fullscreen"></iframe>
+                                    <iframe src="${item.src}" class="mockup-media embed-iframe" frameborder="0" allowfullscreen webkitallowfullscreen mozallowfullscreen allow="autoplay; fullscreen" loading="lazy"></iframe>
                                     <button type="button" class="embed-fullscreen-btn" aria-label="Fullscreen">⛶</button>
                                     <div class="embed-zoom-hint">Tap fullscreen for better viewing</div>
                                 </div>`;
