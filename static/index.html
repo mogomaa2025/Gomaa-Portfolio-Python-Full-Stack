@@ -1015,21 +1015,25 @@
                             const imgItems = items.filter(item => item.type === 'img');
                             if (imgItems.length > 1) {
                                 currentSlides = imgItems.map(item => item.src);
-                                // Find current image index with improved URL matching
-                                const clickedSrc = e.target.src;
-                                // Extract filename from clicked src for more reliable matching
-                                const clickedFilename = clickedSrc.split('/').pop().split('?')[0];
-                                let foundIndex = currentSlides.findIndex(src => {
-                                    // Try exact match first
-                                    if (clickedSrc === src || src === clickedSrc) return true;
-                                    // Try checking if one URL contains the other
-                                    if (clickedSrc.includes(src) || src.includes(clickedSrc)) return true;
-                                    // Try matching by filename
-                                    const srcFilename = src.split('/').pop().split('?')[0];
-                                    return srcFilename === clickedFilename;
-                                });
-                                // Properly handle -1 (not found) vs 0 (first item)
-                                currentSlideIndex = foundIndex !== -1 ? foundIndex : 0;
+                                // Get current index from carousel's data-index attribute
+                                // This is the reliable way since carousel tracks its own state
+                                const carouselIndex = parseInt(carousel.dataset.index || '0', 10);
+                                // Map carousel index to image-only index
+                                // Count how many images are before current carousel index
+                                let imgIndex = 0;
+                                for (let i = 0; i <= carouselIndex && i < items.length; i++) {
+                                    if (items[i].type === 'img') {
+                                        if (i === carouselIndex) {
+                                            currentSlideIndex = imgIndex;
+                                            break;
+                                        }
+                                        imgIndex++;
+                                    }
+                                }
+                                // If current carousel item isn't an image, default to 0
+                                if (items[carouselIndex]?.type !== 'img') {
+                                    currentSlideIndex = 0;
+                                }
                                 showSlide(currentSlideIndex);
                             } else {
                                 currentSlides = [e.target.src];
