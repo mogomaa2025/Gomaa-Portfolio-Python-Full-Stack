@@ -1,5 +1,5 @@
 {
-    "description": "I'm Mohamed Gomaa Live in Egypt, Graduated From <a href=\"https://eng.alexu.edu.eg/index.php/en/\" class=\"highlight-link\">Faculty Of Engineer Alexandria University</a> graduated from <a href=\"https://depi.gov.eg/content/home\" class=\"highlight-link\">Digital Egyptian Pioneers (DEPI)</a> and i got the prize of the best graduation project from <a href=\"https://mcit.gov.eg/\" class=\"highlight-link\">ministry of communications and information technology</a> Currently student at  <a href=\"https://iti.gov.eg/\" class=\"highlight-link\">Information Technology Institute (ITI) </a> Track Software Testing, I Worked as It Exective in Zahran Market Management for 8 Months, Now i specialized in software Testing Manual & Api and Automation.",
+    "description": "I'm Eng. Mohamed Gomaa  <a href=\"https://i.ibb.co/4nW73zVb/1447-06-26-09-51-20-23ab61b6.jpg\" class=\"highlight-link\"> ISTQB FL </a> Certified who graduated from <a href=\"https://iti.gov.eg/\" class=\"highlight-link\">Information Technology Institute (ITI) </a>, <a href=\"https://depi.gov.eg/content/home\" class=\"highlight-link\">Digital Egyptian Pioneers (DEPI)</a> and <a href=\"https://eng.alexu.edu.eg/index.php/en/\" class=\"highlight-link\">Faculty Of Engineer Alexandria University</a>  and i got the prize of the best graduation project from <a href=\"https://mcit.gov.eg/\" class=\"highlight-link\">ministry of communications and information technology</a> for presenting best project in software testing  , I Worked as IT Exective in Zahran Market Management for 8 Months, Now i specialized in software Testing Manual & Api and Automation, i have projects in Manual, Automation Testing for real and demo projects.",
     "tags": [
         "Engineer",
         "Passion for tech",
@@ -9,6 +9,18 @@
         "Api Testing"
     ],
     "timeline": [
+        {
+            "year": "December 2025",
+            "content": "Certified ISTQB Foundation Level V4"
+        },
+        {
+            "year": "December 2025",
+            "content": "Graduated from ITI and finished all KPIs"
+        },
+        {
+            "year": "November 2025",
+            "content": "Developed Real Full Stack E-Commerce Website for Api and Automation testing [ Java Selenium , Typescript Playwright, Java Rest Assured]"
+        },
         {
             "year": "July 2025",
             "content": "Started Software Testing Track at Information Technology Institute (ITI)"
@@ -24,6 +36,10 @@
         {
             "year": "Aug 2024",
             "content": "Start Working As It Exective In Zahran Market Management."
+        },
+        {
+            "year": "March 2024",
+            "content": "Traveled to Saudi Arabia for one month"
         },
         {
             "year": "Dec 2023",

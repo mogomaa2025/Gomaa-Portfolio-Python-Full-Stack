@@ -5,8 +5,288 @@
     "issuer": "ISTQB",
     "category": "Software Testing",
     "certification_id": "251111068",
-    "date": "15/12/2025",
-    "url": "https://i.ibb.co/4nW73zVb/1447-06-26-09-51-20-23ab61b6.jpg",
+    "date": "December 2025",
+    "url": "",
     "image": "https://i.ibb.co/4nW73zVb/1447-06-26-09-51-20-23ab61b6.jpg"
+  },
+  {
+    "id": 2,
+    "name": "Best Software Testing Graduation Project",
+    "issuer": "MCIT",
+    "category": "Software Testing",
+    "certification_id": "",
+    "date": "April 2025",
+    "url": "",
+    "image": "https://i.ibb.co/7sdQ63y/1750724984167-e-1766797200-v-beta-t-ts4iq-v-XMnd-Xy-FRG6-e-Br-CPSMPEgm-E-3-S-JFTk-V-ug.jpg"
+  },
+  {
+    "id": 3,
+    "name": "Software Testing DEPI Achievement Certification",
+    "issuer": "DEPI",
+    "category": "Software Testing",
+    "certification_id": "",
+    "date": "May 2025",
+    "url": "",
+    "image": "https://i.ibb.co/CpWSbpGb/1752182771391-e-1766797200-v-beta-t-zpcg2-IPu7-LOAD6fkg-S77f-O2a-W7u5-M2-Sx4-Dc-X5-Kv-Rn-Vg.jpg"
+  },
+  {
+    "id": 4,
+    "name": "Business English",
+    "issuer": "Berlitz",
+    "category": "English",
+    "certification_id": "",
+    "date": "May 2025",
+    "url": "",
+    "image": "https://i.ibb.co/FqVnRDfS/1755439819403-e-1766797200-v-beta-t-n-CUu-Nt-Af-8h-Evu-WF1-Phpv-Ebp-TPpq9-Zsj-GBVujfig-Ua4.jpg"
+  },
+  {
+    "id": 5,
+    "name": "Mastering Selenium with Java\u202c By Eng. Ahmed Ashraf",
+    "issuer": "Udemy",
+    "category": "Software Testing",
+    "certification_id": "UC-7011f1ad-ec49-4954-b319-ab2881223792",
+    "date": "October 2025",
+    "url": "https://banquemisr25.udemy.com/certificate/UC-7011f1ad-ec49-4954-b319-ab2881223792/?utm_campaign=email&utm_medium=email&utm_source=sendgrid.com",
+    "image": "https://media.licdn.com/dms/image/v2/D4D2DAQHxn9Cy06RUpg/profile-treasury-document-images_1280/B4DZoS5cMpJIAU-/1/1761253640671?e=1767225600&v=beta&t=QSlAhGcc8KzmcuuvapQw_ulMEi-gjmT7Y98-DvybzXo"
+  },
+  {
+    "id": 6,
+    "name": "Api Automation Java Rest Assured by Rahul",
+    "issuer": "Udemy",
+    "category": "Software Testing",
+    "certification_id": "UC-5494cdef-3f01-4075-834b-56955a93efda",
+    "date": "November 2025",
+    "url": "https://banquemisr25.udemy.com/certificate/UC-5494cdef-3f01-4075-834b-56955a93efda/",
+    "image": "https://media.licdn.com/dms/image/v2/D4D2DAQFvf06rJiqVSQ/profile-treasury-document-cover-images_480/B4DZpK3bvNJcBI-/0/1762192638525?e=1766797200&v=beta&t=UpgNPxhkJd0T8FOBdZ6fBWME0jckFk0oY2zYP7rwlGk"
+  },
+  {
+    "id": 7,
+    "name": "Manual Testing UI & API & Jira by Tarek Roushdy",
+    "issuer": "Udemy",
+    "category": "Software Testing",
+    "certification_id": "UC-4399c69b-2da7-4c2f-88c1-3b49552a5597",
+    "date": "November 2025",
+    "url": "https://banquemisr25.udemy.com/certificate/UC-4399c69b-2da7-4c2f-88c1-3b49552a5597/",
+    "image": "https://media.licdn.com/dms/image/v2/D4D2DAQHrX7oWGOx53Q/profile-treasury-document-cover-images_1920/B4DZpKlC03H0BM-/0/1762187818337?e=1766797200&v=beta&t=G1zNAP33APG_wK1I3W7iJlB5OgD4iw9OJul6sF9Tw2c"
+  },
+  {
+    "id": 8,
+    "name": "Database Fundamentals & SQL",
+    "issuer": "MaharaTech - ITIMooca",
+    "category": "Programming",
+    "certification_id": "Cqx8uENmRa",
+    "date": "August 2024",
+    "url": "https://www.linkedin.com/redir/redirect/?url=https%3A%2F%2Fmaharatech.gov.eg%2Fmod%2Fcustomcert%2Fverify_certificate.php%3Fcontextid%3D162686%26code%3DCqx8uENmRa%26qrcode%3D1&urlhash=y4l8&isSdui=true&lipi=urn%3Ali%3Apage%3Ad_flagship3_profile_view_base_certifications_details%3BHKHgZeM9SKua6GW5qO1Ynw%3D%3D",
+    "image": "https://media.licdn.com/dms/image/v2/D4D2DAQEVId7JuuoYOA/profile-treasury-document-cover-images_1280/profile-treasury-document-cover-images_1280/0/1724329248567?e=1766800800&v=beta&t=bT4DZk5_dEN5Nu6YyJFoUXbtAFn94_RhCeQlNCI99Bk"
+  },
+  {
+    "id": 9,
+    "name": "Effective Test Case and Bug Report Writing Techniques",
+    "issuer": "MaharaTech - ITIMooca",
+    "category": "Software Testing",
+    "certification_id": "oIpe440myC",
+    "date": "Aug 2024",
+    "url": "https://maharatech.gov.eg/mod/customcert/verify_certificate.php?contextid=1685&code=oIpe440myC&qrcode=1",
+    "image": "https://media.licdn.com/dms/image/v2/D4D2DAQEMbTGZse83cw/profile-treasury-document-cover-images_1280/profile-treasury-document-cover-images_1280/0/1724329483969?e=1766800800&v=beta&t=ZI-LHObVtcvowX2WinZ84fXbEhU9O3OqXrlYmEfHMoQ"
+  },
+  {
+    "id": 10,
+    "name": "Mastering Object-Oriented Programming (OOP) using C++",
+    "issuer": "MaharaTech - ITIMooca",
+    "category": "Programming",
+    "certification_id": "DcHdu28hyK",
+    "date": "August 2024",
+    "url": "https://www.linkedin.com/redir/redirect/?url=https%3A%2F%2Fmaharatech.gov.eg%2Fmod%2Fcustomcert%2Fverify_certificate.php%3Fcontextid%3D616036%26code%3DDcHdu28hyK%26qrcode%3D1&urlhash=qzLy&isSdui=true&lipi=urn%3Ali%3Apage%3Ad_flagship3_profile_view_base_certifications_details%3BsJ3aURc8TYy9Na6ha6ogtQ%3D%3D",
+    "image": "https://media.licdn.com/dms/image/v2/D4D2DAQEQwV00uy1a5A/profile-treasury-document-cover-images_1280/profile-treasury-document-cover-images_1280/0/1724329005732?e=1766800800&v=beta&t=4ZLf0t6v04CcikTxIEzaEWVddFYjcLQmTGJctzT5LOM"
+  },
+  {
+    "id": 11,
+    "name": "Cisco Certified Network Associate Security (CCNA)",
+    "issuer": "Coursera",
+    "category": "IT & Networks",
+    "certification_id": "6B5K4GC2WOZA",
+    "date": "September 2024",
+    "url": "https://www.coursera.org/account/accomplishments/verify/6B5K4GC2WOZA?utm_source=mobile&utm_medium=certificate&utm_content=cert_image&utm_campaign=sharing_cta&utm_product=course",
+    "image": "https://media.licdn.com/dms/image/v2/D4D2DAQERVcQGGr6Hkg/profile-treasury-image-shrink_800_800/profile-treasury-image-shrink_800_800/0/1726582129822?e=1766800800&v=beta&t=0xlkWEPFq8enIOtXVeV5l7Y7WbD_QbYpIbe9vhsIdPg"
+  },
+  {
+    "id": 12,
+    "name": "Google Data Analysis",
+    "issuer": "Coursera",
+    "category": "Data Analytics",
+    "certification_id": "PXGLNC967M7S",
+    "date": "Mars 2024",
+    "url": "https://www.coursera.org/account/accomplishments/verify/PXGLNC967M7S",
+    "image": "https://media.licdn.com/dms/image/v2/D4D2DAQHth0waPnKoQA/profile-treasury-image-shrink_800_800/profile-treasury-image-shrink_800_800/0/1710650724978?e=1766800800&v=beta&t=Zqn9hjkn5Uql7gfTo2SuNGrNOsatrjnP_7nmXcVZVag"
+  },
+  {
+    "id": 15,
+    "name": "CSWA - Solidworks Mechanical Designer",
+    "issuer": "Solidworks International Certificate",
+    "category": "Production Engineer",
+    "certification_id": "C-SB8RZLCKJW",
+    "date": "Feb 2022",
+    "url": "https://cv.virtualtester.com/qr/?b=SLDWRKS&i=C-SB8RZLCKJW",
+    "image": "https://media.licdn.com/dms/image/v2/D4D2DAQFKDufvY66OIQ/profile-treasury-image-shrink_8192_8192/profile-treasury-image-shrink_8192_8192/0/1710619381349?e=1766800800&v=beta&t=5nXhsK2VwlKkpSOlIDmxB-PuAl4UX2ngWfbfw2KV998"
+  },
+  {
+    "id": 13,
+    "name": "Six Sigma Principles (Yellow Belt)",
+    "issuer": "Coursera",
+    "category": "Production Engineer",
+    "certification_id": "4YS9873WM7B6",
+    "date": "Mars 2024",
+    "url": "https://www.coursera.org/account/accomplishments/verify/4YS9873WM7B6",
+    "image": "https://media.licdn.com/dms/image/v2/D4D2DAQGLZoJjRyjecQ/profile-treasury-image-shrink_800_800/profile-treasury-image-shrink_800_800/0/1710650670833?e=1766800800&v=beta&t=uN1HDsYXuCe6ytcklA1tCB4pDasrLjZ3gAtiJznUefc"
+  },
+  {
+    "id": 14,
+    "name": "Lean Manufacturing",
+    "issuer": "Egyptian Engineers Syndicate",
+    "category": "Production Engineer",
+    "certification_id": "",
+    "date": "August 2024",
+    "url": "",
+    "image": "https://media.licdn.com/dms/image/v2/D4D2DAQG19PZiW7-oJg/profile-treasury-image-shrink_800_800/profile-treasury-image-shrink_800_800/0/1724420291136?e=1766800800&v=beta&t=xPuloIT3lAI68Hc0GqCFfp1BSaGzHE9we54OrIpdK8g"
+  },
+  {
+    "id": 16,
+    "name": "ASNT Central Certification Program Level II - Visual Testing (ACCP-VT)",
+    "issuer": "EGAC",
+    "category": "Production Engineer",
+    "certification_id": "EGAC-VT-II-286/2024",
+    "date": "Feb 2024",
+    "url": "",
+    "image": "https://media.licdn.com/dms/image/v2/D4D2DAQGLMkWFpBLHPQ/profile-treasury-image-shrink_1280_1280/B4DZs5OEG_I4AQ-/0/1766191548148?e=1766800800&v=beta&t=ZzZg0wx8snz6GI3alMv-WBLIc_BlAUVW8pfR8d40rlo"
+  },
+  {
+    "id": 17,
+    "name": " ASNT NDT Level II Certification - Liquid Penetrant Testing (PT) (ASNT-NDT2-PT)",
+    "issuer": "EGAC",
+    "category": "Production Engineer",
+    "certification_id": "EGAC-PT-II-287/2024",
+    "date": "Feb 2024",
+    "url": "",
+    "image": "https://media.licdn.com/dms/image/v2/D4D2DAQFbFYJpeaZR7w/profile-treasury-image-shrink_1280_1280/B4DZs5O5WlKwAQ-/0/1766191765951?e=1766800800&v=beta&t=EBCgzxgfKoYv5Kqx7AAUU7ny_Mp-E18-1ZibNOwIGuo"
+  },
+  {
+    "id": 18,
+    "name": "ASNT Central Certification Program Level II - Magnetic Particle Testing (ACCP-MT)",
+    "issuer": "EGAC",
+    "category": "Production Engineer",
+    "certification_id": "EGAC-MT-II-288/2024",
+    "date": "Feb 2024",
+    "url": "",
+    "image": "https://media.licdn.com/dms/image/v2/D4D2DAQFofa68EToDzA/profile-treasury-image-shrink_1280_1280/B4DZs5PR9tG0AQ-/0/1766191866774?e=1766800800&v=beta&t=qgbnyLkM4PlSaLyM3ju2Jxj1Ou2OukRpNUDAlVBFh54"
+  },
+  {
+    "id": 19,
+    "name": "ASNT Central Certification Program Level II - Magnetic Particle Testing (ACCP-MT)",
+    "issuer": "EGAC",
+    "category": "Production Engineer",
+    "certification_id": "EGAC-MT-II-288/2024",
+    "date": "Feb 2024",
+    "url": "",
+    "image": "https://media.licdn.com/dms/image/v2/D4D2DAQFofa68EToDzA/profile-treasury-image-shrink_1280_1280/B4DZs5PR9tG0AQ-/0/1766191866774?e=1766800800&v=beta&t=qgbnyLkM4PlSaLyM3ju2Jxj1Ou2OukRpNUDAlVBFh54"
+  },
+  {
+    "id": 20,
+    "name": "ASNT Central Certification Program Level II - Radiographic Testing (ACCP-RT)",
+    "issuer": "EGAC",
+    "category": "Production Engineer",
+    "certification_id": "EGAC-RT-II-289/2024",
+    "date": "Mars 2024",
+    "url": "",
+    "image": "https://media.licdn.com/dms/image/v2/D4D2DAQGNa4eHvOvg5A/profile-treasury-image-shrink_1280_1280/B4DZs5PoPoJcAY-/0/1766191958234?e=1766800800&v=beta&t=TWAUnX2cD4dQNnRV58uSbfBp8VDxoDq2c1_pey7oJx4"
+  },
+  {
+    "id": 21,
+    "name": "ASNT Central Certification Program Level II - Ultrasonic Testing (ACCP-UT)",
+    "issuer": "EGAC",
+    "category": "Production Engineer",
+    "certification_id": "EGAC-UT-II-290/2024",
+    "date": "May 2024",
+    "url": "",
+    "image": "https://media.licdn.com/dms/image/v2/D4D2DAQFRblVeJZ4zAw/profile-treasury-image-shrink_1280_1280/B4DZs5QFT3GwAQ-/0/1766192077579?e=1766800800&v=beta&t=shNV3vTKgMXOkF4rP7An2hVMi0UZf9gUom0wXr9_kZU"
+  },
+  {
+    "id": 22,
+    "name": "Certified Welding Engineer",
+    "issuer": "EGAC",
+    "category": "Production Engineer",
+    "certification_id": "",
+    "date": "Feb 2024",
+    "url": "",
+    "image": "https://media.licdn.com/dms/image/v2/D4D2DAQFOCmkBIuDQEg/profile-treasury-image-shrink_800_800/B4DZs5OhPuJIAY-/0/1766191667243?e=1766800800&v=beta&t=ssQ96YeRVW1cND00avWSxHwE6-SIH8hON0_cceKMm6M"
+  },
+  {
+    "id": 23,
+    "name": "3D Printing",
+    "issuer": "3D Speed",
+    "category": "Production Engineer",
+    "certification_id": "",
+    "date": "Jan 2024",
+    "url": "",
+    "image": "https://media.licdn.com/dms/image/v2/D4D2DAQF26jL8UxCELg/profile-treasury-image-shrink_1280_1280/profile-treasury-image-shrink_1280_1280/0/1704753379742?e=1766800800&v=beta&t=NGlpGojYiMxRH4fwY8TEM7mMhWhxpwutRwesLT8kzbw"
+  },
+  {
+    "id": 24,
+    "name": "English Level (B1.3)",
+    "issuer": "Berlitz",
+    "category": "English",
+    "certification_id": "",
+    "date": "Feb 2024",
+    "url": "",
+    "image": "https://media.licdn.com/dms/image/v2/D4D2DAQG5LgSG6vc-yg/profile-treasury-image-shrink_800_800/profile-treasury-image-shrink_800_800/0/1710618701728?e=1766800800&v=beta&t=brsfgqgEUz31OcjtUnl9rlTL8X2DEMdzJcOlOuMwZc4"
+  },
+  {
+    "id": 26,
+    "name": "Supply Chain",
+    "issuer": "UCCD Engineering",
+    "category": "Production Engineer",
+    "certification_id": "",
+    "date": "December 2021",
+    "url": "",
+    "image": "https://media.licdn.com/dms/image/v2/D4E2DAQEyfKv8lsnH5w/profile-treasury-image-shrink_8192_8192/profile-treasury-image-shrink_8192_8192/0/1702607218090?e=1766800800&v=beta&t=Vvru0iMJXBdTcEPoJa9sfUkTVXlncruQNceVCsv4Ndw"
+  },
+  {
+    "id": 27,
+    "name": "Supply Chain Management",
+    "issuer": "Coursera",
+    "category": "Production Engineer",
+    "certification_id": "QVRK4NRZLE9X",
+    "date": "Mars 2024",
+    "url": "https://www.coursera.org/account/accomplishments/verify/QVRK4NRZLE9X",
+    "image": "https://media.licdn.com/dms/image/v2/D4D2DAQFgybfll08DOA/profile-treasury-image-shrink_800_800/profile-treasury-image-shrink_800_800/0/1710650618111?e=1766800800&v=beta&t=1RdfNcXB7qqtV64Pcju9QFQkQkRtTR64o3982V2SYx8"
+  },
+  {
+    "id": 28,
+    "name": " Internship Production Engineer",
+    "issuer": "TITAN Cement Egypt (TCE)",
+    "category": "Production Engineer",
+    "certification_id": "",
+    "date": "September 2021",
+    "url": "",
+    "image": "https://media.licdn.com/dms/image/v2/D4E2DAQELJonF6PSPJQ/profile-treasury-image-shrink_8192_8192/profile-treasury-image-shrink_8192_8192/0/1702609022045?e=1766800800&v=beta&t=m-IYiR9OMqzszZLfonspFZUl8MmBlPEQO4pKWN4V_WI"
+  },
+  {
+    "id": 29,
+    "name": "Internship Production Engineer",
+    "issuer": "ALEXANDRIA SHIPYARD (AYS)",
+    "category": "Production Engineer",
+    "certification_id": "",
+    "date": "September 2021",
+    "url": "",
+    "image": "https://media.licdn.com/dms/image/v2/D4E2DAQGaad80Zjy3Lg/profile-treasury-image-shrink_1280_1280/profile-treasury-image-shrink_1280_1280/0/1702608516008?e=1766800800&v=beta&t=dPesNV6LNalArey4uwMMac7FbhEmugaoyYfXi9lOwbc"
+  },
+  {
+    "id": 30,
+    "name": "Internship Production Engineer",
+    "issuer": "Egyptian Copper Works",
+    "category": "Production Engineer",
+    "certification_id": "",
+    "date": "August 2021",
+    "url": "",
+    "image": "https://media.licdn.com/dms/image/v2/D4D2DAQGkKLnY0NsL4g/profile-treasury-image-shrink_1920_1920/profile-treasury-image-shrink_1920_1920/0/1702690299020?e=1766800800&v=beta&t=kZ_ECtxWG8AGQtBbfyqEpqNy3bJM9SBtHTmOO02znZk"
   }
 ]

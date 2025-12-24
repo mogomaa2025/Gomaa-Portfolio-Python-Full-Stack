@@ -23,9 +23,11 @@ class PortfolioApp {
         this.currentVisitId = null;
         this.currentVisitStartTime = null;
         this.visitUpdateInterval = null;
-        this.typingSpeed = 100;
-        this.deletingSpeed = 50;
-        this.pauseTime = 2000;
+        this.typingTimeout = null;
+        this.config = window.PortfolioConfig || {};
+        this.typingSpeed = this.config.TYPING?.TYPE_SPEED || 100;
+        this.deletingSpeed = this.config.TYPING?.BACK_SPEED || 50;
+        this.pauseTime = this.config.TYPING?.BACK_DELAY || 2000;
         
         this.init();
     }
@@ -62,18 +64,12 @@ class PortfolioApp {
         // Create floating particles
         this.createParticles(particlesContainer, 30);
         
-        // Timeline sequence - FAST VERSION
-        // 0.0s - Intro appears with logo animation
-        // 0.8s - Loader finishes
-        // 1.2s - Start reveal sequence
-        // 1.8s - Curtains fully open, show app
-        // 2.2s - Remove overlay completely
-        
+        // Timeline sequence from config
         setTimeout(() => {
             // Start curtain reveal
             introOverlay.classList.add('reveal');
             app.classList.add('visible');
-        }, 1200);
+        }, PortfolioConfig.INTRO.REVEAL_DELAY);
         
         setTimeout(() => {
             // Mark as complete (will fade out)
@@ -87,19 +83,18 @@ class PortfolioApp {
             }
             
             // Add highlight glow to bottom nav
-            const bottomNav = document.querySelector('.bottom-nav');
-            if (bottomNav) {
-                bottomNav.classList.add('intro-highlight');
-                setTimeout(() => {
-                    bottomNav.classList.remove('intro-highlight');
-                }, 1500);
-            }
-        }, 1800);
+            this.triggerNavHighlight();
+        }, PortfolioConfig.INTRO.COMPLETE_DELAY);
         
         // Remove overlay from DOM after animation completes
         setTimeout(() => {
             introOverlay.remove();
-        }, 2500);
+            
+            // Show Click Here hints on profile image and logo after intro
+            if (window.bugSquashAnimation) {
+                window.bugSquashAnimation.showClickMeHints();
+            }
+        }, PortfolioConfig.INTRO.REMOVE_DELAY);
     }
     
     createParticles(container, count) {
@@ -132,7 +127,20 @@ class PortfolioApp {
     // Note: Video fullscreen in portrait mode is handled via modal in index.html
 
     // Global event delegation for YouTube placeholders - works for any dynamically created placeholders
+    // Uses YouTube IFrame API to properly enforce start/end times
     setupGlobalYouTubeHandler() {
+        // Load YouTube IFrame API if not already loaded
+        if (!window.YT) {
+            const tag = document.createElement('script');
+            tag.src = 'https://www.youtube.com/iframe_api';
+            const firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        }
+        
+        // Store active YouTube players for cleanup
+        this._ytPlayers = this._ytPlayers || {};
+        this._ytPlayerIdCounter = this._ytPlayerIdCounter || 0;
+        
         document.addEventListener('click', (e) => {
             // Find if click was on or inside a YouTube placeholder
             const placeholder = e.target.closest('.yt-placeholder');
@@ -144,36 +152,248 @@ class PortfolioApp {
             const videoId = placeholder.dataset.youtubeId;
             if (!videoId) return;
             
+            // Get optional params (start, end times)
+            const ytParams = placeholder.dataset.youtubeParams || '';
+            
+            // Parse start and end from params
+            let startTime = 0;
+            let endTime = null;
+            if (ytParams) {
+                const startMatch = ytParams.match(/start=(\d+)/);
+                const endMatch = ytParams.match(/end=(\d+)/);
+                if (startMatch) startTime = parseInt(startMatch[1], 10);
+                if (endMatch) endTime = parseInt(endMatch[1], 10);
+            }
+            
+            // Debug logging
+            console.log('[YouTube Debug] Video ID:', videoId);
+            console.log('[YouTube Debug] Params from data attribute:', ytParams);
+            console.log('[YouTube Debug] Parsed start time:', startTime);
+            console.log('[YouTube Debug] Parsed end time:', endTime);
+            
             e.preventDefault();
             e.stopPropagation();
             
             // Stop all other media first
-            // Pause all videos
+            this.stopAllYouTubePlayers();
+            
+            // Pause all HTML5 videos
             document.querySelectorAll('.project-card video').forEach(v => {
                 try { v.pause(); } catch (err) {}
                 try { v.currentTime = 0; } catch (err) {}
             });
             
-            // Stop other YouTube iframes (convert back to placeholders)
-            document.querySelectorAll('.project-card iframe.yt-iframe, .project-card iframe[src*="youtube.com/embed/"]').forEach(fr => {
+            // Create a unique container for the player
+            const playerId = `yt-player-${++this._ytPlayerIdCounter}`;
+            const container = document.createElement('div');
+            container.id = playerId;
+            container.className = 'yt-player-container';
+            container.dataset.endTime = endTime || '';
+            container.dataset.youtubeParams = ytParams;
+            
+            // Replace placeholder with container
+            placeholder.replaceWith(container);
+            
+            // Wait for YouTube API to be ready, then create player
+            const createPlayer = () => {
+                if (window.YT && window.YT.Player) {
+                    const player = new YT.Player(playerId, {
+                        videoId: videoId,
+                        playerVars: {
+                            autoplay: 1,
+                            start: startTime,
+                            enablejsapi: 1,
+                            rel: 0,
+                            modestbranding: 1
+                        },
+                        events: {
+                            onReady: (event) => {
+                                console.log('[YouTube Debug] Player ready, storing reference');
+                                // Store player reference
+                                this._ytPlayers[playerId] = {
+                                    player: event.target,
+                                    endTime: endTime,
+                                    endTimeout: null
+                                };
+                                
+                                // If we have an end time, use timeout-based approach
+                                // This is more reliable than API-based time tracking due to cross-origin restrictions
+                                if (endTime !== null) {
+                                    const duration = (endTime - startTime) * 1000; // Convert to milliseconds
+                                    console.log(`[YouTube Debug] Setting timeout to pause after ${duration/1000} seconds`);
+                                    
+                                    this._ytPlayers[playerId].endTimeout = setTimeout(() => {
+                                        console.log('[YouTube Debug] End time reached via timeout, pausing...');
+                                        try {
+                                            event.target.pauseVideo();
+                                        } catch (e) {
+                                            console.log('[YouTube Debug] pauseVideo failed, trying alternative');
+                                        }
+                                        
+                                        // Show end overlay
+                                        const iframe = event.target.getIframe();
+                                        if (iframe) {
+                                            const wrapper = iframe.parentElement;
+                                            if (wrapper && !wrapper.querySelector('.yt-end-overlay')) {
+                                                const overlay = document.createElement('div');
+                                                overlay.className = 'yt-end-overlay';
+                                                overlay.innerHTML = `
+                                                    <div class="yt-end-message">
+                                                        <span>▶</span> Video clip ended (${Math.floor(endTime/60)}:${(endTime%60).toString().padStart(2,'0')})
+                                                    </div>
+                                                `;
+                                                overlay.addEventListener('click', () => {
+                                                    // Restart from beginning on click
+                                                    try {
+                                                        event.target.seekTo(startTime);
+                                                        event.target.playVideo();
+                                                    } catch (e) {}
+                                                    overlay.remove();
+                                                    // Set new timeout
+                                                    this._ytPlayers[playerId].endTimeout = setTimeout(() => {
+                                                        try { event.target.pauseVideo(); } catch(e) {}
+                                                    }, duration);
+                                                });
+                                                wrapper.style.position = 'relative';
+                                                wrapper.appendChild(overlay);
+                                            }
+                                        }
+                                    }, duration);
+                                }
+                            },
+                            onStateChange: (event) => {
+                                // If video ends naturally or is paused by user, clean up timeout
+                                if (event.data === YT.PlayerState.ENDED || event.data === YT.PlayerState.PAUSED) {
+                                    if (this._ytPlayers[playerId] && this._ytPlayers[playerId].endTimeout) {
+                                        clearTimeout(this._ytPlayers[playerId].endTimeout);
+                                    }
+                                }
+                                // If video starts playing again, restart the timeout
+                                if (event.data === YT.PlayerState.PLAYING && endTime !== null) {
+                                    // Clear existing timeout first
+                                    if (this._ytPlayers[playerId] && this._ytPlayers[playerId].endTimeout) {
+                                        clearTimeout(this._ytPlayers[playerId].endTimeout);
+                                    }
+                                    // Calculate remaining time based on current position
+                                    try {
+                                        const currentTime = event.target.getCurrentTime() || startTime;
+                                        const remaining = Math.max(0, (endTime - currentTime) * 1000);
+                                        console.log(`[YouTube Debug] Playing from ${currentTime}s, timeout in ${remaining/1000}s`);
+                                        this._ytPlayers[playerId].endTimeout = setTimeout(() => {
+                                            console.log('[YouTube Debug] Timeout reached, pausing...');
+                                            try { event.target.pauseVideo(); } catch(e) {}
+                                        }, remaining);
+                                    } catch(e) {
+                                        console.log('[YouTube Debug] getCurrentTime failed, using fixed timeout');
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    // API not ready yet, wait and retry
+                    setTimeout(createPlayer, 100);
+                }
+            };
+            
+            createPlayer();
+        });
+    }
+    
+    // Monitor video playback and pause at end time
+    startEndTimeMonitor(playerId, endTime) {
+        console.log('[YouTube Debug] Starting end time monitor for player:', playerId, 'End time:', endTime);
+        const playerData = this._ytPlayers[playerId];
+        if (!playerData || !playerData.player) return;
+        
+        // Clear any existing interval
+        if (playerData.checkInterval) {
+            clearInterval(playerData.checkInterval);
+        }
+        
+        // Check every 500ms
+        let lastLogTime = 0;
+        playerData.checkInterval = setInterval(() => {
+            try {
+                const currentTime = playerData.player.getCurrentTime();
+                
+                // Log every 5 seconds to avoid spam
+                if (Math.floor(currentTime) % 5 === 0 && Math.floor(currentTime) !== lastLogTime) {
+                    lastLogTime = Math.floor(currentTime);
+                    console.log(`[YouTube Debug] Current time: ${currentTime.toFixed(1)}s, End time: ${endTime}s`);
+                }
+                
+                if (currentTime >= endTime) {
+                    console.log('[YouTube Debug] Reached end time! Pausing video...');
+                    playerData.player.pauseVideo();
+                    clearInterval(playerData.checkInterval);
+                    
+                    // Show end overlay
+                    const iframe = playerData.player.getIframe();
+                    if (iframe) {
+                        const wrapper = iframe.parentElement;
+                        if (wrapper && !wrapper.querySelector('.yt-end-overlay')) {
+                            const overlay = document.createElement('div');
+                            overlay.className = 'yt-end-overlay';
+                            overlay.innerHTML = `
+                                <div class="yt-end-message">
+                                    <span>▶</span> Video clip ended
+                                </div>
+                            `;
+                            overlay.addEventListener('click', () => {
+                                // Restart from beginning on click
+                                playerData.player.seekTo(0);
+                                playerData.player.playVideo();
+                                overlay.remove();
+                                this.startEndTimeMonitor(playerId, endTime);
+                            });
+                            wrapper.style.position = 'relative';
+                            wrapper.appendChild(overlay);
+                        }
+                    }
+                }
+            } catch (err) {
+                // Player might be destroyed, clean up
+                clearInterval(playerData.checkInterval);
+            }
+        }, 500);
+    }
+    
+    // Stop all YouTube players and clean up
+    stopAllYouTubePlayers() {
+        for (const playerId in this._ytPlayers) {
+            const playerData = this._ytPlayers[playerId];
+            if (playerData) {
+                if (playerData.checkInterval) {
+                    clearInterval(playerData.checkInterval);
+                }
                 try {
-                    const src = fr.getAttribute('src') || '';
-                    const m = src.match(/embed\/([^?&/]+)/);
-                    const otherId = m ? m[1] : null;
-                    if (otherId) {
-                        const thumb = `https://img.youtube.com/vi/${otherId}/hqdefault.jpg`;
-                        fr.outerHTML = `
-                          <div class="yt-placeholder" data-youtube-id="${otherId}" role="button" aria-label="Play YouTube video">
-                            <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb">
-                            <div class="yt-play-btn">▶</div>
-                          </div>
-                        `;
+                    if (playerData.player && playerData.player.stopVideo) {
+                        playerData.player.stopVideo();
                     }
                 } catch (err) {}
-            });
-            
-            // Replace clicked placeholder with iframe
-            placeholder.outerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen class="mockup-media yt-iframe"></iframe>`;
+            }
+        }
+        
+        // Also handle any iframes that might have been created outside this system
+        document.querySelectorAll('.project-card iframe.yt-iframe, .project-card iframe[src*="youtube.com/embed/"]').forEach(fr => {
+            try {
+                const src = fr.getAttribute('src') || '';
+                const m = src.match(/embed\/([^?&/]+)/);
+                const otherId = m ? m[1] : null;
+                const paramsMatch = src.match(/[?&](start=\d+|end=\d+)/g);
+                const preservedParams = paramsMatch ? paramsMatch.map(p => p.replace(/^[?&]/, '')).join('&') : '';
+                if (otherId) {
+                    const thumb = `https://img.youtube.com/vi/${otherId}/hqdefault.jpg`;
+                    const paramsAttr = preservedParams ? ` data-youtube-params="${preservedParams}"` : '';
+                    fr.outerHTML = `
+                      <div class="yt-placeholder" data-youtube-id="${otherId}"${paramsAttr} role="button" aria-label="Play YouTube video">
+                        <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb">
+                        <div class="yt-play-btn">▶</div>
+                      </div>
+                    `;
+                }
+            } catch (err) {}
         });
     }
 
@@ -199,19 +419,6 @@ class PortfolioApp {
                     ? String(categories[0].name || '').toLowerCase()
                     : null;
                 this._initialProjectFilter = firstCategory;
-
-                if (showAll) {
-                    const allBtn = document.createElement('button');
-                    // Not active by default (we default to first category)
-                    allBtn.className = 'filter-btn';
-                    allBtn.dataset.filter = 'all';
-                    allBtn.textContent = 'All';
-                    allBtn.addEventListener('click', (e) => {
-                        this.filterProjects('all');
-                        this.updateActiveFilter(e.target);
-                    });
-                    container.appendChild(allBtn);
-                }
 
                 // Add category buttons
                 categories.forEach((cat, idx) => {
@@ -382,6 +589,12 @@ class PortfolioApp {
         const typingElement = document.getElementById('typing-text');
         if (!typingElement) return;
 
+        // Clear any existing timeout to prevent race conditions
+        if (this.typingTimeout) {
+            clearTimeout(this.typingTimeout);
+            this.typingTimeout = null;
+        }
+
         const typeText = () => {
             const currentText = this.typingTexts[this.currentTextIndex];
             
@@ -392,9 +605,9 @@ class PortfolioApp {
                 if (this.currentCharIndex === 0) {
                     this.isDeleting = false;
                     this.currentTextIndex = (this.currentTextIndex + 1) % this.typingTexts.length;
-                    setTimeout(typeText, this.typingSpeed);
+                    this.typingTimeout = setTimeout(typeText, this.typingSpeed);
                 } else {
-                    setTimeout(typeText, this.deletingSpeed);
+                    this.typingTimeout = setTimeout(typeText, this.deletingSpeed);
                 }
             } else {
                 typingElement.textContent = currentText.substring(0, this.currentCharIndex + 1);
@@ -402,9 +615,9 @@ class PortfolioApp {
                 
                 if (this.currentCharIndex === currentText.length) {
                     this.isDeleting = true;
-                    setTimeout(typeText, this.pauseTime);
+                    this.typingTimeout = setTimeout(typeText, this.pauseTime);
                 } else {
-                    setTimeout(typeText, this.typingSpeed);
+                    this.typingTimeout = setTimeout(typeText, this.typingSpeed);
                 }
             }
         };
@@ -463,6 +676,16 @@ class PortfolioApp {
             setTimeout(() => {
                 newSectionElement.classList.add('active');
                 this.animateSectionChange(section);
+                
+                // Show Click Here hints when navigating to home section
+                if (section === 'home' && window.bugSquashAnimation) {
+                    // Reset hints flag so they can show again
+                    window.bugSquashAnimation.hintsShown = false;
+                    // Show hints after a short delay for section to render
+                    setTimeout(() => {
+                        window.bugSquashAnimation.showClickMeHints();
+                    }, 500);
+                }
             }, 150);
         }
 
@@ -479,14 +702,10 @@ class PortfolioApp {
         const logoText = document.getElementById('logo-text');
         if (!logoText) return;
         
-        // Get or create the hint element
         let logoHint = document.getElementById('logo-click-hint');
         
         if (section === 'home') {
-            // Hide hint on home page
-            if (logoHint) {
-                logoHint.classList.remove('visible');
-            }
+            if (logoHint) logoHint.classList.remove('visible');
             logoText.classList.remove('logo-highlighted');
         } else {
             // Show hint on other sections (if not already clicked)
@@ -510,6 +729,18 @@ class PortfolioApp {
                 logoText.classList.add('logo-highlighted');
                 setTimeout(() => logoHint.classList.add('visible'), 100);
             }
+        }
+    }
+
+
+
+    triggerNavHighlight() {
+        const bottomNav = document.querySelector('.bottom-nav');
+        if (bottomNav) {
+            bottomNav.classList.add('intro-highlight');
+            setTimeout(() => {
+                bottomNav.classList.remove('intro-highlight');
+            }, (PortfolioConfig.INTRO?.NAV_HIGHLIGHT_DURATION || 1500));
         }
     }
 
@@ -802,7 +1033,7 @@ class PortfolioApp {
                     }
 
                     card.innerHTML = `
-                        ${imageUrl ? `<div class="cert-image-container"><img src="${imageUrl}" alt="${cert.name}" class="cert-image" onclick="window.portfolioApp.openImageModal('${imageUrl}', '${cert.name}')"></div>` : ''}
+                        ${imageUrl ? `<div class="cert-image-container"><img src="${imageUrl}" alt="${cert.name}" class="cert-image" loading="lazy" onclick="window.portfolioApp.openImageModal('${imageUrl}', '${cert.name}')"></div>` : ''}
                         <div class="cert-content">
                             <div class="cert-issuer">${cert.issuer}</div>
                             <h3 class="cert-name">${cert.name}</h3>
@@ -919,6 +1150,7 @@ class PortfolioApp {
                             // img1:URL img2:URL
                             // yt1:YOUTUBE_URL
                             // vd1:VIDEO_URL
+                            // em1:EMBED_URL (for iframe embeds like Jumpshare, Loom, etc.)
                             // Ordering is by the number suffix (1,2,3...)
                             const tokens = raw.split(/\s+/).filter(Boolean);
                             const items = [];
@@ -929,7 +1161,7 @@ class PortfolioApp {
                                 const val = t.slice(idx + 1).trim();
                                 if (!val) continue;
 
-                                const m = key.match(/^(img|yt|vd)(\d+)$/);
+                                const m = key.match(/^(img|yt|vd|em|gd|gdv)(\d+)$/);
                                 if (!m) continue;
                                 items.push({ type: m[1], order: parseInt(m[2], 10), src: val });
                             }
@@ -937,27 +1169,72 @@ class PortfolioApp {
                             return items;
                         };
 
-                        const getYouTubeId = (url) => {
+                        // Parse YouTube URL/iframe and extract video ID + params (start, end, etc.)
+                        const parseYouTubeUrl = (input) => {
+                            console.log('[YouTube Debug] parseYouTubeUrl called with:', input);
+                            const result = { videoId: null, start: null, end: null, params: '' };
+                            if (!input) return result;
+                            
+                            let url = input.trim();
+                            
+                            // Check if input is an iframe HTML - extract src
+                            if (url.startsWith('<iframe')) {
+                                const srcMatch = url.match(/src=["']([^"']+)["']/i);
+                                if (srcMatch) url = srcMatch[1];
+                            }
+                            
                             try {
                                 const u = new URL(url);
-                                if (u.hostname.includes('youtube.com')) return u.searchParams.get('v');
-                                if (u.hostname.includes('youtu.be')) return u.pathname.replace('/', '');
-                                return null;
+                                
+                                // Extract video ID based on URL type
+                                if (u.hostname.includes('youtube.com')) {
+                                    if (u.pathname.includes('/embed/')) {
+                                        // Embed URL: youtube.com/embed/VIDEO_ID
+                                        result.videoId = u.pathname.split('/embed/')[1]?.split(/[?&/]/)[0];
+                                    } else {
+                                        // Regular URL: youtube.com/watch?v=VIDEO_ID
+                                        result.videoId = u.searchParams.get('v');
+                                    }
+                                } else if (u.hostname.includes('youtu.be')) {
+                                    // Short URL: youtu.be/VIDEO_ID
+                                    result.videoId = u.pathname.slice(1);
+                                }
+                                
+                                // Extract start and end params (support both 'start' and 't' for start time)
+                                const startParam = u.searchParams.get('start') || u.searchParams.get('t');
+                                const endParam = u.searchParams.get('end');
+                                
+                                if (startParam) result.start = startParam.replace(/s$/i, ''); // Remove 's' suffix if present
+                                if (endParam) result.end = endParam.replace(/s$/i, '');
+                                
+                                // Build params string for embed URL
+                                const embedParams = [];
+                                if (result.start) embedParams.push(`start=${result.start}`);
+                                if (result.end) embedParams.push(`end=${result.end}`);
+                                result.params = embedParams.join('&');
+                                
                             } catch (e) {
-                                return null;
+                                console.log('[YouTube Debug] parseYouTubeUrl error:', e);
+                                return result;
                             }
+                            console.log('[YouTube Debug] parseYouTubeUrl result:', result);
+                            return result;
                         };
+                        
+                        // Legacy helper for backward compatibility
+                        const getYouTubeId = (url) => parseYouTubeUrl(url).videoId;
 
                         const renderYouTube = (url) => {
-                            const videoId = getYouTubeId(url);
-                            if (!videoId) return null;
+                            const parsed = parseYouTubeUrl(url);
+                            if (!parsed.videoId) return null;
 
                             // Lazy placeholder (saves space and avoids loading iframe until user clicks play)
-                            const thumb = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                            const thumb = `https://img.youtube.com/vi/${parsed.videoId}/hqdefault.jpg`;
+                            const paramsAttr = parsed.params ? ` data-youtube-params="${parsed.params}"` : '';
                             return `
-                              <div class="video-wrapper" data-youtube-id="${videoId}">
-                                <div class="yt-placeholder" data-youtube-id="${videoId}" role="button" aria-label="Play YouTube video">
-                                  <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb">
+                              <div class="video-wrapper" data-youtube-id="${parsed.videoId}"${paramsAttr}>
+                                <div class="yt-placeholder" data-youtube-id="${parsed.videoId}"${paramsAttr} role="button" aria-label="Play YouTube video">
+                                  <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb" loading="lazy">
                                   <div class="yt-play-btn">▶</div>
                                 </div>
                                 <button type="button" class="video-fullscreen-btn" aria-label="Fullscreen">⛶</button>
@@ -970,33 +1247,52 @@ class PortfolioApp {
                         const renderCarouselItem = (item) => {
                             if (!item) return '';
                             if (item.type === 'img') {
-                                return `<img src="${item.src}" alt="${project.title} media" class="mockup-media">`;
+                                return `<img src="${item.src}" alt="${project.title} media" class="mockup-media" loading="lazy">`;
                             }
                             if (item.type === 'yt') {
-                                // Lazy YouTube placeholder (self-contained)
-                                try {
-                                    const u = new URL(item.src);
-                                    let videoId = null;
-                                    if (u.hostname.includes('youtube.com')) videoId = u.searchParams.get('v');
-                                    else if (u.hostname.includes('youtu.be')) videoId = u.pathname.replace('/', '');
-                                    if (videoId) {
-                                        const thumb = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-                                        return `
-                                          <div class="video-wrapper" data-youtube-id="${videoId}">
-                                            <div class="yt-placeholder" data-youtube-id="${videoId}" role="button" aria-label="Play YouTube video">
-                                              <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb">
-                                              <div class="yt-play-btn">▶</div>
-                                            </div>
-                                            <button type="button" class="video-fullscreen-btn" aria-label="Fullscreen">⛶</button>
-                                          </div>
-                                        `;
-                                    }
-                                } catch (e) {}
+                                // Lazy YouTube placeholder (self-contained) with start/end support
+                                const parsed = parseYouTubeUrl(item.src);
+                                if (parsed.videoId) {
+                                    const thumb = `https://img.youtube.com/vi/${parsed.videoId}/hqdefault.jpg`;
+                                    const paramsAttr = parsed.params ? ` data-youtube-params="${parsed.params}"` : '';
+                                    return `
+                                      <div class="video-wrapper" data-youtube-id="${parsed.videoId}"${paramsAttr}>
+                                        <div class="yt-placeholder" data-youtube-id="${parsed.videoId}"${paramsAttr} role="button" aria-label="Play YouTube video">
+                                          <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb" loading="lazy">
+                                          <div class="yt-play-btn">▶</div>
+                                        </div>
+                                        <button type="button" class="video-fullscreen-btn" aria-label="Fullscreen">⛶</button>
+                                      </div>
+                                    `;
+                                }
                                 return `<p>${item.src}</p>`;
                             }
                             if (item.type === 'vd') {
                                 return `<div class="video-wrapper" data-video-src="${item.src}">
                                     <video src="${item.src}" class="mockup-media" controls playsinline></video>
+                                    <button type="button" class="video-fullscreen-btn" aria-label="Fullscreen">⛶</button>
+                                </div>`;
+                            }
+                            if (item.type === 'em') {
+                                // Embed iframe (Jumpshare, Loom, etc.) with fullscreen button
+                                return `<div class="embed-wrapper">
+                                    <iframe src="${item.src}" class="mockup-media embed-iframe" frameborder="0" allowfullscreen webkitallowfullscreen mozallowfullscreen allow="autoplay; fullscreen"></iframe>
+                                    <button type="button" class="embed-fullscreen-btn" aria-label="Fullscreen">⛶</button>
+                                    <div class="embed-zoom-hint">Tap fullscreen for better viewing</div>
+                                </div>`;
+                            }
+                            if (item.type === 'gd') {
+                                // Google Drive video embed
+                                return `<div class="embed-wrapper">
+                                    <iframe src="https://drive.google.com/file/d/${item.src}/preview" class="mockup-media embed-iframe" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                                    <button type="button" class="embed-fullscreen-btn" aria-label="Fullscreen">⛶</button>
+                                    <div class="embed-zoom-hint">Tap fullscreen for better viewing</div>
+                                </div>`;
+                            }
+                            if (item.type === 'gdv') {
+                                // Google Drive Direct Video (Native Player)
+                                return `<div class="video-wrapper" data-video-src="https://drive.google.com/uc?export=download&id=${item.src}">
+                                    <video src="https://drive.google.com/uc?export=download&id=${item.src}" class="mockup-media" controls playsinline></video>
                                     <button type="button" class="video-fullscreen-btn" aria-label="Fullscreen">⛶</button>
                                 </div>`;
                             }
@@ -1110,11 +1406,40 @@ class PortfolioApp {
                         }
                     }
 
+                    // Format description: convert lines starting with - to list items, preserve newlines
+                    let formattedDesc = project.description || '';
+                    if (formattedDesc.includes('\n') || formattedDesc.includes('-')) {
+                        const lines = formattedDesc.split('\n');
+                        const listItems = [];
+                        const introLines = [];
+                        let inList = false;
+                        
+                        lines.forEach(line => {
+                            const trimmed = line.trim();
+                            if (trimmed.startsWith('-')) {
+                                inList = true;
+                                listItems.push(`<li>${trimmed.substring(1).trim()}</li>`);
+                            } else if (trimmed) {
+                                if (inList) {
+                                    listItems.push(`<li>${trimmed}</li>`);
+                                } else {
+                                    introLines.push(trimmed);
+                                }
+                            }
+                        });
+                        
+                        if (listItems.length > 0) {
+                            formattedDesc = introLines.join('<br>') + (introLines.length ? '<ul style="margin:0.5em 0 0 1em;padding:0;list-style:disc;">' : '<ul style="margin:0;padding:0 0 0 1em;list-style:disc;">') + listItems.join('') + '</ul>';
+                        } else {
+                            formattedDesc = formattedDesc.replace(/\n/g, '<br>');
+                        }
+                    }
+
                     projectCard.innerHTML = `
                         <div class="project-preview">
                             <div class="project-info">
                                 <h3 class="project-title">${project.title}</h3>
-                                <p class="project-description">${project.description}</p>
+                                <div class="project-description">${formattedDesc}</div>
                             </div>
                             ${projectPreviewHTML}
                             <div class="project-tags">
@@ -1144,29 +1469,75 @@ class PortfolioApp {
                                 return `<img src="${item.src}" alt="${project.title} media" class="mockup-media">`;
                             }
                             if (item.type === 'yt') {
-                                // Lazy YouTube placeholder (self-contained)
-                                try {
-                                    const u = new URL(item.src);
-                                    let videoId = null;
-                                    if (u.hostname.includes('youtube.com')) videoId = u.searchParams.get('v');
-                                    else if (u.hostname.includes('youtu.be')) videoId = u.pathname.replace('/', '');
-                                    if (videoId) {
-                                        const thumb = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-                                        return `
-                                          <div class="yt-placeholder" data-youtube-id="${videoId}" role="button" aria-label="Play YouTube video">
-                                            <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb">
-                                            <div class="yt-play-btn">▶</div>
-                                          </div>
-                                        `;
+                                // Lazy YouTube placeholder with start/end support
+                                // Note: parseYouTubeUrl helper defined in the parent scope
+                                const parseYT = (input) => {
+                                    const result = { videoId: null, params: '' };
+                                    if (!input) return result;
+                                    let url = input.trim();
+                                    if (url.startsWith('<iframe')) {
+                                        const srcMatch = url.match(/src=["']([^"']+)["']/i);
+                                        if (srcMatch) url = srcMatch[1];
                                     }
-                                } catch (e) {}
+                                    try {
+                                        const u = new URL(url);
+                                        if (u.hostname.includes('youtube.com')) {
+                                            if (u.pathname.includes('/embed/')) {
+                                                result.videoId = u.pathname.split('/embed/')[1]?.split(/[?&/]/)[0];
+                                            } else {
+                                                result.videoId = u.searchParams.get('v');
+                                            }
+                                        } else if (u.hostname.includes('youtu.be')) {
+                                            result.videoId = u.pathname.slice(1);
+                                        }
+                                        const startParam = u.searchParams.get('start') || u.searchParams.get('t');
+                                        const endParam = u.searchParams.get('end');
+                                        const embedParams = [];
+                                        if (startParam) embedParams.push(`start=${startParam.replace(/s$/i, '')}`);
+                                        if (endParam) embedParams.push(`end=${endParam.replace(/s$/i, '')}`);
+                                        result.params = embedParams.join('&');
+                                    } catch (e) {}
+                                    return result;
+                                };
+                                const parsed = parseYT(item.src);
+                                if (parsed.videoId) {
+                                    const thumb = `https://img.youtube.com/vi/${parsed.videoId}/hqdefault.jpg`;
+                                    const paramsAttr = parsed.params ? ` data-youtube-params="${parsed.params}"` : '';
+                                    return `
+                                      <div class="yt-placeholder" data-youtube-id="${parsed.videoId}"${paramsAttr} role="button" aria-label="Play YouTube video">
+                                        <img src="${thumb}" alt="YouTube thumbnail" class="yt-thumb">
+                                        <div class="yt-play-btn">▶</div>
+                                      </div>
+                                    `;
+                                }
                                 return `<p>${item.src}</p>`;
                             }
                             if (item.type === 'vd') {
                                 return `<video src="${item.src}" class="mockup-media" controls playsinline></video>`;
                             }
+                            if (item.type === 'gd') {
+                                // Google Drive video embed
+                                return `<div class="embed-wrapper">
+                                    <iframe src="https://drive.google.com/file/d/${item.src}/preview" class="mockup-media embed-iframe" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                                    <button type="button" class="embed-fullscreen-btn" aria-label="Fullscreen">⛶</button>
+                                    <div class="embed-zoom-hint">Tap fullscreen for better viewing</div>
+                                </div>`;
+                            }
+                            if (item.type === 'gdv') {
+                                // Google Drive Direct Video (Native Player)
+                                return `<video src="https://drive.google.com/uc?export=download&id=${item.src}" class="mockup-media" controls playsinline></video>`;
+                            }
+                            if (item.type === 'em') {
+                                // Embed iframe (Jumpshare, Loom, etc.) with fullscreen button
+                                return `<div class="embed-wrapper">
+                                    <iframe src="${item.src}" class="mockup-media embed-iframe" frameborder="0" allowfullscreen webkitallowfullscreen mozallowfullscreen allow="autoplay; fullscreen"></iframe>
+                                    <button type="button" class="embed-fullscreen-btn" aria-label="Fullscreen">⛶</button>
+                                    <div class="embed-zoom-hint">Tap fullscreen for better viewing</div>
+                                </div>`;
+                            }
                             return '';
                         };
+
 
                         const stopMediaInCard = (rootEl) => {
                             const root = rootEl || projectCard;
@@ -1385,95 +1756,87 @@ class BugSquashAnimation {
         this.isAnimating = false;
         this.container = null;
         this.hintsShown = false;
+        this.easterEggTriggered = false; // Only allow Easter egg once per session
         this.init();
     }
 
     showClickMeHints() {
-        if (this.hintsShown) return;
+        // Don't show hints if already shown or if Easter egg was triggered
+        if (this.hintsShown || this.easterEggTriggered) return;
+        // Check if hints were already shown/dismissed in this session
+        if (this.hintsShown || this.easterEggTriggered || sessionStorage.getItem('profileHintDismissed')) return;
         this.hintsShown = true;
 
-        const heroTitle = document.getElementById('hero-title');
         const profileImage = document.getElementById('profile-image');
-        const logoText = document.getElementById('logo-text');
-        const nameHighlight = heroTitle ? heroTitle.querySelector('.name-highlight') : null;
+        const profileContainer = document.querySelector('.profile-image-container');
+        const bottomNav = document.querySelector('.bottom-nav');
         
-        // Create arrow for logo text in top left (below it, pointing up)
-        if (logoText) {
-            const rect = logoText.getBoundingClientRect();
+        // Add glow animation to profile image and show "Click Here!" hint
+        if (profileImage && profileContainer) {
+            // Add glow effect to profile image
+            profileImage.classList.add('logo-highlighted');
             
-            const logoArrow = document.createElement('div');
-            logoArrow.className = 'click-me-hint';
-            logoArrow.innerHTML = `<div class="hint-arrow">⬆</div>`;
-            logoArrow.style.cssText = `
-                position: fixed;
-                top: ${rect.bottom + 5}px;
-                left: ${rect.left + rect.width / 2}px;
-                transform: translateX(-50%);
-                z-index: 9999;
-            `;
-            document.body.appendChild(logoArrow);
+            // Remove existing hint if any
+            const existingHint = profileContainer.querySelector('.logo-click-hint.profile-hint');
+            if (existingHint) existingHint.remove();
             
-            // Animate in
-            setTimeout(() => logoArrow.classList.add('visible'), 100);
-            
-            // Remove after 4 seconds
-            setTimeout(() => {
-                logoArrow.classList.remove('visible');
-                setTimeout(() => logoArrow.remove(), 500);
-            }, 4000);
-        }
-        
-        // Create arrow hint for Mohamed Gomaa name (above it)
-        if (nameHighlight || heroTitle) {
-            const targetEl = nameHighlight || heroTitle;
-            const rect = targetEl.getBoundingClientRect();
-            
-            const nameHint = document.createElement('div');
-            nameHint.className = 'click-me-hint';
-            nameHint.innerHTML = `<div class="hint-arrow">⬇</div>`;
-            nameHint.style.cssText = `
-                position: fixed;
-                top: ${rect.top - 50}px;
-                left: ${rect.left + rect.width / 2}px;
-                transform: translateX(-50%);
-                z-index: 9999;
-            `;
-            document.body.appendChild(nameHint);
-
-            // Animate in
-            setTimeout(() => nameHint.classList.add('visible'), 100);
-
-            // Remove after 6 seconds
-            setTimeout(() => {
-                nameHint.classList.remove('visible');
-                setTimeout(() => nameHint.remove(), 500);
-            }, 2000);
-        }
-
-        // Create arrow hint for profile image (above it)
-        if (profileImage) {
-            const rect = profileImage.getBoundingClientRect();
-            
+            // Create hint ABOVE the profile image
             const imageHint = document.createElement('div');
-            imageHint.className = 'click-me-hint';
-            imageHint.innerHTML = `<div class="hint-arrow">⬇</div>`;
+            imageHint.className = 'logo-click-hint profile-hint top-positioned';
+            imageHint.innerHTML = 'Click Here!';
             imageHint.style.cssText = `
-                position: fixed;
-                top: ${rect.top - 50}px;
-                left: ${rect.left + rect.width / 2}px;
+                position: absolute;
+                bottom: calc(100% + 15px);
+                top: auto;
+                left: 50%;
                 transform: translateX(-50%);
                 z-index: 9999;
             `;
-            document.body.appendChild(imageHint);
+            profileContainer.style.position = 'relative';
+            profileContainer.appendChild(imageHint);
+
+            // Animate in
+            setTimeout(() => imageHint.classList.add('visible'), 150);
+
+            // Remove only when user clicks on the image
+            const dismissHandler = () => {
+                imageHint.classList.remove('visible');
+                profileImage.classList.remove('logo-highlighted');
+                setTimeout(() => imageHint.remove(), 500);
+                // Mark as dismissed in session storage
+                sessionStorage.setItem('profileHintDismissed', 'true');
+            };
+            
+            profileImage.addEventListener('click', dismissHandler, { once: true });
+            profileImage.addEventListener('touchend', dismissHandler, { once: true });
+        }
+        
+        // Add hint for bottom navigation
+        if (bottomNav) {
+            // Remove existing hint if any
+            const existingNavHint = document.querySelector('.logo-click-hint.nav-hint');
+            if (existingNavHint) existingNavHint.remove();
+
+            const navHint = document.createElement('div');
+            navHint.className = 'logo-click-hint nav-hint';
+            navHint.innerHTML = 'Navigate';
+            navHint.style.cssText = `
+                position: fixed;
+                bottom: 80px;
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 9999;
+            `;
+            document.body.appendChild(navHint);
 
             // Animate in with slight delay
-            setTimeout(() => imageHint.classList.add('visible'), 200);
+            setTimeout(() => navHint.classList.add('visible'), 200);
 
-            // Remove after 4 seconds
+            // Remove after 3 seconds
             setTimeout(() => {
-                imageHint.classList.remove('visible');
-                setTimeout(() => imageHint.remove(), 500);
-            }, 2000);
+                navHint.classList.remove('visible');
+                setTimeout(() => navHint.remove(), 500);
+            }, 3000);
         }
     }
 
@@ -1487,14 +1850,10 @@ class BugSquashAnimation {
             
             if (profileImage && imageContainer) {
                 clearInterval(checkImage);
+                // Profile image triggers Easter egg animation
                 this.setupClickHandler(profileImage, imageContainer);
                 
-                // Also setup handler for hero title (name)
-                if (heroTitle) {
-                    this.setupHeroTitleHandler(heroTitle, profileImage, imageContainer);
-                }
-                
-                // Also setup handler for logo text in header (top left)
+                // Logo text in header also triggers Easter egg
                 if (logoText) {
                     this.setupLogoHandler(logoText, profileImage, imageContainer);
                 }
@@ -1515,7 +1874,7 @@ class BugSquashAnimation {
                 setTimeout(() => {
                     logoText.classList.remove('bug-shake-text');
                 }, 300);
-                this.startAnimation(profileImage);
+                this.startAnimation(profileImage, 'logo');
             }
         });
 
@@ -1528,7 +1887,7 @@ class BugSquashAnimation {
                 setTimeout(() => {
                     logoText.classList.remove('bug-shake-text');
                 }, 300);
-                this.startAnimation(profileImage);
+                this.startAnimation(profileImage, 'logo');
             }
         });
     }
@@ -1551,7 +1910,7 @@ class BugSquashAnimation {
                 setTimeout(() => {
                     targetElement.classList.remove('bug-shake-text');
                 }, 300);
-                this.startAnimation(profileImage);
+                this.startAnimation(profileImage, 'name');
             }
         });
 
@@ -1564,7 +1923,7 @@ class BugSquashAnimation {
                 setTimeout(() => {
                     targetElement.classList.remove('bug-shake-text');
                 }, 300);
-                this.startAnimation(profileImage);
+                this.startAnimation(profileImage, 'name');
             }
         });
     }
@@ -1579,16 +1938,26 @@ class BugSquashAnimation {
         // Add click/tap handler
         profileImage.addEventListener('click', (e) => {
             e.preventDefault();
-            if (!this.isAnimating) {
-                this.startAnimation(profileImage);
+            // Always shake on click
+            profileImage.classList.add('bug-shake');
+            setTimeout(() => profileImage.classList.remove('bug-shake'), 300);
+            
+            // Only run full animation once per session
+            if (!this.isAnimating && !this.easterEggTriggered) {
+                this.startAnimation(profileImage, 'image');
             }
         });
 
         // Add touch handler for mobile
         profileImage.addEventListener('touchend', (e) => {
             e.preventDefault();
-            if (!this.isAnimating) {
-                this.startAnimation(profileImage);
+            // Always shake on touch
+            profileImage.classList.add('bug-shake');
+            setTimeout(() => profileImage.classList.remove('bug-shake'), 300);
+            
+            // Only run full animation once per session
+            if (!this.isAnimating && !this.easterEggTriggered) {
+                this.startAnimation(profileImage, 'image');
             }
         });
 
@@ -1596,21 +1965,58 @@ class BugSquashAnimation {
         profileImage.style.cursor = 'pointer';
     }
 
-    startAnimation(profileImage) {
+    startAnimation(profileImage, triggerSource = 'image') {
+        // Only allow Easter egg once per session
+        if (this.easterEggTriggered) return;
+        this.easterEggTriggered = true;
         this.isAnimating = true;
         
-        // Add shake effect to image
-        profileImage.classList.add('bug-shake');
+        // Activate terminal mode theme during animation
+        document.body.classList.add('terminal-mode');
+        document.documentElement.setAttribute('data-theme', 'dark');
         
-        // Spawn bugs after a brief delay
+        // Start portfolio tour during animation (no scrolling)
+        if (PortfolioConfig.EASTER_EGG.TOUR.ENABLED) {
+            const sections = PortfolioConfig.EASTER_EGG.TOUR.SECTIONS;
+            const tourDelay = PortfolioConfig.EASTER_EGG.TOUR.SECTION_DELAY;
+            
+            sections.forEach((section, index) => {
+                setTimeout(() => {
+                    if (window.portfolioApp) {
+                        window.portfolioApp.showSection(section);
+                        window.portfolioApp.updateActiveNavItem(section);
+                        if (section === 'home') {
+                            window.portfolioApp.currentSection = 'home';
+                        }
+                    }
+                }, index * tourDelay);
+            });
+        }
+        
+        // Track the Easter egg click
+        fetch('/api/track_easter_egg', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ trigger_source: triggerSource })
+        }).catch(() => {}); // Silently fail if tracking fails
+        
+        // Add shake/vibrate effect to image (like Mohamed Gomaa logo)
+        profileImage.classList.add('bug-shake');
         setTimeout(() => {
             profileImage.classList.remove('bug-shake');
+        }, PortfolioConfig.EASTER_EGG.SHAKE_DURATION);
+        
+        // Spawn bugs after shake effect
+        setTimeout(() => {
             this.spawnBugs(profileImage);
-        }, 300);
+        }, PortfolioConfig.EASTER_EGG.BUG_SPAWN_DELAY);
     }
 
     spawnBugs(profileImage) {
-        const bugCount = 12 + Math.floor(Math.random() * 7); // 12-18 bugs
+        // Use config for bug counts
+        const baseCount = PortfolioConfig.EASTER_EGG.BUG_MIN_COUNT;
+        const randomAdd = PortfolioConfig.EASTER_EGG.BUG_MAX_ADDITIONAL;
+        const bugCount = baseCount + Math.floor(Math.random() * randomAdd);
         const rect = profileImage.getBoundingClientRect();
         
         // Get viewport dimensions for spreading bugs across page
@@ -1792,7 +2198,7 @@ class BugSquashAnimation {
             // Show success message in center of screen
             const successMsg = document.createElement('div');
             successMsg.className = 'bug-success-message';
-            successMsg.innerHTML = '✅ All Bugs Fixed!';
+            successMsg.innerHTML = '✅ All Bugs Fixed By Eng. Gomaa!';
             successMsg.style.position = 'fixed';
             successMsg.style.left = '50%';
             successMsg.style.top = '50%';
@@ -1815,6 +2221,12 @@ class BugSquashAnimation {
                 this.tester.remove();
                 successMsg.remove();
                 this.cleanupFullPage();
+                // Deactivate terminal mode after animation
+                document.body.classList.remove('terminal-mode');
+                // Trigger nav highlight after Easter egg
+                if (window.portfolioApp) {
+                    window.portfolioApp.triggerNavHighlight();
+                }
             }, 1200);
         } else {
             this.cleanupFullPage();
@@ -1969,6 +2381,8 @@ class BugSquashAnimation {
                 this.tester.remove();
                 successMsg.remove();
                 this.cleanup();
+                // Deactivate terminal mode after animation
+                document.body.classList.remove('terminal-mode');
             }, 1500);
         } else {
             this.cleanup();
@@ -1981,16 +2395,19 @@ class BugSquashAnimation {
         this.isAnimating = false;
         // Clean any remaining elements
         this.container.innerHTML = '';
+        
+        // Deactivate terminal mode theme after animation
+        document.body.classList.remove('terminal-mode');
     }
 }
 
 // Initialize bug squash animation
-let bugSquashAnimation = null;
+window.bugSquashAnimation = null;
 
 // Initialize the Portfolio App
 document.addEventListener('DOMContentLoaded', () => {
     const app = new PortfolioApp();
     
     // Initialize bug squash Easter egg
-    bugSquashAnimation = new BugSquashAnimation();
+    window.bugSquashAnimation = new BugSquashAnimation();
 });

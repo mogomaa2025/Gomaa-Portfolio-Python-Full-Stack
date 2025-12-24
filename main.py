@@ -28,6 +28,7 @@ ABOUT_FILE = os.path.join(DATA_DIR, 'about.json')
 CONTACT_FILE = os.path.join(DATA_DIR, 'contact.json')
 CERTIFICATIONS_FILE = os.path.join(DATA_DIR, 'certifications.json')
 CERTIFICATION_CATEGORIES_FILE = os.path.join(DATA_DIR, 'certification_categories.json')
+EASTER_EGG_FILE = os.path.join(DATA_DIR, 'easter_egg_clicks.json')
 
 # Create data directory if it doesn't exist
 os.makedirs(DATA_DIR, exist_ok=True)
@@ -341,6 +342,32 @@ def admin_visitors():
     # Get recent visitors (last 50)
     recent_visitors = visitors[-50:] if len(visitors) > 50 else visitors
     
+    # Parse device/OS for visitors missing this data
+    for visitor in recent_visitors:
+        if not visitor.get('device_type') or not visitor.get('os_type'):
+            ua = visitor.get('user_agent', '').lower()
+            # Detect device type
+            if any(x in ua for x in ['mobile', 'android', 'iphone', 'ipad', 'ipod', 'webos', 'blackberry', 'opera mini', 'opera mobi']):
+                if 'ipad' in ua or 'tablet' in ua:
+                    visitor['device_type'] = 'Tablet'
+                else:
+                    visitor['device_type'] = 'Phone'
+            else:
+                visitor['device_type'] = 'PC'
+            # Detect OS
+            if 'windows' in ua:
+                visitor['os_type'] = 'Windows'
+            elif 'mac os' in ua or 'macintosh' in ua:
+                visitor['os_type'] = 'Mac'
+            elif 'iphone' in ua or 'ipad' in ua:
+                visitor['os_type'] = 'iOS'
+            elif 'android' in ua:
+                visitor['os_type'] = 'Android'
+            elif 'linux' in ua:
+                visitor['os_type'] = 'Linux'
+            else:
+                visitor['os_type'] = 'Unknown'
+    
     # Calculate top pages
     page_counts = {}
     for visitor in visitors:
@@ -370,7 +397,23 @@ def admin_visitors():
         'hourly_visits': hourly_visits
     }
     
-    return render_template('visitor_analytics.html', visitors=recent_visitors, analytics=analytics)
+    # Load Easter egg clicks stats
+    try:
+        with open(EASTER_EGG_FILE, 'r') as f:
+            easter_clicks = json.load(f)
+    except:
+        easter_clicks = []
+    
+    easter_stats = {
+        'total': len(easter_clicks),
+        'today': len([c for c in easter_clicks if c.get('timestamp', '')[:10] == datetime.now().strftime('%Y-%m-%d')]),
+        'by_trigger': {}
+    }
+    for click in easter_clicks:
+        trigger = click.get('trigger_source', 'unknown')
+        easter_stats['by_trigger'][trigger] = easter_stats['by_trigger'].get(trigger, 0) + 1
+    
+    return render_template('visitor_analytics.html', visitors=recent_visitors, analytics=analytics, easter_stats=easter_stats)
 
 @app.route('/admin/visitors/clear', methods=['POST'])
 @admin_required
@@ -378,7 +421,42 @@ def clear_visitors():
     try:
         with open(VISITORS_FILE, 'w') as f:
             json.dump([], f)
-        return jsonify({"success": True, "message": "Visitor logs cleared successfully"})
+        # Also clear Easter egg clicks
+        with open(EASTER_EGG_FILE, 'w') as f:
+            json.dump([], f)
+        return jsonify({"success": True, "message": "Visitor logs and Easter egg clicks cleared successfully"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
+@app.route('/admin/visitors/delete', methods=['POST'])
+@admin_required
+def delete_visitor():
+    """Delete a specific visitor by visit_id or timestamp."""
+    try:
+        data = request.get_json() if request.is_json else {}
+        visit_id = data.get('visit_id')
+        timestamp = data.get('timestamp')
+        
+        with open(VISITORS_FILE, 'r') as f:
+            visitors = json.load(f)
+        
+        original_count = len(visitors)
+        
+        # Filter out the matching visitor
+        if visit_id:
+            visitors = [v for v in visitors if v.get('visit_id') != visit_id]
+        elif timestamp:
+            visitors = [v for v in visitors if v.get('timestamp') != timestamp]
+        else:
+            return jsonify({"success": False, "message": "No visit_id or timestamp provided"})
+        
+        if len(visitors) == original_count:
+            return jsonify({"success": False, "message": "Visitor not found"})
+        
+        with open(VISITORS_FILE, 'w') as f:
+            json.dump(visitors, f, indent=2)
+        
+        return jsonify({"success": True, "message": "Visitor deleted successfully"})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
 
@@ -402,6 +480,45 @@ def export_visitors():
         )
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
+
+@app.route('/api/track_easter_egg', methods=['POST'])
+def track_easter_egg():
+    """Track when a visitor triggers the Easter egg animation."""
+    try:
+        data = request.get_json() if request.is_json else {}
+        trigger_source = data.get('trigger_source', 'unknown')
+        
+        # Get visitor IP
+        ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+        if ip:
+            ip = ip.split(',')[0].strip()
+        
+        click_data = {
+            'timestamp': datetime.now().isoformat(),
+            'ip': ip,
+            'trigger_source': trigger_source,
+            'user_agent': request.headers.get('User-Agent', '')
+        }
+        
+        # Load existing clicks
+        try:
+            with open(EASTER_EGG_FILE, 'r') as f:
+                clicks = json.load(f)
+        except:
+            clicks = []
+        
+        clicks.append(click_data)
+        
+        # Keep only last 1000 clicks
+        if len(clicks) > 1000:
+            clicks = clicks[-1000:]
+        
+        with open(EASTER_EGG_FILE, 'w') as f:
+            json.dump(clicks, f, indent=2)
+        
+        return jsonify({'status': 'ok', 'message': 'Easter egg click tracked'})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @app.route('/admin/projects')
 @admin_required
@@ -764,13 +881,13 @@ def get_project_categories():
 @admin_required
 def admin_skills():
     try:
-        with open(SKILLS_FILE, 'r') as f:
+        with open(SKILLS_FILE, 'r', encoding='utf-8-sig') as f:
             skills = json.load(f)
     except:
         skills = []
     
     try:
-        with open(SKILL_CATEGORIES_FILE, 'r') as f:
+        with open(SKILL_CATEGORIES_FILE, 'r', encoding='utf-8-sig') as f:
             skill_categories = json.load(f)
     except:
         skill_categories = []
@@ -781,7 +898,7 @@ def admin_skills():
 @admin_required
 def add_skill():
     try:
-        with open(SKILL_CATEGORIES_FILE, 'r') as f:
+        with open(SKILL_CATEGORIES_FILE, 'r', encoding='utf-8-sig') as f:
             skill_categories = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         skill_categories = []
@@ -792,7 +909,7 @@ def add_skill():
 @admin_required
 def edit_skill(skill_id):
     try:
-        with open(SKILLS_FILE, 'r') as f:
+        with open(SKILLS_FILE, 'r', encoding='utf-8-sig') as f:
             skills = json.load(f)
         
         skill = next((s for s in skills if s.get('id') == skill_id), None)
@@ -800,7 +917,7 @@ def edit_skill(skill_id):
             return "Skill not found", 404
             
         try:
-            with open(SKILL_CATEGORIES_FILE, 'r') as f:
+            with open(SKILL_CATEGORIES_FILE, 'r', encoding='utf-8-sig') as f:
                 skill_categories = json.load(f)
         except (FileNotFoundError, json.JSONDecodeError):
             skill_categories = []
@@ -813,7 +930,7 @@ def edit_skill(skill_id):
 @admin_required
 def create_skill():
     try:
-        with open(SKILLS_FILE, 'r') as f:
+        with open(SKILLS_FILE, 'r', encoding='utf-8-sig') as f:
             skills = json.load(f)
     except:
         skills = []
@@ -827,7 +944,7 @@ def create_skill():
     
     skills.append(new_skill)
     
-    with open(SKILLS_FILE, 'w') as f:
+    with open(SKILLS_FILE, 'w', encoding='utf-8') as f:
         json.dump(skills, f, indent=2)
     
     return redirect('/admin/skills')
@@ -836,7 +953,7 @@ def create_skill():
 @admin_required
 def update_skill(skill_id):
     try:
-        with open(SKILLS_FILE, 'r') as f:
+        with open(SKILLS_FILE, 'r', encoding='utf-8-sig') as f:
             skills = json.load(f)
     except:
         skills = []
@@ -851,7 +968,7 @@ def update_skill(skill_id):
             }
             break
     
-    with open(SKILLS_FILE, 'w') as f:
+    with open(SKILLS_FILE, 'w', encoding='utf-8') as f:
         json.dump(skills, f, indent=2)
     
     return redirect('/admin/skills')
@@ -860,14 +977,14 @@ def update_skill(skill_id):
 @admin_required
 def delete_skill(skill_id):
     try:
-        with open(SKILLS_FILE, 'r') as f:
+        with open(SKILLS_FILE, 'r', encoding='utf-8-sig') as f:
             skills = json.load(f)
     except:
         skills = []
     
     skills = [s for s in skills if s.get('id') != skill_id]
     
-    with open(SKILLS_FILE, 'w') as f:
+    with open(SKILLS_FILE, 'w', encoding='utf-8') as f:
         json.dump(skills, f, indent=2)
     
     return jsonify({"success": True, "message": "Skill deleted successfully"})
@@ -927,9 +1044,27 @@ def manage_categories():
         elif action == 'edit':
             cat_id = int(request.form.get('id'))
             new_name = request.form.get('name', '').strip()
+            old_name = None
             for c in categories:
                 if c['id'] == cat_id:
+                    old_name = c['name']
                     c['name'] = new_name
+                    break
+            # Update all projects that use the old category name
+            if old_name and new_name and old_name != new_name:
+                try:
+                    with open(PROJECTS_FILE, 'r') as f:
+                        projects = json.load(f)
+                    updated = False
+                    for p in projects:
+                        if p.get('category') == old_name:
+                            p['category'] = new_name
+                            updated = True
+                    if updated:
+                        with open(PROJECTS_FILE, 'w') as f:
+                            json.dump(projects, f, indent=2)
+                except Exception:
+                    pass  # If projects file doesn't exist, just skip
         elif action == 'delete':
             cat_id = int(request.form.get('id'))
             categories = [c for c in categories if c['id'] != cat_id]
@@ -1253,26 +1388,69 @@ def track_visit():
     except (FileNotFoundError, json.JSONDecodeError):
         visitors = []
 
-    # Check if this IP has already visited this page (tab) - without a visit_id
-    if not visit_id:
-        if any(v.get('ip') == ip and v.get('path') == page for v in visitors):
-            return jsonify({'status': 'exists', 'message': 'Visit already recorded'})
+    # Find existing visit from same IP on same page (consolidate visits)
+    existing_visit = None
+    for v in visitors:
+        if v.get('ip') == ip and v.get('path') == page:
+            existing_visit = v
+            break
+    
+    if existing_visit:
+        # Update existing record: increment visit count and update timestamp
+        existing_visit['visit_count'] = existing_visit.get('visit_count', 1) + 1
+        existing_visit['last_visit'] = datetime.now().isoformat()
+        existing_visit['visit_id'] = visit_id  # Update to latest visit_id for duration tracking
+        # Total duration is accumulated via update_visit_duration
+        
+        with open(VISITORS_FILE, 'w') as f:
+            json.dump(visitors, f, indent=2)
+        
+        return jsonify({'status': 'updated', 'message': 'Visit count updated', 'visit_count': existing_visit['visit_count']})
+    
+    # New visitor - create new record
+    user_agent = request.headers.get('User-Agent', '')
+    
+    # Parse device type and OS from User-Agent
+    ua_lower = user_agent.lower()
+    
+    # Detect device type
+    if any(x in ua_lower for x in ['mobile', 'android', 'iphone', 'ipad', 'ipod', 'webos', 'blackberry', 'opera mini', 'opera mobi']):
+        if 'ipad' in ua_lower or 'tablet' in ua_lower:
+            device_type = 'Tablet'
+        else:
+            device_type = 'Phone'
     else:
-        # If visit_id is provided, check if THAT specific visit is already recorded
-        if any(v.get('visit_id') == visit_id for v in visitors):
-            return jsonify({'status': 'exists', 'message': 'Visit ID already recorded'})
-
+        device_type = 'PC'
+    
+    # Detect OS
+    if 'windows' in ua_lower:
+        os_type = 'Windows'
+    elif 'mac os' in ua_lower or 'macintosh' in ua_lower:
+        os_type = 'Mac'
+    elif 'iphone' in ua_lower or 'ipad' in ua_lower:
+        os_type = 'iOS'
+    elif 'android' in ua_lower:
+        os_type = 'Android'
+    elif 'linux' in ua_lower:
+        os_type = 'Linux'
+    else:
+        os_type = 'Unknown'
+    
     visitor_data = {
         'ip': ip,
         'visit_id': visit_id,
         'timestamp': datetime.now().isoformat(),
+        'last_visit': datetime.now().isoformat(),
         'path': page,
         'method': request.method,
-        'user_agent': request.headers.get('User-Agent', ''),
+        'user_agent': user_agent,
         'referrer': request.referrer or '',
         'country': None,
         'city': None,
-        'duration': 0
+        'duration': 0,
+        'visit_count': 1,
+        'device_type': device_type,
+        'os_type': os_type
     }
     visitors.append(visitor_data)
     
@@ -1287,7 +1465,16 @@ def track_visit():
 
 @app.route('/api/update_visit_duration', methods=['POST'])
 def update_visit_duration():
-    data = request.json
+    # Handle both application/json and text/plain (from navigator.sendBeacon)
+    try:
+        if request.is_json:
+            data = request.json
+        else:
+            # sendBeacon sends as text/plain, so parse manually
+            data = json.loads(request.get_data(as_text=True))
+    except:
+        return jsonify({'status': 'error', 'message': 'Invalid data'}), 400
+    
     visit_id = data.get('visit_id')
     duration = data.get('duration', 0)
 
@@ -1300,11 +1487,13 @@ def update_visit_duration():
     except:
         return jsonify({'status': 'error', 'message': 'Could not load visitors'}), 500
 
-    # Find the visit and update duration
+    # Find the visit and accumulate duration (add to existing duration)
     updated = False
     for v in visitors:
         if v.get('visit_id') == visit_id:
-            v['duration'] = duration
+            # Accumulate duration instead of replacing
+            current_duration = v.get('duration', 0)
+            v['duration'] = current_duration + duration
             updated = True
             break
     

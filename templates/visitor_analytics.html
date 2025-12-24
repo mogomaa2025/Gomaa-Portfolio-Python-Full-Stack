@@ -238,9 +238,38 @@
         
         .visitor-info {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr 100px;
+            grid-template-columns: 1fr 1fr 1fr 100px 80px 80px 100px 50px;
             gap: 1rem;
             align-items: center;
+        }
+        
+        .visitor-device {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.25rem 0.5rem;
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #c4b5fd;
+        }
+        
+        .visitor-delete-btn {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s ease;
+        }
+        
+        .visitor-delete-btn:hover {
+            background: rgba(239, 68, 68, 0.4);
+            color: white;
         }
         
         .visitor-ip {
@@ -306,12 +335,80 @@
         }
         
         @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+                padding: 1rem;
+            }
+
+            .admin-nav {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
             .admin-container {
                 padding: 1rem;
             }
             
+            .page-header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+                align-items: stretch;
+            }
+
             .action-buttons {
                 flex-direction: column;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            /* Visitor Table Mobile View */
+            .visitor-item {
+                padding: 1.25rem;
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                margin-bottom: 1rem;
+                border-radius: 8px;
+                background: rgba(0,0,0,0.2);
+            }
+
+            .visitor-info {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+                text-align: left;
+            }
+            
+            .visitor-ip {
+                font-size: 1.1rem;
+                color: #64ffda;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+                padding-bottom: 0.5rem;
+                margin-bottom: 0.25rem;
+            }
+            
+            .visitor-duration {
+                text-align: left;
+            }
+            
+            /* Wrap meta info */
+            .visitor-metadata {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .visitor-delete-btn {
+                width: 100%;
+                margin-top: 0.5rem;
+                padding: 0.75rem;
+                font-size: 1rem;
             }
         }
     </style>
@@ -354,6 +451,10 @@
             <div class="stat-card">
                 <div class="stat-number">{{ visitors|length }}</div>
                 <div class="stat-label">Recent Entries</div>
+            </div>
+            <div class="stat-card" style="background: rgba(139, 92, 246, 0.1); border-color: rgba(139, 92, 246, 0.3);">
+                <div class="stat-number" style="color: #c4b5fd;">🎮 {{ easter_stats.total }}</div>
+                <div class="stat-label">Easter Egg Clicks ({{ easter_stats.today }} today)</div>
             </div>
         </div>
         
@@ -409,8 +510,14 @@
                         <div class="visitor-ip">{{ visitor.ip }}</div>
                         <div class="visitor-time">{{ visitor.timestamp[:19] }}</div>
                         <div class="visitor-path">{{ visitor.path }}</div>
+                        <div class="visitor-device" title="{{ visitor.get('os_type', 'Unknown') }}">
+                            {% if visitor.get('device_type') == 'Phone' %}📱{% elif visitor.get('device_type') == 'Tablet' %}📲{% else %}💻{% endif %}
+                            {{ visitor.get('device_type', 'PC') }} / {{ visitor.get('os_type', '?') }}
+                        </div>
+                        <div class="visitor-method" style="text-align:center;">{{ visitor.get('visit_count', 1) }}x</div>
                         <div class="visitor-method">{{ visitor.method }}</div>
                         <div class="visitor-duration">{{ visitor.get('duration', 0)|format_duration }}</div>
+                        <button class="visitor-delete-btn" onclick="deleteVisitor('{{ visitor.get('visit_id', '') }}', '{{ visitor.timestamp }}')">🗑️</button>
                     </div>
                 </div>
                 {% endfor %}
@@ -445,6 +552,29 @@
                 })
                 .catch(error => {
                     alert('Error clearing logs: ' + error);
+                });
+            }
+        }
+        
+        function deleteVisitor(visitId, timestamp) {
+            if (confirm('Delete this visitor entry?')) {
+                fetch('/admin/visitors/delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ visit_id: visitId, timestamp: timestamp })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Error: ' + error);
                 });
             }
         }

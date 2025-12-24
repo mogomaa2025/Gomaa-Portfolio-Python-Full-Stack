@@ -1,7 +1,7 @@
 {
   "logo_text": "Mohamed Gomaa",
-  "profile_image": "2.jpeg",
-  "profile_image_url": "",
+  "profile_image": "",
+  "profile_image_url": "https://i.ibb.co/3yN6rVsH/lossy.png",
   "hero_title": "Hey <span class='wave'>\ud83d\udc4b</span> <br/> I'm <span class='name-highlight'>Eng. Mohamed Gomaa</span><span class='aka'> <br/>ITI Graduation <br/> Depi Best Graduation Project <br/> ISTQB FL Certified</span>",
   "hero_subtitle": [
     "Manual Testing",
@@ -12,7 +12,7 @@
   "social_links": [
     {
       "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">   <path d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z\"></path>   <path d=\"M14 2v6h6\"></path>   <text x=\"8\" y=\"17\" font-family=\"sans-serif\" font-size=\"7\" fill=\"currentColor\" stroke=\"none\">CV</text> </svg>",
-      "url": "https://shorturl.at/BbMhz",
+      "url": "https://shorturl.at/A5U9G",
       "title": "CV"
     },
     {
@@ -26,7 +26,7 @@
       "title": "LinkedIn"
     },
     {
-      "icon": "<img src=\"https://i.ibb.co/bRB9C3fy/empty-testination1.png\" alt=\"Lamp\" width=\"44\" height=\"50\" style=\"mix-blend-mode: multiply;\" >",
+      "icon": "<img src=\"https://i.ibb.co/WNVD1jxk/testinationlossy.png\" alt=\"Lamp\" width=\"44\" height=\"50\" style=\"mix-blend-mode: multiply;\" >",
       "url": "https://www.linkedin.com/company/testination-eg",
       "title": "Testination"
     },
@@ -41,5 +41,6 @@
       "title": "Depi"
     }
   ],
-  "project_sort_by": "manual"
+  "project_sort_by": "manual",
+  "show_all_category_filter": false
 }
