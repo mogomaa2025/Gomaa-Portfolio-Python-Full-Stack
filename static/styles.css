@@ -374,7 +374,8 @@ body {
 /* ===== END INTRO OVERLAY ===== */
 
 
-/* Animated background dots */
+/* Animated background dots - DISABLED FOR PERFORMANCE */
+/* The animation was causing scroll lag on Windows PCs */
 body::before {
     content: '';
     position: fixed;
@@ -386,7 +387,7 @@ body::before {
         radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
         radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
         radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
-    animation: float 20s ease-in-out infinite;
+    /* animation removed for performance */
     pointer-events: none;
     z-index: -1;
 }
@@ -841,13 +842,15 @@ body::before {
     border-radius: 16px;
     overflow: hidden;
     border: 1px solid var(--card-border);
-    backdrop-filter: blur(5px);
+    /* backdrop-filter removed for performance - causes scroll flicker */
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     /* GPU acceleration to prevent white flicker during scroll */
     will-change: transform;
     backface-visibility: hidden;
     transform: translateZ(0);
     -webkit-backface-visibility: hidden;
+    /* Contain paint to this element */
+    contain: layout style paint;
 }
 
 .project-card:hover {
@@ -882,6 +885,9 @@ body::before {
     flex-direction: column;
     align-items: stretch;
     justify-content: center;
+    /* Prevent layout shifts from lazy-loaded content */
+    min-height: 200px;
+    contain: layout style;
 }
 
 .mockup-header {
