@@ -950,12 +950,19 @@
             // Prevent navigation while image is still loading
             if (isImageLoading) return;
             
+            // Clamp index to valid range (no wrapping)
+            if (index < 0) index = 0;
+            if (index >= currentSlides.length) index = currentSlides.length - 1;
+            
+            // If already at this slide, do nothing
+            if (index === currentSlideIndex && modalImg.src.includes(currentSlides[index])) return;
+            
             // Reset zoom state when changing slides
             if (zoomLevel > 1) {
                 resetZoom();
             }
             
-            currentSlideIndex = (index + currentSlides.length) % currentSlides.length;
+            currentSlideIndex = index;
             
             // Set loading state
             isImageLoading = true;
@@ -979,13 +986,24 @@
             // Update dots immediately for responsiveness
             updateSlideIndicators(currentSlides.length, currentSlideIndex);
             
+            // Update arrow visibility and highlighting
             if (currentSlides.length > 1) {
-                modalPrev.style.display = 'flex';
-                modalNext.style.display = 'flex';
-                // Add highlight to arrows until user interacts
-                if (!modalPrev.dataset.interacted) {
-                    modalPrev.classList.add('highlight');
+                const isFirst = currentSlideIndex === 0;
+                const isLast = currentSlideIndex === currentSlides.length - 1;
+                
+                // Show/hide arrows based on position
+                modalPrev.style.display = isFirst ? 'none' : 'flex';
+                modalNext.style.display = isLast ? 'none' : 'flex';
+                
+                // Clear previous highlights
+                modalPrev.classList.remove('highlight');
+                modalNext.classList.remove('highlight');
+                
+                // Highlight the available direction
+                if (isFirst) {
                     modalNext.classList.add('highlight');
+                } else if (isLast) {
+                    modalPrev.classList.add('highlight');
                 }
             } else {
                 modalPrev.style.display = 'none';
@@ -1098,20 +1116,11 @@
             }
         });
 
-        // Navigation buttons - remove highlight on interaction
-        function removeArrowHighlight() {
-            modalPrev.classList.remove('highlight');
-            modalNext.classList.remove('highlight');
-            modalPrev.dataset.interacted = 'true';
-            modalNext.dataset.interacted = 'true';
-        }
-        
+        // Navigation buttons
         if (modalPrev) modalPrev.addEventListener('click', () => {
-            removeArrowHighlight();
             showSlide(currentSlideIndex - 1);
         });
         if (modalNext) modalNext.addEventListener('click', () => {
-            removeArrowHighlight();
             showSlide(currentSlideIndex + 1);
         });
 
