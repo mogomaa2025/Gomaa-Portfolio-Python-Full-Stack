@@ -16,7 +16,7 @@ app.config['SECRET_KEY'] = 'asdf#FGSgvasgf$5$WGT'
 
 # Admin configuration
 # Store the hashed admin password (SHA-256)
-ADMIN_PASSWORD_HASH = "d9faee09e8b5af1d37143292700818f7a954b360e5941470cdc9c59c5ca3a76b"  # placeholder, will set real hash below
+ADMIN_PASSWORD_HASH = "test"  # placeholder, will set real hash below
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 VISITORS_FILE = os.path.join(DATA_DIR, 'visitors.json')
 PROJECTS_FILE = os.path.join(DATA_DIR, 'projects.json')
@@ -1782,4 +1782,4 @@ def validate_mockup_content(content):
         return content
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001, debug=True) # Changed from 5000 to 5001
+    app.run(host='0.0.0.0', port=8080, debug=True)

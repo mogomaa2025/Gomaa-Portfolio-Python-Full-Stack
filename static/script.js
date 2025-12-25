@@ -1785,10 +1785,10 @@ class BugSquashAnimation {
             // Create hint ABOVE the profile image
             const imageHint = document.createElement('div');
             imageHint.className = 'logo-click-hint profile-hint top-positioned';
-            imageHint.innerHTML = 'Click Here!';
+            imageHint.innerHTML = 'Click Here For Tour!';
             imageHint.style.cssText = `
                 position: absolute;
-                bottom: calc(100% + 15px);
+                bottom: calc(100% + 5px);
                 top: auto;
                 left: 50%;
                 transform: translateX(-50%);
