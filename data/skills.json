@@ -55,7 +55,6 @@
   },
   {
     "id": 10,
-<<<<<<< HEAD
     "name": "SQL Server",
     "category": "Database",
     "icon": "<img src=\"https://upload.wikimedia.org/wikipedia/commons/4/41/Microsoft_SQL_Server_2025_icon.svg\" alt=\"Lamp\" width=\"62\" height=\"62\">"
@@ -89,153 +88,17 @@
     "name": "XML",
     "category": "Database",
     "icon": "<img src=\"https://cdn.worldvectorlogo.com/logos/xml-2.svg\" alt=\"Lamp\" width=\"62\" height=\"62\">"
-=======
-    "name": "FireBase",
-    "category": "Database",
-    "icon": "<img src=\"https://brandlogos.net/wp-content/uploads/2025/03/firebase_icon-logo_brandlogos.net_tcvck-512x646.png\" alt=\"Lamp\" width=\"62\" height=\"62\">"
-  },
-  {
-    "id": 11,
-    "name": "Python Flask",
-    "category": "Web",
-    "icon": "<img src=\"https://i.ibb.co/KxVFjvJH/image.png\" alt=\"Lamp\" width=\"62\" height=\"62\">"
-  },
-  {
-    "id": 12,
-    "name": "JSON",
-    "category": "Database",
-    "icon": "<img src=\"https://i.ibb.co/RG5HJmGN/image-removebg-preview.png\" alt=\"Lamp\" width=\"62\" height=\"62\">"
-  },
-  {
-    "id": 13,
-    "name": "SQL Server",
-    "category": "Database",
-    "icon": "<img src=\"https://upload.wikimedia.org/wikipedia/commons/4/41/Microsoft_SQL_Server_2025_icon.svg\" alt=\"Lamp\" width=\"62\" height=\"62\">"
-  },
-  {
-    "id": 14,
-    "name": "MySQL",
-    "category": "Database",
-    "icon": "<img src=\"https://i.ibb.co/zTnVJS2L/navicat-mariadb-mysql-database-macos-childlike-12-1-41ba35a830ffe7d391b36a0039b3b03b.png\" alt=\"Lamp\" width=\"62\" height=\"62\">"
-  },
-  {
-    "id": 15,
-    "name": "CCNA",
-    "category": "IT",
-    "icon": "<img src=\"https://i.ibb.co/fG1bTybZ/pngegg-1.png\" alt=\"Lamp\" width=\"62\" height=\"62\">"
->>>>>>> 2999dd4961c88d3cb15b77b044341ca9bbf4d2da
   },
   {
     "id": 16,
-    "name": "MCSA",
+    "name": "CCNA",
     "category": "IT",
-<<<<<<< HEAD
     "icon": "<img src=\"https://i.ibb.co/fG1bTybZ/pngegg-1.png\" alt=\"Lamp\" width=\"62\" height=\"62\">"
-=======
-    "icon": "<img src=\"https://i.ibb.co/ZzMtWnpS/pngwing-com.png\" alt=\"Lamp\" width=\"62\" height=\"62\">"
->>>>>>> 2999dd4961c88d3cb15b77b044341ca9bbf4d2da
   },
   {
     "id": 17,
-    "name": "Cucumber BDD",
-    "category": "Software Testing",
-    "icon": "<img src=\"https://icon.icepanel.io/Technology/svg/Cucumber.svg\" alt=\"Lamp\" width=\"62\" height=\"62\">"
-  },
-  {
-    "id": 18,
-    "name": "Appium",
-    "category": "Software Testing",
-    "icon": "<img src=\"https://p7.hiclipart.com/preview/366/527/730/appium-test-automation-software-testing-selenium-ios-logo.jpg\" alt=\"Lamp\" width=\"62\" height=\"62\">"
-  },
-  {
-    "id": 19,
-    "name": "Github Actions",
-    "category": "Software Testing",
-    "icon": "<img src=\"https://www.svgrepo.com/show/306098/githubactions.svg\" alt=\"Lamp\" width=\"62\" height=\"62\">"
-  },
-  {
-    "id": 20,
-    "name": "Ollma Local AI",
-    "category": "AI",
-    "icon": "<img src=\"https://ollama.com/public/ollama.png\" alt=\"Lamp\" width=\"62\" height=\"62\">"
-  },
-  {
-    "id": 21,
-    "name": "Gemini CLI",
-    "category": "AI",
-    "icon": "<img src=\"https://geminicli.com/icon.png\" alt=\"Lamp\" width=\"62\" height=\"62\">"
-  },
-  {
-    "id": 22,
-    "name": "Claude Code",
-    "category": "AI",
-    "icon": "<img src=\"https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/dark/claude-color.png\" alt=\"Lamp\" width=\"62\" height=\"62\">"
-  },
-  {
-    "id": 23,
-    "name": "Qwen CLI",
-    "category": "AI",
-    "icon": "<img src=\"https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/dark/qwen-color.png\" alt=\"Lamp\" width=\"62\" height=\"62\">"
-  },
-  {
-    "id": 24,
-    "name": "MCP",
-    "category": "AI",
-    "icon": "<img src=\"https://i.ibb.co/cKLCssnD/mcp.png\" alt=\"Lamp\" width=\"62\" height=\"62\">"
-  },
-  {
-    "id": 25,
-    "name": "Playwright MCP",
-    "category": "AI",
-    "icon": "<img src=\"https://avatars.githubusercontent.com/u/6154722?s=48&v=4\" alt=\"Lamp\" width=\"62\" height=\"62\">"
-  },
-  {
-    "id": 26,
-    "name": "Typescript",
-    "category": "Web",
-    "icon": "<img src=\"https://icon.icepanel.io/Technology/svg/TypeScript.svg\" alt=\"Lamp\" width=\"62\" height=\"62\">"
-  },
-  {
-    "id": 27,
-    "name": "Postman MCP",
-    "category": "AI",
-    "icon": "<img src=\"https://avatars.githubusercontent.com/u/10251060?s=48&v=4\" alt=\"Lamp\" width=\"62\" height=\"62\">"
-  },
-  {
-    "id": 28,
-    "name": "Cursor",
-    "category": "AI",
-    "icon": "<img src=\"https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/dark/cursor.png\" alt=\"Lamp\" width=\"62\" height=\"62\">"
-  },
-  {
-    "id": 29,
-    "name": "Trae",
-    "category": "AI",
-    "icon": "<img src=\"https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/dark/trae-color.png\" alt=\"Lamp\" width=\"62\" height=\"62\">"
-  },
-  {
-    "id": 30,
-    "name": "Andlua",
-    "category": "Mobile",
-    "icon": "<img src=\"https://i.ibb.co/zV3Lpf09/lua.png\" alt=\"Lamp\" width=\"62\" height=\"62\">"
-  },
-  {
-    "id": 31,
-    "name": "Browser OS",
-    "category": "AI",
-    "icon": "<img src=\"https://i.ibb.co/35whxCNf/image.png\" alt=\"Lamp\" width=\"62\" height=\"62\">"
-  },
-  {
-    "id": 32,
-    "name": "Comet Ai Browser",
-    "category": "AI",
-    "icon": "<img src=\"https://img.utdstc.com/icon/f00/c67/f00c6739642581aae294938e8da1e781d0eddb8014a8f40beed04e7baf015629:100\" alt=\"Lamp\" width=\"62\" height=\"62\">"
-  },
-  {
-    "id": 33,
-    "name": "CentOS Fedora",
+    "name": "MCSA",
     "category": "IT",
-<<<<<<< HEAD
     "icon": "<img src=\"https://i.ibb.co/ZzMtWnpS/pngwing-com.png\" alt=\"Lamp\" width=\"62\" height=\"62\">"
   },
   {
@@ -342,43 +205,20 @@
   },
   {
     "id": 35,
-=======
-    "icon": "<img src=\"https://www.centos.org/assets/img/centos-symbol.svg\" alt=\"Lamp\" width=\"62\" height=\"62\">"
-  },
-  {
-    "id": 34,
->>>>>>> 2999dd4961c88d3cb15b77b044341ca9bbf4d2da
     "name": "Ubuntu Debian",
     "category": "IT",
     "icon": "<img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/UbuntuCoF.svg/960px-UbuntuCoF.svg.png?20120210072525\" alt=\"Lamp\" width=\"62\" height=\"62\">"
   },
   {
-<<<<<<< HEAD
     "id": 36,
-=======
-    "id": 35,
->>>>>>> 2999dd4961c88d3cb15b77b044341ca9bbf4d2da
     "name": "Kali Linux Debian",
     "category": "IT",
     "icon": "<img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Kali-dragon-icon.svg/960px-Kali-dragon-icon.svg.png?20211125065834\" alt=\"Lamp\" width=\"62\" height=\"62\">"
   },
   {
-<<<<<<< HEAD
     "id": 37,
     "name": "Black Arch",
     "category": "IT",
     "icon": "<img src=\"https://upload.wikimedia.org/wikipedia/commons/3/3f/BlackArch_logo.png\" alt=\"Lamp\" width=\"62\" height=\"62\">"
-=======
-    "id": 36,
-    "name": "Black Arch",
-    "category": "IT",
-    "icon": "<img src=\"https://upload.wikimedia.org/wikipedia/commons/3/3f/BlackArch_logo.png\" alt=\"Lamp\" width=\"62\" height=\"62\">"
-  },
-  {
-    "id": 37,
-    "name": "XML",
-    "category": "Database",
-    "icon": "<img src=\"https://cdn.worldvectorlogo.com/logos/xml-2.svg\" alt=\"Lamp\" width=\"62\" height=\"62\">"
->>>>>>> 2999dd4961c88d3cb15b77b044341ca9bbf4d2da
   }
 ]

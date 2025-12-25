@@ -1,63 +1,38 @@
 [
   {
     "ip": "197.48.134.76",
-<<<<<<< HEAD
     "visit_id": "v_1766441973340_3c32k40gd",
     "timestamp": "2025-12-21T20:56:04.633757",
     "last_visit": "2025-12-22T22:19:33.554970",
     "path": "home",
-=======
-    "visit_id": "v_1766202154878_7keq6qtaj",
-    "timestamp": "2025-12-20T03:42:35.840238",
-    "last_visit": "2025-12-20T03:42:35.840248",
-    "path": "projects",
->>>>>>> 2999dd4961c88d3cb15b77b044341ca9bbf4d2da
     "method": "POST",
     "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
     "referrer": "https://gowano2025.pythonanywhere.com/",
     "country": null,
     "city": null,
-<<<<<<< HEAD
     "duration": 392906,
     "visit_count": 67,
-=======
-    "duration": 0,
-    "visit_count": 1,
->>>>>>> 2999dd4961c88d3cb15b77b044341ca9bbf4d2da
     "device_type": "PC",
     "os_type": "Windows"
   },
   {
     "ip": "197.48.134.76",
-<<<<<<< HEAD
     "visit_id": "v_1766379480148_ybaafdiav",
     "timestamp": "2025-12-21T20:56:05.995738",
     "last_visit": "2025-12-22T04:58:00.299739",
     "path": "projects",
-=======
-    "visit_id": "v_1766202155529_napmi410c",
-    "timestamp": "2025-12-20T03:42:36.493005",
-    "last_visit": "2025-12-20T03:42:36.493015",
-    "path": "certifications",
->>>>>>> 2999dd4961c88d3cb15b77b044341ca9bbf4d2da
     "method": "POST",
     "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
     "referrer": "https://gowano2025.pythonanywhere.com/",
     "country": null,
     "city": null,
-<<<<<<< HEAD
     "duration": 317779,
     "visit_count": 45,
-=======
-    "duration": 0,
-    "visit_count": 1,
->>>>>>> 2999dd4961c88d3cb15b77b044341ca9bbf4d2da
     "device_type": "PC",
     "os_type": "Windows"
   },
   {
     "ip": "197.48.134.76",
-<<<<<<< HEAD
     "visit_id": "v_1766371827102_ouca3znu2",
     "timestamp": "2025-12-21T20:57:45.283623",
     "last_visit": "2025-12-22T02:50:28.325398",
@@ -77,30 +52,19 @@
     "visit_id": "v_1766379481697_sqebhmidp",
     "timestamp": "2025-12-21T20:57:50.404907",
     "last_visit": "2025-12-22T04:58:01.935888",
-=======
-    "visit_id": "v_1766202156108_dgkpa27x9",
-    "timestamp": "2025-12-20T03:42:37.083481",
-    "last_visit": "2025-12-20T03:42:37.083492",
->>>>>>> 2999dd4961c88d3cb15b77b044341ca9bbf4d2da
     "path": "skills",
     "method": "POST",
     "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
     "referrer": "https://gowano2025.pythonanywhere.com/",
     "country": null,
     "city": null,
-<<<<<<< HEAD
     "duration": 4,
     "visit_count": 5,
-=======
-    "duration": 0,
-    "visit_count": 1,
->>>>>>> 2999dd4961c88d3cb15b77b044341ca9bbf4d2da
     "device_type": "PC",
     "os_type": "Windows"
   },
   {
     "ip": "197.48.134.76",
-<<<<<<< HEAD
     "visit_id": "v_1766379480967_dhim6ygfm",
     "timestamp": "2025-12-21T20:57:54.382936",
     "last_visit": "2025-12-22T04:58:01.116920",
@@ -376,11 +340,6 @@
     "visit_id": "v_1766606402438_w5aesx1tv",
     "timestamp": "2025-12-24T20:00:01.834889",
     "last_visit": "2025-12-24T20:00:01.834900",
-=======
-    "visit_id": "v_1766202156679_gsfqmt3v1",
-    "timestamp": "2025-12-20T03:42:37.637400",
-    "last_visit": "2025-12-20T03:42:37.637410",
->>>>>>> 2999dd4961c88d3cb15b77b044341ca9bbf4d2da
     "path": "contact",
     "method": "POST",
     "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",

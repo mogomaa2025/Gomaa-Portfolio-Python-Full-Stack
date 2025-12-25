@@ -315,10 +315,10 @@
 
     <!-- Modal for enlarged images -->
     <div id="image-modal" class="modal-overlay" style="display:none;">
+        <button class="modal-nav prev" id="modal-prev" aria-label="Previous">&lt;</button>
+        <button class="modal-nav next" id="modal-next" aria-label="Next">&gt;</button>
         <div class="modal-content">
             <button class="modal-close" id="modal-close" aria-label="Close">&times;</button>
-            <button class="modal-nav prev" id="modal-prev" aria-label="Previous">&lt;</button>
-            <button class="modal-nav next" id="modal-next" aria-label="Next">&gt;</button>
             <div class="modal-slide-container">
                 <img src="" alt="Enlarged view" id="modal-img" class="modal-img">
                 <div class="slide-indicator" id="slide-indicator"></div>
@@ -467,7 +467,7 @@
             height: 48px;
             font-size: 1.8rem;
             cursor: pointer;
-            z-index: 1010;
+            z-index: 3000;
             transition: all 0.2s ease;
             opacity: 1;
             display: flex;
@@ -485,7 +485,7 @@
         .modal-nav.next {
             right: 20px;
         }
-        .modal-content:hover .modal-nav {
+        .modal-overlay:hover .modal-nav {
             opacity: 1;
         }
         .modal-nav.highlight {
@@ -509,8 +509,8 @@
         .modal-slide-container {
             position: relative;
         }
-        .modal-content:hover .modal-nav {
-            display: block;
+        .modal-overlay:hover .modal-nav {
+            display: flex;
         }
         .slide-indicator {
             position: absolute;
@@ -941,8 +941,14 @@
             }
         }
 
+        // Flag to prevent rapid clicking before image loads
+        let isImageLoading = false;
+        
         function showSlide(index) {
             if (!currentSlides.length) return;
+            
+            // Prevent navigation while image is still loading
+            if (isImageLoading) return;
             
             // Reset zoom state when changing slides
             if (zoomLevel > 1) {
@@ -950,7 +956,27 @@
             }
             
             currentSlideIndex = (index + currentSlides.length) % currentSlides.length;
-            modalImg.src = currentSlides[currentSlideIndex];
+            
+            // Set loading state
+            isImageLoading = true;
+            modalImg.style.opacity = '0.5';
+            
+            // Create a new image to preload
+            const newImg = new Image();
+            newImg.onload = function() {
+                modalImg.src = currentSlides[currentSlideIndex];
+                modalImg.style.opacity = '1';
+                isImageLoading = false;
+            };
+            newImg.onerror = function() {
+                // Still show the image even if error, reset loading state
+                modalImg.src = currentSlides[currentSlideIndex];
+                modalImg.style.opacity = '1';
+                isImageLoading = false;
+            };
+            newImg.src = currentSlides[currentSlideIndex];
+            
+            // Update dots immediately for responsiveness
             updateSlideIndicators(currentSlides.length, currentSlideIndex);
             
             if (currentSlides.length > 1) {
