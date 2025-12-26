@@ -1320,6 +1320,135 @@
                 videoModal.classList.add('visible');
             }, 10);
         });
+
+        // ===== Double-Tap to Seek for Mobile Video =====
+        // Works on video elements and in fullscreen video modal
+        (function() {
+            let lastTapTime = 0;
+            let lastTapX = 0;
+            const DOUBLE_TAP_DELAY = 300; // ms
+            const SEEK_SECONDS = 10;
+
+            // Create seek indicator element
+            function createSeekIndicator() {
+                let indicator = document.getElementById('seek-indicator');
+                if (!indicator) {
+                    indicator = document.createElement('div');
+                    indicator.id = 'seek-indicator';
+                    indicator.style.cssText = `
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        background: rgba(0, 0, 0, 0.7);
+                        color: white;
+                        padding: 15px 25px;
+                        border-radius: 30px;
+                        font-size: 1.2rem;
+                        font-weight: 600;
+                        pointer-events: none;
+                        z-index: 3000;
+                        opacity: 0;
+                        transition: opacity 0.2s ease;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                    `;
+                    document.body.appendChild(indicator);
+                }
+                return indicator;
+            }
+
+            function showSeekIndicator(direction) {
+                const indicator = createSeekIndicator();
+                if (direction === 'forward') {
+                    indicator.innerHTML = `⏩ +${SEEK_SECONDS}s`;
+                    indicator.style.left = '70%';
+                } else {
+                    indicator.innerHTML = `⏪ -${SEEK_SECONDS}s`;
+                    indicator.style.left = '30%';
+                }
+                indicator.style.opacity = '1';
+                setTimeout(() => {
+                    indicator.style.opacity = '0';
+                }, 600);
+            }
+
+            // Handle double-tap on video modal
+            if (videoModal) {
+                videoModal.addEventListener('touchend', function(e) {
+                    // Don't trigger on close button
+                    if (e.target.closest('.video-modal-close')) return;
+                    
+                    const now = Date.now();
+                    const tapX = e.changedTouches[0].clientX;
+                    const screenWidth = window.innerWidth;
+                    
+                    // Check for double tap
+                    if (now - lastTapTime < DOUBLE_TAP_DELAY) {
+                        e.preventDefault();
+                        
+                        // Right side = forward, Left side = backward
+                        const isRightSide = tapX > screenWidth / 2;
+                        const seekDirection = isRightSide ? 'forward' : 'backward';
+                        
+                        // Try to seek the video
+                        const video = modalVideo.style.display !== 'none' ? modalVideo : null;
+                        
+                        if (video && video.duration) {
+                            const newTime = isRightSide 
+                                ? Math.min(video.duration, video.currentTime + SEEK_SECONDS)
+                                : Math.max(0, video.currentTime - SEEK_SECONDS);
+                            video.currentTime = newTime;
+                            showSeekIndicator(seekDirection);
+                        }
+                        
+                        lastTapTime = 0; // Reset to prevent triple-tap
+                    } else {
+                        lastTapTime = now;
+                        lastTapX = tapX;
+                    }
+                }, { passive: false });
+            }
+
+            // Also handle double-tap on regular video wrappers (non-modal)
+            document.addEventListener('touchend', function(e) {
+                const videoWrapper = e.target.closest('.video-wrapper');
+                if (!videoWrapper) return;
+                
+                // Don't trigger on fullscreen button
+                if (e.target.closest('.video-fullscreen-btn')) return;
+                
+                const video = videoWrapper.querySelector('video');
+                if (!video) return;
+                
+                const now = Date.now();
+                const tapX = e.changedTouches[0].clientX;
+                const rect = videoWrapper.getBoundingClientRect();
+                const relativeX = tapX - rect.left;
+                const isRightSide = relativeX > rect.width / 2;
+                
+                // Check for double tap
+                if (now - lastTapTime < DOUBLE_TAP_DELAY) {
+                    e.preventDefault();
+                    
+                    const seekDirection = isRightSide ? 'forward' : 'backward';
+                    
+                    if (video.duration) {
+                        const newTime = isRightSide 
+                            ? Math.min(video.duration, video.currentTime + SEEK_SECONDS)
+                            : Math.max(0, video.currentTime - SEEK_SECONDS);
+                        video.currentTime = newTime;
+                        showSeekIndicator(seekDirection);
+                    }
+                    
+                    lastTapTime = 0;
+                } else {
+                    lastTapTime = now;
+                    lastTapX = tapX;
+                }
+            }, { passive: false });
+        })();
     </script>
 </body>
 </html>

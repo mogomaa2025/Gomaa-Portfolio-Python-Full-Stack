@@ -70,5 +70,29 @@
     "ip": "127.0.0.1",
     "trigger_source": "logo",
     "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+  },
+  {
+    "timestamp": "2025-12-26T22:24:40.796269",
+    "ip": "192.168.1.114",
+    "trigger_source": "image",
+    "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36"
+  },
+  {
+    "timestamp": "2025-12-26T22:26:50.422209",
+    "ip": "192.168.1.114",
+    "trigger_source": "image",
+    "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36"
+  },
+  {
+    "timestamp": "2025-12-26T22:30:02.720706",
+    "ip": "192.168.1.114",
+    "trigger_source": "image",
+    "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36"
+  },
+  {
+    "timestamp": "2025-12-26T22:31:33.935156",
+    "ip": "192.168.1.114",
+    "trigger_source": "image",
+    "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36"
   }
 ]
