@@ -79,48 +79,56 @@ def format_duration_telegram(seconds):
     return f"{hours}h {remaining_minutes}m"
 
 def send_telegram_csv_report(visitors):
-    """Send a CSV report of visitors to Telegram."""
-    try:
-        import io
-        
-        # Create CSV content
-        csv_content = "IP,Timestamp,Page,Device,OS,Duration,Visit Count\n"
-        for v in visitors:
-            duration = format_duration_telegram(v.get('duration', 0))
-            csv_content += f"{v.get('ip', '')},{v.get('timestamp', '')},{v.get('path', '')},{v.get('device_type', '')},{v.get('os_type', '')},{duration},{v.get('visit_count', 1)}\n"
-        
-        # Create file-like object
-        csv_file = io.BytesIO(csv_content.encode('utf-8'))
-        csv_file.name = f"visitors_report_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
-        
-        # Send summary message first
-        total_visitors = len(visitors)
-        total_duration = sum(v.get('duration', 0) for v in visitors)
-        avg_duration = total_duration // total_visitors if total_visitors > 0 else 0
-        
-        summary = f"📊 *Visitor Analytics Report*\n\n"
-        summary += f"👥 *Total Records:* {total_visitors}\n"
-        summary += f"⏱ *Total Duration:* {format_duration_telegram(total_duration)}\n"
-        summary += f"📈 *Avg Duration:* {format_duration_telegram(avg_duration)}\n"
-        summary += f"🕐 *Generated (Cairo):* {get_cairo_time()}\n"
-        
-        # Send message
-        msg_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-        requests.post(msg_url, json={
-            'chat_id': TELEGRAM_CHAT_ID,
-            'text': summary,
-            'parse_mode': 'Markdown'
-        }, timeout=5)
-        
-        # Send CSV file
-        doc_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendDocument"
-        csv_file.seek(0)
-        files = {'document': (csv_file.name, csv_file, 'text/csv')}
-        data = {'chat_id': TELEGRAM_CHAT_ID, 'caption': '📎 Full visitor report with duration'}
-        requests.post(doc_url, data=data, files=files, timeout=10)
-        
-    except Exception as e:
-        print(f"Telegram CSV report failed: {e}")
+    """Send a CSV report of visitors to Telegram (runs in background thread)."""
+    import threading
+    
+    def _send_report():
+        try:
+            import io
+            
+            # Create CSV content
+            csv_content = "IP,Timestamp,Page,Device,OS,Duration,Visit Count\n"
+            for v in visitors:
+                duration = format_duration_telegram(v.get('duration', 0))
+                csv_content += f"{v.get('ip', '')},{v.get('timestamp', '')},{v.get('path', '')},{v.get('device_type', '')},{v.get('os_type', '')},{duration},{v.get('visit_count', 1)}\n"
+            
+            # Create file-like object
+            csv_file = io.BytesIO(csv_content.encode('utf-8'))
+            csv_file.name = f"visitors_report_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
+            
+            # Send summary message first
+            total_visitors = len(visitors)
+            total_duration = sum(v.get('duration', 0) for v in visitors)
+            avg_duration = total_duration // total_visitors if total_visitors > 0 else 0
+            
+            summary = f"📊 *Visitor Analytics Report*\n\n"
+            summary += f"👥 *Total Records:* {total_visitors}\n"
+            summary += f"⏱ *Total Duration:* {format_duration_telegram(total_duration)}\n"
+            summary += f"📈 *Avg Duration:* {format_duration_telegram(avg_duration)}\n"
+            summary += f"🕐 *Generated (Cairo):* {get_cairo_time()}\n"
+            
+            # Send message
+            msg_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+            requests.post(msg_url, json={
+                'chat_id': TELEGRAM_CHAT_ID,
+                'text': summary,
+                'parse_mode': 'Markdown'
+            }, timeout=5)
+            
+            # Send CSV file
+            doc_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendDocument"
+            csv_file.seek(0)
+            files = {'document': (csv_file.name, csv_file, 'text/csv')}
+            data = {'chat_id': TELEGRAM_CHAT_ID, 'caption': '📎 Full visitor report with duration'}
+            requests.post(doc_url, data=data, files=files, timeout=10)
+            
+        except Exception as e:
+            print(f"Telegram CSV report failed: {e}")
+    
+    # Run in background thread so page doesn't hang
+    thread = threading.Thread(target=_send_report)
+    thread.daemon = True
+    thread.start()
 
 # DON'T CHANGE THIS !!!
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
@@ -1542,7 +1550,8 @@ def track_visit():
         existing_visit['visit_count'] = existing_visit.get('visit_count', 1) + 1
         existing_visit['last_visit'] = datetime.now().isoformat()
         existing_visit['visit_id'] = visit_id  # Update to latest visit_id for duration tracking
-        # Total duration is accumulated via update_visit_duration
+        # Store current duration as session start for new session accumulation
+        existing_visit['session_start_duration'] = existing_visit.get('duration', 0)
         
         # Send Telegram notification for returning visitor
         send_telegram_notification(existing_visit, is_returning=True)
@@ -1635,13 +1644,15 @@ def update_visit_duration():
     except:
         return jsonify({'status': 'error', 'message': 'Could not load visitors'}), 500
 
-    # Find the visit and accumulate duration (add to existing duration)
+    # Find the visit and update duration
     updated = False
     for v in visitors:
         if v.get('visit_id') == visit_id:
-            # Accumulate duration instead of replacing
-            current_duration = v.get('duration', 0)
-            v['duration'] = current_duration + duration
+            # For the same visit session, take the max (frontend sends cumulative time)
+            # The 'session_start_duration' tracks duration at session start
+            session_start = v.get('session_start_duration', 0)
+            new_total = session_start + duration
+            v['duration'] = new_total
             updated = True
             break
     
