@@ -1,4 +1,7 @@
 {
+  "secret_key": "asecretkeyhere",
+  "admin_password_hash": "hashpasswordhere",
+  "track_local": false,
   "logo_text": "Mohamed Gomaa",
   "profile_image": "",
   "profile_image_url": "https://i.ibb.co/3yN6rVsH/lossy.png",

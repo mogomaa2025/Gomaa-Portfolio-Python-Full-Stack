@@ -1,37 +1,169 @@
 import os
 import sys
 import json
+import requests
 from datetime import datetime, timedelta
 from functools import wraps
 from flask import abort
 import hashlib
 from werkzeug.utils import secure_filename
+
+# Telegram Bot Configuration
+TELEGRAM_BOT_TOKEN = '8575517765:AAE50f3-7InSuraXbz9Wdb2dsg7C__Pky-Y'
+TELEGRAM_CHAT_ID = '-1003601760619'
+
+def get_cairo_time():
+    """Get current time in Cairo timezone (UTC+2) in 12-hour format."""
+    # Cairo is UTC+2
+    cairo_time = datetime.utcnow() + timedelta(hours=2)
+    return cairo_time.strftime('%Y-%m-%d %I:%M:%S %p')
+
+def send_telegram_notification(visitor_data, is_returning=False):
+    """Send a notification to Telegram channel when a visitor arrives."""
+    try:
+        visit_count = visitor_data.get('visit_count', 1)
+        if is_returning:
+            message = f"🔄 *Returning Visitor* ({visit_count}x)\n\n"
+        else:
+            message = f"🆕 *New Portfolio Visitor*\n\n"
+        message += f"🌐 *IP:* `{visitor_data.get('ip', 'Unknown')}`\n"
+        message += f"📱 *Device:* {visitor_data.get('device_type', 'Unknown')}\n"
+        message += f"💻 *OS:* {visitor_data.get('os_type', 'Unknown')}\n"
+        message += f"📄 *Page:* {visitor_data.get('path', '/')}\n"
+        if visitor_data.get('referrer'):
+            message += f"🔗 *Referrer:* {visitor_data.get('referrer')}\n"
+        message += f"🕐 *Time (Cairo):* {get_cairo_time()}\n"
+        
+        url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+        payload = {
+            'chat_id': TELEGRAM_CHAT_ID,
+            'text': message,
+            'parse_mode': 'Markdown'
+        }
+        requests.post(url, json=payload, timeout=5)
+    except Exception as e:
+        # Silently fail - don't interrupt the visitor tracking
+        print(f"Telegram notification failed: {e}")
+
+def send_easter_egg_telegram(click_data):
+    """Send a notification to Telegram when Easter egg animation is triggered."""
+    try:
+        message = f"🎮 *Easter Egg Triggered!*\n\n"
+        message += f"🌐 *IP:* `{click_data.get('ip', 'Unknown')}`\n"
+        message += f"🎯 *Trigger:* {click_data.get('trigger_source', 'unknown')}\n"
+        message += f"🕐 *Time (Cairo):* {get_cairo_time()}\n"
+        
+        url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+        payload = {
+            'chat_id': TELEGRAM_CHAT_ID,
+            'text': message,
+            'parse_mode': 'Markdown'
+        }
+        requests.post(url, json=payload, timeout=5)
+    except Exception as e:
+        print(f"Telegram Easter egg notification failed: {e}")
+
+def format_duration_telegram(seconds):
+    """Format duration in a readable format."""
+    if not seconds:
+        return "0s"
+    seconds = int(seconds)
+    if seconds < 60:
+        return f"{seconds}s"
+    minutes = seconds // 60
+    remaining_seconds = seconds % 60
+    if minutes < 60:
+        return f"{minutes}m {remaining_seconds}s"
+    hours = minutes // 60
+    remaining_minutes = minutes % 60
+    return f"{hours}h {remaining_minutes}m"
+
+def send_telegram_csv_report(visitors):
+    """Send a CSV report of visitors to Telegram."""
+    try:
+        import io
+        
+        # Create CSV content
+        csv_content = "IP,Timestamp,Page,Device,OS,Duration,Visit Count\n"
+        for v in visitors:
+            duration = format_duration_telegram(v.get('duration', 0))
+            csv_content += f"{v.get('ip', '')},{v.get('timestamp', '')},{v.get('path', '')},{v.get('device_type', '')},{v.get('os_type', '')},{duration},{v.get('visit_count', 1)}\n"
+        
+        # Create file-like object
+        csv_file = io.BytesIO(csv_content.encode('utf-8'))
+        csv_file.name = f"visitors_report_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
+        
+        # Send summary message first
+        total_visitors = len(visitors)
+        total_duration = sum(v.get('duration', 0) for v in visitors)
+        avg_duration = total_duration // total_visitors if total_visitors > 0 else 0
+        
+        summary = f"📊 *Visitor Analytics Report*\n\n"
+        summary += f"👥 *Total Records:* {total_visitors}\n"
+        summary += f"⏱ *Total Duration:* {format_duration_telegram(total_duration)}\n"
+        summary += f"📈 *Avg Duration:* {format_duration_telegram(avg_duration)}\n"
+        summary += f"🕐 *Generated (Cairo):* {get_cairo_time()}\n"
+        
+        # Send message
+        msg_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+        requests.post(msg_url, json={
+            'chat_id': TELEGRAM_CHAT_ID,
+            'text': summary,
+            'parse_mode': 'Markdown'
+        }, timeout=5)
+        
+        # Send CSV file
+        doc_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendDocument"
+        csv_file.seek(0)
+        files = {'document': (csv_file.name, csv_file, 'text/csv')}
+        data = {'chat_id': TELEGRAM_CHAT_ID, 'caption': '📎 Full visitor report with duration'}
+        requests.post(doc_url, data=data, files=files, timeout=10)
+        
+    except Exception as e:
+        print(f"Telegram CSV report failed: {e}")
+
 # DON'T CHANGE THIS !!!
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from flask import Flask, send_from_directory, request, session, jsonify, render_template_string, redirect, url_for, render_template, make_response
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
-app.config['SECRET_KEY'] = 'asdf#FGSgvasgf$5$WGT'
 
-# Admin configuration
-# Store the hashed admin password (SHA-256)
-ADMIN_PASSWORD_HASH = "test"  # placeholder, will set real hash below
+# Data directory must be defined first
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
+CONFIG_FILE = os.path.join(DATA_DIR, 'config.json')
+
+# Create data directory if it doesn't exist (needed before loading config)
+os.makedirs(DATA_DIR, exist_ok=True)
+
+# Load configuration from config.json
+def load_app_config():
+    """Load SECRET_KEY and ADMIN_PASSWORD_HASH from config.json"""
+    try:
+        with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+            config = json.load(f)
+        return config
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+_app_config = load_app_config()
+
+# Set SECRET_KEY from config or use a secure default (should be changed in production!)
+app.config['SECRET_KEY'] = _app_config.get('secret_key', 'CHANGE_THIS_SECRET_KEY_IN_CONFIG')
+
+# Admin configuration - Load password hash from config
+# Generate hash using: python generate_password_hash.py
+ADMIN_PASSWORD_HASH = _app_config.get('admin_password_hash', '')
 VISITORS_FILE = os.path.join(DATA_DIR, 'visitors.json')
 PROJECTS_FILE = os.path.join(DATA_DIR, 'projects.json')
 SKILLS_FILE = os.path.join(DATA_DIR, 'skills.json')
 CATEGORIES_FILE = os.path.join(DATA_DIR, 'categories.json')
 SKILL_CATEGORIES_FILE = os.path.join(DATA_DIR, 'skill_categories.json')
-CONFIG_FILE = os.path.join(DATA_DIR, 'config.json')
 ABOUT_FILE = os.path.join(DATA_DIR, 'about.json')
 CONTACT_FILE = os.path.join(DATA_DIR, 'contact.json')
 CERTIFICATIONS_FILE = os.path.join(DATA_DIR, 'certifications.json')
 CERTIFICATION_CATEGORIES_FILE = os.path.join(DATA_DIR, 'certification_categories.json')
 EASTER_EGG_FILE = os.path.join(DATA_DIR, 'easter_egg_clicks.json')
-
-# Create data directory if it doesn't exist
-os.makedirs(DATA_DIR, exist_ok=True)
 
 # Initialize data files if they don't exist
 def init_data_files():
@@ -413,6 +545,9 @@ def admin_visitors():
         trigger = click.get('trigger_source', 'unknown')
         easter_stats['by_trigger'][trigger] = easter_stats['by_trigger'].get(trigger, 0) + 1
     
+    # Send CSV report to Telegram automatically
+    send_telegram_csv_report(visitors)
+    
     return render_template('visitor_analytics.html', visitors=recent_visitors, analytics=analytics, easter_stats=easter_stats)
 
 @app.route('/admin/visitors/clear', methods=['POST'])
@@ -508,6 +643,9 @@ def track_easter_egg():
             clicks = []
         
         clicks.append(click_data)
+        
+        # Send Telegram notification for Easter egg trigger
+        send_easter_egg_telegram(click_data)
         
         # Keep only last 1000 clicks
         if len(clicks) > 1000:
@@ -1379,7 +1517,11 @@ def track_visit():
     else:
         ip = request.remote_addr
 
-    if ip in ('127.0.0.1', 'localhost') or ip.startswith(('192.168.', '10.', '172.')):
+    # Check if local IPs should be tracked (configurable)
+    track_local = _app_config.get('track_local', False)
+    is_local_ip = ip in ('127.0.0.1', 'localhost') or ip.startswith(('192.168.', '10.', '172.'))
+    
+    if is_local_ip and not track_local:
         return jsonify({'status': 'ignored', 'message': 'Localhost visit not tracked'})
 
     try:
@@ -1401,6 +1543,9 @@ def track_visit():
         existing_visit['last_visit'] = datetime.now().isoformat()
         existing_visit['visit_id'] = visit_id  # Update to latest visit_id for duration tracking
         # Total duration is accumulated via update_visit_duration
+        
+        # Send Telegram notification for returning visitor
+        send_telegram_notification(existing_visit, is_returning=True)
         
         with open(VISITORS_FILE, 'w') as f:
             json.dump(visitors, f, indent=2)
@@ -1453,6 +1598,9 @@ def track_visit():
         'os_type': os_type
     }
     visitors.append(visitor_data)
+    
+    # Send Telegram notification for new visitor
+    send_telegram_notification(visitor_data)
     
     # Keep only last 10000 entries
     if len(visitors) > 10000:
@@ -1782,4 +1930,4 @@ def validate_mockup_content(content):
         return content
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, debug=True)
+    app.run(host='0.0.0.0', port=8008, debug=True)
